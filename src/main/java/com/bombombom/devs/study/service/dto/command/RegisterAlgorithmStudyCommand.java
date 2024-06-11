@@ -21,7 +21,7 @@ public record RegisterAlgorithmStudyCommand (
 
     public AlgorithmStudy toEntity() {
         int difficultyGap = difficultyEnd-difficultyBegin;
-        int db = difficultyBegin;
+        float db = difficultyBegin;
 
         return AlgorithmStudy.builder().name(name).introduce(introduce)
             .capacity(capacity).weeks(weeks).startDate(startDate)
