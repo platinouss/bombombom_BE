@@ -1,12 +1,3 @@
----
-name: Custom pull request template
-about: Describe this pull request template's purpose here.
-title: ''
-labels: ''
-assignees: ''
-
----
-
 ## 작업 개요
 <!-- 작업에 대한 요약 설명을 남겨주세요. -->
 
