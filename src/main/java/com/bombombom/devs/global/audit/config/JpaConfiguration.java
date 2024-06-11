@@ -1,4 +1,4 @@
-package com.bombombom.devs.global.domain.config;
+package com.bombombom.devs.global.audit.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

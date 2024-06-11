@@ -1,13 +1,15 @@
 package com.bombombom.devs.user.models;
 
-import com.bombombom.devs.global.domain.BaseEntity;
+import com.bombombom.devs.global.audit.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Builder
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends BaseEntity {
