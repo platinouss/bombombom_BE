@@ -48,7 +48,7 @@ public class StudyService {
 
         Page<StudyResult> studyResults = studies.map(Study::toDto);
 
-        return studyResults.getContent().stream().map(StudyResponse::of).toList();
+        return studyResults.map(StudyResponse::of).getContent();
     }
 
 }
