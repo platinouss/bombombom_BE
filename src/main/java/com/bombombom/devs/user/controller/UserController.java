@@ -1,7 +1,7 @@
 package com.bombombom.devs.user.controller;
 
-import com.bombombom.devs.user.UserService;
 import com.bombombom.devs.user.controller.dto.SignupRequest;
+import com.bombombom.devs.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<Void> signup(@Valid @RequestBody SignupRequest signupRequest) {
-        userService.addUser(signupRequest);
+        userService.addUser(signupRequest.toCommand());
         return ResponseEntity.ok().build();
     }
 }
