@@ -1,8 +1,8 @@
 package com.bombombom.devs.user.service;
 
-import com.bombombom.devs.user.UserRepository;
 import com.bombombom.devs.user.exception.ExistUsernameException;
 import com.bombombom.devs.user.models.User;
+import com.bombombom.devs.user.repository.UserRepository;
 import com.bombombom.devs.user.service.dto.SignupCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
