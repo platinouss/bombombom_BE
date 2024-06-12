@@ -1,5 +1,6 @@
 package com.bombombom.devs.study.service.dto.result;
 
+import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import jakarta.persistence.Column;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 
 @Builder
-public record AlgorithmStudyResult(
+public record AlgorithmStudyResult (
     Long id,
     String name,
     String introduce,
@@ -29,6 +30,6 @@ public record AlgorithmStudyResult(
     float difficultyString,
     float difficultyDp,
     int difficultyGap,
-    int problemCount) {
+    int problemCount) implements StudyResult{
 
 }

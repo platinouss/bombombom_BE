@@ -1,5 +1,6 @@
 package com.bombombom.devs.study.service.dto.result;
 
+import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import java.time.LocalDate;
@@ -19,6 +20,6 @@ public record BookStudyResult(
     StudyStatus state,
     StudyType studyType,
     Long bookId
-){
+) implements StudyResult {
 
 }

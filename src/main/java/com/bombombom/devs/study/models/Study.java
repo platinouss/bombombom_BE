@@ -2,6 +2,7 @@ package com.bombombom.devs.study.models;
 
 import com.bombombom.devs.global.audit.BaseEntity;
 import com.bombombom.devs.study.models.StudyStatus.Values;
+import com.bombombom.devs.study.service.dto.result.StudyResult;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -14,7 +15,9 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
@@ -26,6 +29,7 @@ import org.hibernate.annotations.DynamicInsert;
 @Table(name = "study")
 @DiscriminatorColumn(name = "STUDY_TYPE")
 @Inheritance(strategy = InheritanceType.JOINED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 public abstract class Study extends BaseEntity {
     @Id
@@ -62,7 +66,7 @@ public abstract class Study extends BaseEntity {
     @Enumerated(EnumType.STRING)
     protected StudyStatus state;
 
-    abstract public StudyType getType();
+    abstract public StudyType getStudyType();
 
-
+    abstract public StudyResult toDto();
 }

@@ -5,7 +5,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -15,6 +18,7 @@ import org.hibernate.annotations.DynamicInsert;
 @SuperBuilder
 @Table(name = "book_study")
 @DiscriminatorValue(StudyType.Values.BOOK)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 public class BookStudy extends Study {
 
@@ -26,11 +30,11 @@ public class BookStudy extends Study {
             .id(id).name(name).introduce(introduce).capacity(capacity)
             .headCount(headCount).weeks(weeks).startDate(startDate)
             .reliabilityLimit(reliabilityLimit).penalty(penalty).state(state)
-            .bookId(bookId).studyType(getType()).build();
+            .bookId(bookId).studyType(getStudyType()).build();
     }
 
     @Override
-    public StudyType getType() {
+    public StudyType getStudyType() {
         return StudyType.BOOK;
     }
 }

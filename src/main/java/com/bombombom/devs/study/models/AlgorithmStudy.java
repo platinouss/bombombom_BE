@@ -5,7 +5,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -14,6 +16,7 @@ import org.hibernate.annotations.DynamicInsert;
 @SuperBuilder
 @Table(name = "algorithm_study")
 @DiscriminatorValue(StudyType.Values.ALGORITHM)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 public class AlgorithmStudy extends Study {
 
@@ -49,18 +52,18 @@ public class AlgorithmStudy extends Study {
 
     public AlgorithmStudyResult toDto() {
         return AlgorithmStudyResult.builder()
-            .name(name).introduce(introduce).capacity(capacity)
+            .id(id).name(name).introduce(introduce).capacity(capacity)
             .headCount(headCount).weeks(weeks).startDate(startDate)
             .reliabilityLimit(reliabilityLimit).penalty(penalty).state(state)
             .difficultyDs(difficultyDs).difficultyGraph(difficultyGraph)
             .difficultyString(difficultyString).difficultyGeometry(difficultyGeometry)
             .difficultyMath(difficultyMath).difficultyImpl(difficultyImpl)
             .difficultyGap(difficultyGap).difficultyGreedy(difficultyGreedy)
-            .difficultyDp(difficultyDp).studyType(getType()).build();
+            .difficultyDp(difficultyDp).studyType(getStudyType()).build();
     }
 
     @Override
-    public StudyType getType() {
+    public StudyType getStudyType() {
 
         return StudyType.ALGORITHM;
     }
