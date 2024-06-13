@@ -4,71 +4,75 @@ import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.Column;
 import java.time.LocalDate;
 import lombok.Builder;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Builder
+@JsonNaming(SnakeCaseStrategy.class)
 public record AlgorithmStudyResponse(
     Long id,
     String name,
     String introduce,
-    int capacity,
-    @JsonProperty("head_count")
-    int headCount,
-    int weeks,
-    @JsonProperty("start_date")
+    Integer capacity,
+    Integer headCount,
+    Integer weeks,
+    @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,
-    @JsonProperty("reliability_limit")
-    int reliabilityLimit,
-    int penalty,
+    Integer reliabilityLimit,
+    Integer penalty,
     StudyStatus state,
-    @JsonProperty("study_type")
     StudyType studyType,
 
-    @JsonProperty("difficulty_math")
-    float difficultyMath,
+    Float difficultyMath,
 
-    @JsonProperty("difficulty_dp")
-    float difficultyDp,
+    Float difficultyDp,
 
-    @JsonProperty("difficulty_greedy")
-    float difficultyGreedy,
+    Float difficultyGreedy,
 
-    @JsonProperty("difficulty_impl")
-    float difficultyImpl,
+    Float difficultyImpl,
 
-    @JsonProperty("difficulty_graph")
-    float difficultyGraph,
+    Float difficultyGraph,
 
-    @JsonProperty("difficulty_geometry")
-    float difficultyGeometry,
+    Float difficultyGeometry,
 
-    @JsonProperty("difficulty_ds")
-    float difficultyDs,
+    Float difficultyDs,
 
-    @JsonProperty("difficulty_string")
-    float difficultyString,
+    Float difficultyString,
 
-    @JsonProperty("difficulty_gap")
-    int difficultyGap,
+    Integer difficultyGap,
 
-    @JsonProperty("problem_count")
-    int problemCount)
+    Integer problemCount)
     implements StudyResponse {
 
     public static AlgorithmStudyResponse of(AlgorithmStudyResult res) {
 
-        return builder().name(res.name()).id(res.id()).introduce(res.introduce()).capacity(
-                res.capacity()).headCount(res.headCount()).weeks(res.weeks()).startDate(res.startDate())
-            .reliabilityLimit(res.reliabilityLimit()).penalty(res.penalty()).state(res.state())
-            .studyType(res.studyType()).difficultyDp(res.difficultyDp())
+        return builder()
+            .id(res.id())
+            .name(res.name())
+            .introduce(res.introduce())
+            .capacity(res.capacity())
+            .headCount(res.headCount())
+            .weeks(res.weeks())
+            .startDate(res.startDate())
+            .reliabilityLimit(res.reliabilityLimit())
+            .penalty(res.penalty())
+            .state(res.state())
+            .studyType(res.studyType())
+            .difficultyDp(res.difficultyDp())
             .difficultyDs(res.difficultyDs())
-            .difficultyGap(res.difficultyGap()).difficultyGeometry(res.difficultyGeometry())
-            .difficultyMath(res.difficultyMath()).difficultyGreedy(res.difficultyGreedy())
-            .difficultyString(res.difficultyString()).difficultyGraph(res.difficultyGraph())
-            .difficultyImpl(res.difficultyImpl()).problemCount(res.problemCount())
+            .difficultyGap(res.difficultyGap())
+            .difficultyGeometry(res.difficultyGeometry())
+            .difficultyMath(res.difficultyMath())
+            .difficultyGreedy(res.difficultyGreedy())
+            .difficultyString(res.difficultyString())
+            .difficultyGraph(res.difficultyGraph())
+            .difficultyImpl(res.difficultyImpl())
+            .problemCount(res.problemCount())
             .build();
 
     }

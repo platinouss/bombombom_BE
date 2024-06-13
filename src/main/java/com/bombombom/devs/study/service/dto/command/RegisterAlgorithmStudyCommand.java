@@ -7,29 +7,41 @@ import java.time.LocalDate;
 import lombok.Builder;
 
 @Builder
-public record RegisterAlgorithmStudyCommand (
+public record RegisterAlgorithmStudyCommand(
     @NotNull String name,
     @NotNull String introduce,
-    int capacity,
-    int weeks,
+    Integer capacity,
+    Integer weeks,
     @NotNull LocalDate startDate,
-    int reliabilityLimit,
-    int penalty,
-    int difficultyBegin,
-    int difficultyEnd,
-    int problemCount){
+    Integer reliabilityLimit,
+    Integer penalty,
+    Integer difficultyBegin,
+    Integer difficultyEnd,
+    Integer problemCount) {
 
     public AlgorithmStudy toEntity() {
-        int difficultyGap = difficultyEnd-difficultyBegin;
+        int difficultyGap = difficultyEnd - difficultyBegin;
         float db = difficultyBegin;
 
-        return AlgorithmStudy.builder().name(name).introduce(introduce)
-            .capacity(capacity).weeks(weeks).startDate(startDate)
-            .reliabilityLimit(reliabilityLimit).penalty(penalty)
-            .difficultyGraph(db).difficultyString(db).difficultyImpl(db)
-            .difficultyMath(db).difficultyDp(db).difficultyGraph(db)
-            .difficultyDs(db).difficultyGeometry(db)
+        return AlgorithmStudy.builder()
+            .name(name)
+            .introduce(introduce)
+            .capacity(capacity)
+            .weeks(weeks)
+            .startDate(startDate)
+            .reliabilityLimit(reliabilityLimit)
+            .penalty(penalty)
+            .difficultyGraph(db)
+            .difficultyString(db)
+            .difficultyImpl(db)
+            .difficultyMath(db)
+            .difficultyDp(db)
+            .difficultyGraph(db)
+            .difficultyDs(db)
+            .difficultyGeometry(db)
+            .difficultyGreedy(db)
             .difficultyGap(difficultyGap)
+            .problemCount(problemCount)
             .build();
 
     }

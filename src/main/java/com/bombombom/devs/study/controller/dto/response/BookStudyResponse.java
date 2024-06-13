@@ -4,37 +4,47 @@ import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.time.LocalDate;
 import lombok.Builder;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Builder
-public record BookStudyResponse (
+@JsonNaming(SnakeCaseStrategy.class)
+public record BookStudyResponse(
     Long id,
     String name,
     String introduce,
-    int capacity,
-    @JsonProperty("head_count")
-    int headCount,
-    int weeks,
-    @JsonProperty("start_date")
+    Integer capacity,
+    Integer headCount,
+    Integer weeks,
+    @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate startDate,
-    @JsonProperty("reliability_limit")
-    int reliabilityLimit,
-    int penalty,
+    Integer reliabilityLimit,
+    Integer penalty,
     StudyStatus state,
-    @JsonProperty("study_type")
     StudyType studyType,
-    @JsonProperty("book_id")
     Long bookId)
     implements StudyResponse {
 
     public static BookStudyResponse of(BookStudyResult res) {
 
-        return builder().name(res.name()).id(res.id()).introduce(res.introduce()).capacity(
-            res.capacity()).headCount(res.headCount()).weeks(res.weeks()).startDate(res.startDate())
-            .reliabilityLimit(res.reliabilityLimit()).penalty(res.penalty()).state(res.state())
-            .studyType(res.studyType()).bookId(res.bookId()).build();
+        return builder()
+            .id(res.id())
+            .name(res.name())
+            .introduce(res.introduce())
+            .capacity(res.capacity())
+            .headCount(res.headCount())
+            .weeks(res.weeks())
+            .startDate(res.startDate())
+            .reliabilityLimit(res.reliabilityLimit())
+            .penalty(res.penalty())
+            .state(res.state())
+            .studyType(res.studyType())
+            .bookId(res.bookId())
+            .build();
 
     }
 

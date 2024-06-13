@@ -17,17 +17,17 @@ public interface StudyResponse {
 
     String introduce();
 
-    int capacity();
+    Integer capacity();
 
-    int headCount();
+    Integer headCount();
 
-    int weeks();
+    Integer weeks();
 
     LocalDate startDate();
 
-    int reliabilityLimit();
+    Integer reliabilityLimit();
 
-    int penalty();
+    Integer penalty();
 
     StudyStatus state();
 

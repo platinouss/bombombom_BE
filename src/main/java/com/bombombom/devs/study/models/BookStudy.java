@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,16 +23,9 @@ import org.hibernate.annotations.DynamicInsert;
 @DynamicInsert
 public class BookStudy extends Study {
 
-    @Column(name = "book_id", nullable = false)
+    @NotNull
+    @Column(name = "book_id")
     private Long bookId;
-
-    public BookStudyResult toDto() {
-        return BookStudyResult.builder()
-            .id(id).name(name).introduce(introduce).capacity(capacity)
-            .headCount(headCount).weeks(weeks).startDate(startDate)
-            .reliabilityLimit(reliabilityLimit).penalty(penalty).state(state)
-            .bookId(bookId).studyType(getStudyType()).build();
-    }
 
     @Override
     public StudyType getStudyType() {

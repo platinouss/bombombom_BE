@@ -13,7 +13,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,41 +34,48 @@ import org.hibernate.annotations.DynamicInsert;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
 public abstract class Study extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
 
-    @Column(nullable = false)
+    @NotNull
+    @Column
     protected String name;
 
-    @Column(length = 500, nullable = false)
+    @NotNull
+    @Column(length = 500)
     protected String introduce;
 
     @Column
-    protected int capacity;
+    protected Integer capacity;
 
-    @ColumnDefault("1")
-    @Column(name = "head_count",nullable = false)
-    protected int headCount;
+    @NotNull
+    @Column(name = "head_count")
+    protected Integer headCount;
 
     @Column
-    protected int weeks;
+    protected Integer weeks;
 
-    @Column(name="start_date")
+    @Column(name = "start_date")
     protected LocalDate startDate;
 
     @Column(name = "reliability_limit")
-    protected int reliabilityLimit;
+    protected Integer reliabilityLimit;
 
     @Column
-    protected int penalty;
+    protected Integer penalty;
 
-    @ColumnDefault("'"+StudyStatus.Values.READY+"'")
-    @Column(nullable = false)
+    @NotNull
     @Enumerated(EnumType.STRING)
     protected StudyStatus state;
 
     abstract public StudyType getStudyType();
 
-    abstract public StudyResult toDto();
+
+    @PrePersist
+    private void onCreate() {
+        state = StudyStatus.READY;
+        headCount = 1;
+    }
 }

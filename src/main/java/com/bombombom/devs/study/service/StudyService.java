@@ -29,26 +29,26 @@ public class StudyService {
     private final StudyRepository studyRepository;
 
 
-    public Long createAlgorithmStudy(RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand){
-        AlgorithmStudy algorithmStudy = algorithmStudyRepository.save(registerAlgorithmStudyCommand.toEntity());
+    public Long createAlgorithmStudy(RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
+        AlgorithmStudy algorithmStudy = algorithmStudyRepository.save(
+            registerAlgorithmStudyCommand.toEntity());
 
         return algorithmStudy.getId();
     }
 
-    public Long createBookStudy(RegisterBookStudyCommand registerBookStudyCommand){
+    public Long createBookStudy(RegisterBookStudyCommand registerBookStudyCommand) {
 
-        BookStudy bookStudy =bookStudyRepository.save( registerBookStudyCommand.toEntity());
+        BookStudy bookStudy = bookStudyRepository.save(registerBookStudyCommand.toEntity());
 
         return bookStudy.getId();
     }
 
-    @Transactional(readOnly=true)
-    public List<StudyResponse> readStudy(Pageable pageable){
-        Page<Study>  studies =  studyRepository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public List<StudyResponse> readStudy(Pageable pageable) {
+        Page<Study> studies = studyRepository.findAll(pageable);
 
-        Page<StudyResult> studyResults = studies.map(Study::toDto);
-
-        return studyResults.map(StudyResponse::of).getContent();
+        return studies.getContent().stream().map(StudyResult::fromEntity).map(StudyResponse::of)
+            .toList();
     }
 
 }
