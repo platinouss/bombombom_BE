@@ -26,6 +26,6 @@ public class AuthController {
         AuthenticationResult result = authService.authenticate(
             UsernamePasswordAuthenticationToken.unauthenticated(
                 request.username(), request.password()));
-        return ResponseEntity.ok((AuthenticationResponse.from(result)));
+        return ResponseEntity.ok((AuthenticationResponse.fromResult(result)));
     }
 }

@@ -6,7 +6,7 @@ public record AuthenticationResponse(
     String AccessToken,
     String RefreshToken
 ) {
-    public static AuthenticationResponse from(AuthenticationResult result) {
+    public static AuthenticationResponse fromResult(AuthenticationResult result) {
         return new AuthenticationResponse(result.accessToken(), result.refreshToken());
     }
 }
