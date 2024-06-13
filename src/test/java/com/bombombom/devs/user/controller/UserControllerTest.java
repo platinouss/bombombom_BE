@@ -64,7 +64,7 @@ public class UserControllerTest {
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/signup")
+                post("/api/v1/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupCommand))
         );
@@ -89,7 +89,7 @@ public class UserControllerTest {
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/signup")
+                post("/api/v1/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequest))
         );
@@ -115,7 +115,7 @@ public class UserControllerTest {
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/signup")
+                post("/api/v1/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequest))
         );
@@ -143,7 +143,7 @@ public class UserControllerTest {
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/signup")
+                post("/api/v1/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequest))
         );

@@ -1,7 +1,7 @@
 package com.bombombom.devs.user.service;
 
-import com.bombombom.devs.user.UserRepository;
 import com.bombombom.devs.user.exception.ExistUsernameException;
+import com.bombombom.devs.user.repository.UserRepository;
 import com.bombombom.devs.user.service.dto.SignupCommand;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
