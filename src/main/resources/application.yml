@@ -1,0 +1,49 @@
+# 공통 설정
+spring:
+  profiles:
+    default: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY}
+      access-token:
+        expire-length: ${ACCESS_TOKEN_EXPIRE}
+      refresh-token:
+        expire-length: ${REFRESH_TOKEN_EXPIRE}
+
+
+# 로컬 프로파일 설정
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+  jpa:
+    hibernate:
+      ddl-auto: update
+logging.level:
+  com.bombombom: DEBUG
+  org.springframework.security: TRACE
+
+# 테스트 프로파일 설정
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${TEST_MYSQL_DATABASE}
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

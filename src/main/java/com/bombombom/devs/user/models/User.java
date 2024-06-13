@@ -2,6 +2,7 @@ package com.bombombom.devs.user.models;
 
 import com.bombombom.devs.global.audit.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -19,6 +20,10 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String password;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     private String image;
     private String introduce;
