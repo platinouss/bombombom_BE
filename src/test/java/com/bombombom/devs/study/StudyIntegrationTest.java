@@ -78,8 +78,8 @@ public class StudyIntegrationTest {
 
 
     @Test
-    @DisplayName("스터디 컨트롤러는 스터디 목록을 offset기반 pagination을 통해 조회할 수 있다")
-    void study_controller_can_retrieve_study_list_through_offset_based_pagination()
+    @DisplayName("스터디 목록을 offset기반 pagination을 통해 조회할 수 있다")
+    void can_retrieve_study_list_through_offset_based_pagination()
         throws Exception {
         /*
         Given

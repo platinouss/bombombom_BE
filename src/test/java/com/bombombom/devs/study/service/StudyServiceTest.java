@@ -58,7 +58,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("스터디 서비스의 readStudy 메소드는 StudyResponse 리스트를 반환한다")
-    void study_service_read_study_returns_study_responses() throws Exception {
+    void study_service_read_study_returns_list_of_study_response() throws Exception {
         /*
         Given
          */

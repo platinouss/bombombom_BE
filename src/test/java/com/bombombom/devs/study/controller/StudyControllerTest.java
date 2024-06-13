@@ -49,8 +49,8 @@ class StudyControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("스터디 컨트롤러의 studyList 메소드는 Study 리스트의 JSON을 반환한다 ")
-    void study_controller() throws Exception {
+    @DisplayName("스터디 컨트롤러의 studyList 메소드는 StudyResponse의 JSON Array룰 반환한다 ")
+    void study_controller_study_list_return_json_array_of_study_response() throws Exception {
 
         /*
         Given
@@ -110,7 +110,6 @@ class StudyControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedResponse));
 
-        System.out.println("expectedResponse = " + expectedResponse);
 
     }
 
