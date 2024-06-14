@@ -45,6 +45,7 @@ jobs:
     - name: Initialize database
       run: |
         mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS test;"
+        mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS bombombom;"
 
     - name: Build with Gradle Wrapper
       run: |
