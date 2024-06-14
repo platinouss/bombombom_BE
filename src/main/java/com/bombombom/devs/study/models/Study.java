@@ -1,7 +1,6 @@
 package com.bombombom.devs.study.models;
 
 import com.bombombom.devs.global.audit.BaseEntity;
-import com.bombombom.devs.study.models.StudyStatus.Values;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
