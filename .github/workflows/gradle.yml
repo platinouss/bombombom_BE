@@ -47,15 +47,5 @@ jobs:
         mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS test;"
 
     - name: Build with Gradle Wrapper
-      env:
-        ACCESS_TOKEN_EXPIRE: 300000000
-        JWT_SECRET_KEY: abcadsadsaqwdwqdfasdasd3r3214t4tk4ninifnewfokncknwfnopefw
-        MYSQL_DATABASE: bombombom
-        MYSQL_HOST: localhost
-        MYSQL_PASSWORD: root
-        MYSQL_USERNAME: root
-        REFRESH_TOKEN_EXPIRE: 7120000
-        TEST_MYSQL_DATABASE: test
-        PORT: 8080
-        LOG_LEVEL: DEBUG
-      run: ./gradlew build
+      run: |
+        ACCESS_TOKEN_EXPIRE=300000000 JWT_SECRET_KEY=abcadsadsaqwdwqdfasdasd3r3214t4tk4ninifnewfokncknwfnopefw MYSQL_DATABASE=bombombom MYSQL_HOST=localhost MYSQL_PASSWORD=root MYSQL_USERNAME=root REFRESH_TOKEN_EXPIRE=7120000 TEST_MYSQL_DATABASE=test PORT=8080 LOG_LEVEL=DEBUG ./gradlew build
