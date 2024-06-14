@@ -1,5 +1,6 @@
 package com.bombombom.devs.global.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,11 +38,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String jwt = authHeader.substring(7);
-        String userId = jwtUtils.extractUserId(jwt);
+        String username = null;
+        try {
+            username = jwtUtils.extractUserId(jwt);
+        } catch (JwtException ignored) {
+        }
 
-        if (userId != null) {
+        if (username != null) {
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userId,
+                username,
                 null,
                 null
             );
