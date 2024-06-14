@@ -1,4 +1,6 @@
 # 공통 설정
+server:
+  port: ${PORT}
 spring:
   profiles:
     default: local
@@ -24,6 +26,7 @@ spring:
 # 로컬 프로파일 설정
 ---
 spring:
+
   config:
     activate:
       on-profile: local
@@ -33,7 +36,7 @@ spring:
     hibernate:
       ddl-auto: update
 logging.level:
-  com.bombombom: DEBUG
+  com.bombombom: ${LOG_LEVEL}
   org.springframework.security: TRACE
 
 # 테스트 프로파일 설정
