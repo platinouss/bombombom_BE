@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.study.controller.StudyController;
+import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
@@ -120,7 +121,14 @@ public class StudyIntegrationTest {
          */
         List<StudyResponse> studies = new ArrayList<>();
         studies.add(StudyResponse.of(StudyResult.fromEntity(study1)));
-        String expectedResponse = objectMapper.writeValueAsString(studies);
+
+        StudyPageResponse studyPageResponse = StudyPageResponse.builder()
+            .totalPages(2)
+            .totalElements(2L)
+            .pageNumber(1)
+            .contents(studies)
+            .build();
+        String expectedResponse = objectMapper.writeValueAsString(studyPageResponse);
         resultActions.andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedResponse));

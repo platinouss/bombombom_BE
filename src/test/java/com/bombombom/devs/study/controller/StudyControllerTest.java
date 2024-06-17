@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
+import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.service.StudyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,8 +41,8 @@ class StudyControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("스터디 컨트롤러의 studyList 메소드는 StudyResponse의 JSON Array룰 반환한다 ")
-    void study_controller_study_list_return_json_array_of_study_response() throws Exception {
+    @DisplayName("스터디 컨트롤러의 studyList 메소드는 StudyPageResponse룰 반환한다 ")
+    void study_controller_study_list_return_study_page_response() throws Exception {
 
         /*
         Given
@@ -82,7 +83,14 @@ class StudyControllerTest {
         serviceResponse.add(studyResponse1);
         serviceResponse.add(studyResponse2);
 
-        when(studyService.readStudy(any(Pageable.class))).thenReturn(serviceResponse);
+        StudyPageResponse studyPageResponse =
+            StudyPageResponse.builder()
+                .totalElements(2L)
+                .totalPages(1)
+                .pageNumber(0)
+                .contents(serviceResponse)
+                .build();
+        when(studyService.readStudy(any(Pageable.class))).thenReturn(studyPageResponse);
 
         /*
         When
@@ -96,7 +104,8 @@ class StudyControllerTest {
         /*
         Then
          */
-        String expectedResponse = objectMapper.writeValueAsString(serviceResponse);
+        String expectedResponse = objectMapper.writeValueAsString(studyPageResponse);
+        System.out.println("expectedResponse = " + expectedResponse);
         resultActions.andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedResponse));
