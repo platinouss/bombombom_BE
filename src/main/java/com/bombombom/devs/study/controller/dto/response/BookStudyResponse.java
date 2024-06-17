@@ -12,7 +12,6 @@ import lombok.Builder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Builder
-@JsonNaming(SnakeCaseStrategy.class)
 public record BookStudyResponse(
     Long id,
     String name,

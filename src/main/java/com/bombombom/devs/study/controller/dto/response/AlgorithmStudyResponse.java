@@ -13,7 +13,6 @@ import lombok.Builder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Builder
-@JsonNaming(SnakeCaseStrategy.class)
 public record AlgorithmStudyResponse(
     Long id,
     String name,
