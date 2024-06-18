@@ -3,6 +3,7 @@ package com.bombombom.devs.study.service;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
@@ -34,8 +35,8 @@ class StudyServiceTest {
     private StudyService studyService;
 
     @Test
-    @DisplayName("스터디 서비스의 readStudy 메소드는 StudyResponse 리스트를 반환한다")
-    void study_service_read_study_returns_list_of_study_response() throws Exception {
+    @DisplayName("스터디 서비스의 readStudy 메소드는 StudyPageResponse를 반환한다")
+    void study_service_read_study_returns_study_page_response() throws Exception {
         /*
         Given
          */
@@ -81,15 +82,20 @@ class StudyServiceTest {
         /*
         When
          */
-        List<StudyResponse> responses = studyService.readStudy(PageRequest.of(1, 10));
+        StudyPageResponse studyPageResponse = studyService.readStudy(PageRequest.of(0, 10));
 
         /*
         Then
          */
-        List<StudyResponse> expectedResponse = repositoryResponses.stream()
+        List<StudyResponse> studyList = repositoryResponses.stream()
             .map(StudyResult::fromEntity).map(StudyResponse::of).toList();
-
-        Assertions.assertThat(responses).isEqualTo(expectedResponse);
+        StudyPageResponse expectedResponse = StudyPageResponse.builder()
+            .contents(studyList)
+            .pageNumber(0)
+            .totalPages(1)
+            .totalElements(2L)
+            .build();
+        Assertions.assertThat(studyPageResponse).isEqualTo(expectedResponse);
 
     }
 
