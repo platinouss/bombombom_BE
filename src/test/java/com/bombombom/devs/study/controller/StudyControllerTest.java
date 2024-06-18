@@ -16,7 +16,11 @@ import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
+import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.service.StudyService;
+import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,6 +33,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
@@ -63,16 +69,15 @@ class StudyControllerTest {
     }
 
     @Test
-    @DisplayName("스터디 컨트롤러의 studyList 메소드는 StudyPageResponse룰 반환한다 ")
-    void study_controller_study_list_return_study_page_response() throws Exception {
-
+    @DisplayName("studyList 메소드는 StudyPageResponse룰 반환한다 ")
+    void study_list_return_study_page_response() throws Exception {
         /*
         Given
          */
-        List<StudyResponse> serviceResponse = new ArrayList<>();
+        List<StudyResult> studyResults = new ArrayList<>();
 
-        StudyResponse studyResponse1 =
-            AlgorithmStudyResponse.builder()
+        StudyResult studyResult =
+            AlgorithmStudyResult.builder()
                 .reliabilityLimit(37)
                 .introduce("안녕하세요")
                 .name("스터디1")
@@ -90,8 +95,8 @@ class StudyControllerTest {
                 .problemCount(5)
                 .build();
 
-        StudyResponse studyResponse2 =
-            BookStudyResponse.builder()
+        StudyResult studyResult2 =
+            BookStudyResult.builder()
                 .reliabilityLimit(37)
                 .capacity(10)
                 .introduce("안녕하세요")
@@ -102,17 +107,13 @@ class StudyControllerTest {
                 .bookId(1024L)
                 .build();
 
-        serviceResponse.add(studyResponse1);
-        serviceResponse.add(studyResponse2);
+        studyResults.add(studyResult);
+        studyResults.add(studyResult2);
 
-        StudyPageResponse studyPageResponse =
-            StudyPageResponse.builder()
-                .totalElements(2L)
-                .totalPages(1)
-                .pageNumber(0)
-                .contents(serviceResponse)
-                .build();
-        when(studyService.readStudy(any(Pageable.class))).thenReturn(studyPageResponse);
+        Page<StudyResult> serviceResponse =
+            new PageImpl<>(studyResults);
+
+        when(studyService.readStudy(any(Pageable.class))).thenReturn(serviceResponse);
 
         /*
         When
@@ -126,6 +127,14 @@ class StudyControllerTest {
         /*
         Then
          */
+        List<StudyResponse> studyResponses = studyResults.stream().map(StudyResponse::of).toList();
+        StudyPageResponse studyPageResponse = StudyPageResponse.builder()
+            .pageNumber(0)
+            .totalPages(1)
+            .totalElements(2L)
+            .contents(studyResponses)
+            .build();
+
         String expectedResponse = objectMapper.writeValueAsString(studyPageResponse);
         resultActions.andDo(print())
             .andExpect(status().isOk())

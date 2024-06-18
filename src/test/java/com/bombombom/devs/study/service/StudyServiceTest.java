@@ -43,8 +43,8 @@ class StudyServiceTest {
     private StudyService studyService;
 
     @Test
-    @DisplayName("스터디 서비스의 readStudy 메소드는 StudyPageResponse를 반환한다")
-    void study_service_read_study_returns_study_page_response() throws Exception {
+    @DisplayName("스터디 서비스의 readStudy 메소드는 Page<StudyResult>를 반환한다")
+    void read_study_returns_page_of_study_result() throws Exception {
         /*
         Given
          */
@@ -90,20 +90,16 @@ class StudyServiceTest {
         /*
         When
          */
-        StudyPageResponse studyPageResponse = studyService.readStudy(PageRequest.of(0, 10));
+        Page<StudyResult> studyResults = studyService.readStudy(PageRequest.of(0, 10));
 
         /*
         Then
          */
-        List<StudyResponse> studyList = repositoryResponses.stream()
-            .map(StudyResult::fromEntity).map(StudyResponse::of).toList();
-        StudyPageResponse expectedResponse = StudyPageResponse.builder()
-            .contents(studyList)
-            .pageNumber(0)
-            .totalPages(1)
-            .totalElements(2L)
-            .build();
-        Assertions.assertThat(studyPageResponse).isEqualTo(expectedResponse);
+        List<StudyResult> studyList = repositoryResponses.stream()
+            .map(StudyResult::fromEntity).toList();
+        Page<StudyResult> expectedResponse = new PageImpl<>(studyList);
+
+        Assertions.assertThat(studyResults).isEqualTo(expectedResponse);
 
     }
 
