@@ -4,7 +4,10 @@ import com.bombombom.devs.global.web.LoginUser;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
+import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
+import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.global.security.AppUserDetails;
 import jakarta.validation.Valid;
@@ -31,19 +34,24 @@ public class StudyController {
     private final StudyService studyService;
 
     @PostMapping("/algo")
-    public ResponseEntity<Void> registerAlgorithmStudy(
-        @Valid @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
-        log.info("{}", registerAlgorithmStudyRequest);
-        Long id = studyService.createAlgorithmStudy(registerAlgorithmStudyRequest.toServiceDto());
-        return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + id)).build();
+
+    public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(
+        @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
+        AlgorithmStudyResponse algorithmStudyResponse = studyService.createAlgorithmStudy(
+            registerAlgorithmStudyRequest.toServiceDto());
+
+        return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + algorithmStudyResponse.id()))
+            .body(algorithmStudyResponse);
     }
 
     @PostMapping("/book")
-    public ResponseEntity<Void> registerBookStudy(
-        @Valid @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
-        log.info("{}", registerBookStudyRequest);
-        Long id = studyService.createBookStudy(registerBookStudyRequest.toServiceDto());
-        return ResponseEntity.created(URI.create(RESOURCE_PATH + id)).build();
+    public ResponseEntity<StudyResponse> registerBookStudy(
+        @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
+        BookStudyResponse bookStudyResponse = studyService.createBookStudy(
+            registerBookStudyRequest.toServiceDto());
+
+        return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + bookStudyResponse.id()))
+            .body(bookStudyResponse);
     }
 
     @GetMapping
