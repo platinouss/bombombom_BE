@@ -1,16 +1,16 @@
 package com.bombombom.devs.study.controller;
 
+import com.bombombom.devs.global.web.LoginUser;
+import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
-import com.bombombom.devs.study.controller.dto.response.StudyResponse;
-import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.service.StudyService;
+import com.bombombom.devs.global.security.AppUserDetails;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -51,6 +51,13 @@ public class StudyController {
         @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         StudyPageResponse studyPageResponse = studyService.readStudy(pageable);
         return ResponseEntity.ok(studyPageResponse);
+    }
+
+    @PostMapping("/join")
+    public ResponseEntity<Void> joinAlgorithmStudy(@LoginUser AppUserDetails userDetails,
+        @RequestBody JoinStudyRequest joinStudyRequest) {
+        studyService.joinAlgorithmStudy(userDetails.getId(), joinStudyRequest.toServiceDto());
+        return ResponseEntity.ok().build();
     }
 
 }
