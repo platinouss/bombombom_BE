@@ -10,6 +10,8 @@ import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.global.security.AppUserDetails;
+import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +38,13 @@ public class StudyController {
     @PostMapping("/algo")
 
     public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(
-        @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
-        AlgorithmStudyResponse algorithmStudyResponse = studyService.createAlgorithmStudy(
+        @Valid @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
+
+        AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
             registerAlgorithmStudyRequest.toServiceDto());
+
+        AlgorithmStudyResponse algorithmStudyResponse = AlgorithmStudyResponse.of(
+            algorithmStudyResult);
 
         return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + algorithmStudyResponse.id()))
             .body(algorithmStudyResponse);
@@ -46,9 +52,12 @@ public class StudyController {
 
     @PostMapping("/book")
     public ResponseEntity<StudyResponse> registerBookStudy(
-        @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
-        BookStudyResponse bookStudyResponse = studyService.createBookStudy(
+        @Valid @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
+
+        BookStudyResult bookStudyResult = studyService.createBookStudy(
             registerBookStudyRequest.toServiceDto());
+
+        BookStudyResponse bookStudyResponse = BookStudyResponse.of(bookStudyResult);
 
         return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + bookStudyResponse.id()))
             .body(bookStudyResponse);

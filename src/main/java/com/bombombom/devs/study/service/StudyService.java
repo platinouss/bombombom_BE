@@ -1,8 +1,6 @@
 package com.bombombom.devs.study.service;
 
 
-import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
-import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
@@ -16,11 +14,8 @@ import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
-<<<<<<< HEAD
-=======
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
->>>>>>> e438b8f (✨Feat: 스터디 생성 API 수정)
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
@@ -42,20 +37,20 @@ public class StudyService {
     private final UserStudyRepository userStudyRepository;
 
 
-    public AlgorithmStudyResponse createAlgorithmStudy(
+    public AlgorithmStudyResult createAlgorithmStudy(
         RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
         AlgorithmStudy algorithmStudy = algorithmStudyRepository.save(
             registerAlgorithmStudyCommand.toEntity());
 
-        return AlgorithmStudyResponse.of(AlgorithmStudyResult.fromEntity(algorithmStudy));
+        return AlgorithmStudyResult.fromEntity(algorithmStudy);
     }
 
 
-    public BookStudyResponse createBookStudy(RegisterBookStudyCommand registerBookStudyCommand) {
+    public BookStudyResult createBookStudy(RegisterBookStudyCommand registerBookStudyCommand) {
 
         BookStudy bookStudy = bookStudyRepository.save(registerBookStudyCommand.toEntity());
 
-        return BookStudyResponse.of(BookStudyResult.fromEntity(bookStudy));
+        return BookStudyResult.fromEntity(bookStudy);
     }
 
     @Transactional(readOnly = true)
