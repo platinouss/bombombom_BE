@@ -10,13 +10,16 @@ import com.bombombom.devs.user.models.Role;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -42,14 +45,8 @@ public class UserControllerTest2 {
     @Autowired
     private MockMvc mockMvc;
 
-    @Test
-    @WithMockUser(username = "username")
-    @DisplayName("로그인한 유저는 자기 자신의 정보를 조회할 수 있다.")
-    void login_user_can_retrieve_own_information() throws Exception {
-        /*
-        Given
-         */
-        // Database Setting
+    @BeforeEach
+    void setUp() {
         User user = User.builder()
             .id(1L)
             .username("username")
@@ -61,6 +58,16 @@ public class UserControllerTest2 {
             .money(0)
             .build();
         userRepository.save(user);
+    }
+
+    @Test
+    @WithUserDetails(value = "username", userDetailsServiceBeanName = "appUserDetailsService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("로그인한 유저는 자기 자신의 정보를 조회할 수 있다.")
+    void login_user_can_retrieve_own_information() throws Exception {
+        /*
+        Given
+         */
+        User user = userRepository.findUserByUsername("username").get();
 
         /*
         When

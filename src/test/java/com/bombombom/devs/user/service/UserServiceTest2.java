@@ -48,7 +48,7 @@ public class UserServiceTest2 {
         /*
         When
          */
-        UserProfileResult result = userService.findByUsername(user.getUsername());
+        UserProfileResult result = userService.findById(user.getId());
 
         /*
         Then

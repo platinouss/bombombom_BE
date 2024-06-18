@@ -1,10 +1,11 @@
 package com.bombombom.devs.user.controller;
 
+import com.bombombom.devs.global.web.LoginUser;
 import com.bombombom.devs.user.controller.dto.SignupRequest;
 import com.bombombom.devs.user.controller.dto.UserProfileResponse;
+import com.bombombom.devs.global.security.AppUserDetails;
 import com.bombombom.devs.user.service.UserService;
 import jakarta.validation.Valid;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +22,9 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserProfileResponse> me(Principal principal) {
+    public ResponseEntity<UserProfileResponse> me(@LoginUser AppUserDetails userDetails) {
         return ResponseEntity.ok().body(UserProfileResponse.fromResult(
-            userService.findByUsername(principal.getName())));
+            userService.findById(userDetails.getId())));
     }
 
     @PostMapping("/signup")
