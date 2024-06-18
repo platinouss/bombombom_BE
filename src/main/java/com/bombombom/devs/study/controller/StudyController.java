@@ -12,10 +12,12 @@ import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.global.security.AppUserDetails;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.study.service.dto.result.StudyResult;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -66,7 +68,16 @@ public class StudyController {
     @GetMapping
     public ResponseEntity<StudyPageResponse> studyList(
         @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        StudyPageResponse studyPageResponse = studyService.readStudy(pageable);
+
+        Page<StudyResponse> studyPage = studyService.readStudy(pageable).map(StudyResponse::of);
+
+        StudyPageResponse studyPageResponse = StudyPageResponse.builder()
+            .contents(studyPage.getContent())
+            .pageNumber(studyPage.getNumber())
+            .totalPages(studyPage.getTotalPages())
+            .totalElements(studyPage.getTotalElements())
+            .build();
+
         return ResponseEntity.ok(studyPageResponse);
     }
 

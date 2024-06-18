@@ -1,8 +1,5 @@
 package com.bombombom.devs.study.service;
 
-
-import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
-import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
@@ -54,20 +51,10 @@ public class StudyService {
     }
 
     @Transactional(readOnly = true)
-    public StudyPageResponse readStudy(Pageable pageable) {
+    public Page<StudyResult> readStudy(Pageable pageable) {
         Page<Study> studyPage = studyRepository.findAll(pageable);
 
-        List<StudyResponse> studies = studyPage.getContent().stream()
-            .map(StudyResult::fromEntity)
-            .map(StudyResponse::of)
-            .toList();
-
-        return StudyPageResponse.builder()
-            .contents(studies)
-            .pageNumber(studyPage.getNumber())
-            .totalPages(studyPage.getTotalPages())
-            .totalElements(studyPage.getTotalElements())
-            .build();
+        return studyPage.map(StudyResult::fromEntity);
 
     }
 
