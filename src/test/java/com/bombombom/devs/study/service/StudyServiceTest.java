@@ -3,6 +3,10 @@ package com.bombombom.devs.study.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
@@ -13,6 +17,10 @@ import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
+import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
+import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.User;
 import java.time.LocalDate;
@@ -29,6 +37,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @ExtendWith(MockitoExtension.class)
 class StudyServiceTest {
@@ -140,13 +150,112 @@ class StudyServiceTest {
     @Test
     @DisplayName("createAlgorithmStudy 메소드는 AlgorithmStudyResult를 반환한다")
     void create_algorithm_study_returns_algorithm_study_result() throws Exception {
+        /*
+        Given
+         */
+
+        RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand =
+            RegisterAlgorithmStudyCommand.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .capacity(10)
+                .startDate(LocalDate.of(2024, 06, 19))
+                .penalty(5000)
+                .weeks(5)
+                .difficultyBegin(10)
+                .difficultyEnd(15)
+                .problemCount(5).build();
+
+        AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
+            .id(1L)
+            .reliabilityLimit(37)
+            .introduce("안녕하세요")
+            .name("스터디1")
+            .headCount(1)
+            .capacity(10)
+            .startDate(LocalDate.of(2024, 06, 19))
+            .penalty(5000)
+            .weeks(5)
+            .state(StudyStatus.READY)
+            .difficultyDp(10f)
+            .difficultyDs(10f)
+            .difficultyImpl(10f)
+            .difficultyGraph(10f)
+            .difficultyGreedy(10f)
+            .difficultyMath(10f)
+            .difficultyString(10f)
+            .difficultyGeometry(10f)
+            .difficultyGap(5)
+            .problemCount(5)
+            .build();
+
+        when(studyRepository.save(
+            any(Study.class))).thenReturn(algorithmStudy);
+        /*
+        When
+         */
+        AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
+            registerAlgorithmStudyCommand);
+
+        /*
+        Then
+         */
+        StudyResult expectedResponse = StudyResult.fromEntity(
+            algorithmStudy);
+
+        Assertions.assertThat(algorithmStudyResult).isEqualTo(expectedResponse);
     }
 
 
     @Test
     @DisplayName("createBookStudy 메소드는 BookStudyResult를 반환한다")
     void create_book_study_returns_book_study_result() throws Exception {
+        /*
+        Given
+         */
+        RegisterBookStudyCommand registerBookStudyCommand =
+            RegisterBookStudyCommand.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .capacity(10)
+                .startDate(LocalDate.of(2024, 06, 19))
+                .penalty(5000)
+                .weeks(5)
+                .bookId(15L)
+                .build();
 
+        BookStudy bookStudy = BookStudy.builder()
+            .id(1L)
+            .reliabilityLimit(37)
+            .introduce("안녕하세요")
+            .name("스터디1")
+            .headCount(1)
+            .capacity(10)
+            .startDate(LocalDate.of(2024, 06, 19))
+            .penalty(5000)
+            .weeks(5)
+            .state(StudyStatus.READY)
+            .bookId(15L)
+            .build();
+
+        when(studyRepository.save(
+            any(Study.class))).thenReturn(bookStudy);
+
+        /*
+        When
+         */
+        BookStudyResult bookStudyResult = studyService.createBookStudy(
+            registerBookStudyCommand);
+
+        /*
+        Then
+         */
+        StudyResult expectedResponse = StudyResult.fromEntity(
+            bookStudy);
+
+        Assertions.assertThat(bookStudyResult).isEqualTo(expectedResponse);
     }
 
 }

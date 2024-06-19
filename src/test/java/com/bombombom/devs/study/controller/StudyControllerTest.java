@@ -1,26 +1,37 @@
 package com.bombombom.devs.study.controller;
 
+import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.global.exception.GlobalExceptionHandler;
 import com.bombombom.devs.global.web.LoginUserArgumentResolver;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
+import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
+import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
 import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.Study;
+import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.service.StudyService;
+import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
+import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -170,13 +181,169 @@ class StudyControllerTest {
 
     @Test
     @DisplayName("registerAlgorithmStudy 메소드는 AlgorithmStudyResponse를 반환한다")
-    void register_algorithm_study_returns_algorithm_study_response() {
+    void register_algorithm_study_returns_algorithm_study_response()
+        throws Exception {
+        /*
+        Given
+         */
+
+        RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+            RegisterAlgorithmStudyRequest.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .capacity(10)
+                .startDate(LocalDate.of(2024, 06, 19))
+                .penalty(5000)
+                .weeks(5)
+                .difficultyBegin(10)
+                .difficultyEnd(15)
+                .problemCount(5).build();
+
+        AlgorithmStudyResult algorithmStudyResult = AlgorithmStudyResult.builder()
+            .id(1L)
+            .reliabilityLimit(37)
+            .introduce("안녕하세요")
+            .name("스터디1")
+            .headCount(1)
+            .capacity(10)
+            .startDate(LocalDate.of(2024, 06, 19))
+            .penalty(5000)
+            .weeks(5)
+            .state(StudyStatus.READY)
+            .difficultyDp(10f)
+            .difficultyDs(10f)
+            .difficultyImpl(10f)
+            .difficultyGraph(10f)
+            .difficultyGreedy(10f)
+            .difficultyMath(10f)
+            .difficultyString(10f)
+            .difficultyGeometry(10f)
+            .difficultyGap(5)
+            .problemCount(5).build();
+
+        when(studyService.createAlgorithmStudy(
+            any(RegisterAlgorithmStudyCommand.class))).thenReturn(algorithmStudyResult);
+        /*
+        When
+         */
+        ResultActions resultActions = mockMvc.perform(
+            post("/api/v1/studies/algo")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+        );
+
+
+        /*
+        Then
+         */
+        StudyResponse studyResponse = StudyResponse.fromResult(
+            algorithmStudyResult);
+        String expectedResponse = objectMapper.writeValueAsString(studyResponse);
+
+        resultActions.andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(content().json(expectedResponse));
 
     }
 
     @Test
     @DisplayName("registerBookStudy 메소드는 BookStudyResponse를 반환한다")
-    void register_book_study_returns_book_study_response() {
+    void register_book_study_returns_book_study_response() throws Exception {
+        /*
+        Given
+         */
+        RegisterBookStudyRequest registerBookStudyRequest =
+            RegisterBookStudyRequest.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .capacity(10)
+                .startDate(LocalDate.of(2024, 06, 19))
+                .penalty(5000)
+                .weeks(5)
+                .bookId(15L)
+                .build();
+
+        BookStudyResult bookStudyResult =
+            BookStudyResult.builder()
+                .id(1L)
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .headCount(1)
+                .capacity(10)
+                .startDate(LocalDate.of(2024, 06, 19))
+                .penalty(5000)
+                .weeks(5)
+                .state(StudyStatus.READY)
+                .bookId(15L)
+                .build();
+
+        when(studyService.createBookStudy(
+            any(RegisterBookStudyCommand.class))).thenReturn(bookStudyResult);
+
+        /*
+        When
+         */
+
+        ResultActions resultActions = mockMvc.perform(
+            post("/api/v1/studies/book")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+        );
+
+        /*
+        Then
+         */
+        StudyResponse studyResponse = StudyResponse.fromResult(
+            bookStudyResult);
+        String expectedResponse = objectMapper.writeValueAsString(studyResponse);
+
+        resultActions.andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(content().json(expectedResponse));
+    }
+
+
+    @Test
+    @DisplayName("BookStudy의 capacity가 1이상 " + MAX_CAPACITY + "이하가 아니라면 생성할 수 없다")
+    void register_book_study_fails_if_capcity_not_in_range() throws Exception {
+        /*
+        Given
+         */
+        RegisterBookStudyRequest registerBookStudyRequest =
+            RegisterBookStudyRequest.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .capacity(MAX_CAPACITY + 1)
+                .startDate(LocalDate.of(2024, 06, 19))
+                .penalty(5000)
+                .weeks(5)
+                .bookId(15L)
+                .build();
+
+        /*
+        When
+         */
+
+        ResultActions resultActions = mockMvc.perform(
+            post("/api/v1/studies/book")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+        );
+
+        /*
+        Then
+         */
+        resultActions.andExpect(status().isBadRequest());
+        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+    }
+
+    @Test
+    @DisplayName("AlgorithmStudy의 capacity가 1이상 " + MAX_CAPACITY + "이하가 아니라면 생성할 수 없다")
+    void register_algorithm_study_fails_if_capcity_not_in_range() throws Exception {
 
     }
 }

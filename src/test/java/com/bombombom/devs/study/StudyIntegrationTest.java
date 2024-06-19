@@ -201,20 +201,14 @@ public class StudyIntegrationTest {
     }
 
     @Test
-    @DisplayName("로그인한 사용자는 알고리즘 스터디를 생성할 수 있다")
-    void authenticated_user_can_create_algorithm_study() {
-
+    @DisplayName("알고리즘 스터디를 생성할 수 있다")
+    void can_register_algorithm_study() {
+        
     }
 
     @Test
-    @DisplayName("로그인하지 않은 사용자는 알고리즘 스터디를 생성할 수 없다")
-    void unauthenticated_user_can_create_algorithm_study() {
-
-    }
-
-    @Test //-> 단위테스트로 이동
-    @DisplayName("capcity가 1이상 " + MAX_CAPACITY + "이하인 스터디는 생성할 수 없다")
-    void study_capacity_is_from_1_to_max_capcity() {
+    @DisplayName("책 스터디를 생성할 수 없다")
+    void can_create_book_study() {
 
     }
 
