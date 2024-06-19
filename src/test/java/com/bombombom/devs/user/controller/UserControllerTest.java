@@ -36,9 +36,6 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import({TestUserDetailsServiceConfig.class, JwtUtils.class, SystemClock.class})
 class UserControllerTest {
 
-    private final String USERNAME = "bombombom";
-    private final String PASSWORD = "1234";
-
     @MockBean
     private UserService userService;
 
@@ -56,8 +53,8 @@ class UserControllerTest {
         Given
          */
         SignupCommand signupCommand = SignupCommand.builder()
-            .username(USERNAME)
-            .password(PASSWORD)
+            .username("testuser")
+            .password("1234")
             .build();
 
         doNothing().when(userService).addUser(any(SignupCommand.class));
@@ -86,7 +83,7 @@ class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-            .username(USERNAME)
+            .username("testuser")
             .build();
 
         /*
@@ -114,7 +111,7 @@ class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-            .password(PASSWORD)
+            .username("testuser")
             .build();
 
         /*
@@ -142,9 +139,9 @@ class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-            .username(USERNAME)
-            .password(PASSWORD)
-            .introduce("봄".repeat(256))
+            .username("testuser")
+            .password("1234")
+            .introduce("봄" .repeat(256))
             .build();
 
         /*
