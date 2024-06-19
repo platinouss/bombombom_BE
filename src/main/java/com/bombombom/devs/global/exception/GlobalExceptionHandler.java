@@ -27,20 +27,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<ErrorResponse> handleInvalidDtoField(
+    protected ResponseEntity<DetailedErrorResponse> handleInvalidDtoField(
         MethodArgumentNotValidException e) throws JsonProcessingException {
 
-        Map<String, String> errors = new HashMap<>();
+        Map<String, String> errorDetails = new HashMap<>();
 
         e.getFieldErrors()
-            .forEach(action -> errors.put(action.getField(), action.getDefaultMessage()));
+            .forEach(action -> errorDetails.put(action.getField(), action.getDefaultMessage()));
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        ErrorResponse errorResponse = new ErrorResponse(
+        DetailedErrorResponse detailedErrorResponse = new DetailedErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            objectMapper.writeValueAsString(errors)
+            e.getFieldErrors().getFirst().getDefaultMessage(),
+            errorDetails
         );
-        return ResponseEntity.badRequest().body(errorResponse);
+        return ResponseEntity.badRequest().body(detailedErrorResponse);
     }
 }
