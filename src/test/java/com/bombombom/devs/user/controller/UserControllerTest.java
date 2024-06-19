@@ -86,7 +86,7 @@ class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-            .username(USERNAME)
+            .password(PASSWORD)
             .build();
 
         /*
@@ -114,7 +114,7 @@ class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-            .password(PASSWORD)
+            .username(USERNAME)
             .build();
 
         /*
