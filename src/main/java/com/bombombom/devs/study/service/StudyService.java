@@ -4,8 +4,6 @@ import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.UserStudy;
-import com.bombombom.devs.study.repository.AlgorithmStudyRepository;
-import com.bombombom.devs.study.repository.BookStudyRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
@@ -16,7 +14,6 @@ import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,8 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StudyService {
 
-    private final AlgorithmStudyRepository algorithmStudyRepository;
-    private final BookStudyRepository bookStudyRepository;
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
     private final UserStudyRepository userStudyRepository;
@@ -62,7 +57,7 @@ public class StudyService {
             .problemCount(registerAlgorithmStudyCommand.problemCount())
             .build();
 
-        return AlgorithmStudyResult.fromEntity(algorithmStudyRepository.save(
+        return AlgorithmStudyResult.fromEntity(studyRepository.save(
             algorithmStudy));
     }
 
@@ -80,7 +75,7 @@ public class StudyService {
             .bookId(registerBookStudyCommand.bookId())
             .build();
 
-        return BookStudyResult.fromEntity(bookStudyRepository.save(bookStudy));
+        return BookStudyResult.fromEntity(studyRepository.save(bookStudy));
     }
 
     @Transactional(readOnly = true)
