@@ -1,5 +1,7 @@
 package com.bombombom.devs.global.exception;
 
+import com.bombombom.devs.book.naverapi.exception.ExternalApiArgumentNotValidException;
+import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
 import com.bombombom.devs.user.exception.ExistUsernameException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({
-        ExistUsernameException.class
+        ExistUsernameException.class,
+        ExternalApiException.class,
+        ExternalApiArgumentNotValidException.class
     })
     protected ResponseEntity<ErrorResponse> handleInvalidData(RuntimeException e) {
         ErrorResponse errorResponse = new ErrorResponse(
