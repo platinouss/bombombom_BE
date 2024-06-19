@@ -2,7 +2,6 @@ package com.bombombom.devs.book.naverapi;
 
 import com.bombombom.devs.book.naverapi.dto.NaverBookApiRequest;
 import com.bombombom.devs.book.naverapi.dto.NaverBookApiResponse;
-import com.bombombom.devs.book.naverapi.exception.ExternalApiArgumentNotValidException;
 import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
 import com.bombombom.devs.global.util.converter.MultiValueMapConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,9 +44,6 @@ public class NaverClient {
     }
 
     NaverBookApiResponse searchBooks(NaverBookApiRequest naverBookApiRequest) {
-        if (naverBookApiRequest.query().isBlank()) {
-            throw new ExternalApiArgumentNotValidException("query는 공백일 수 없습니다.");
-        }
         return requestBookApi(naverBookApiRequest, naverBookApiUrl);
     }
 }

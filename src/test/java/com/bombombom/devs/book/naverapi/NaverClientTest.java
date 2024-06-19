@@ -4,7 +4,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bombombom.devs.book.naverapi.dto.NaverBookApiRequest;
-import com.bombombom.devs.book.naverapi.exception.ExternalApiArgumentNotValidException;
 import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
@@ -54,21 +53,6 @@ public class NaverClientTest {
          */
         assertThatCode(() -> naverClient.searchBooks(bookApiRequest))
             .doesNotThrowAnyException();
-    }
-
-    @DisplayName("query 파라미터가 비었을 경우 검색이 실패한다.")
-    @Test
-    void search_book_using_open_api_without_query_param_fail() {
-        /*
-        Given
-         */
-        NaverBookApiRequest bookApiRequest = new NaverBookApiRequest(" ");
-
-        /*
-        When & Then
-         */
-        assertThrows(ExternalApiArgumentNotValidException.class,
-            () -> naverClient.searchBooks(bookApiRequest));
     }
 
     @DisplayName("호출 한도 초과 등 응답으로 에러를 받은 경우 검색이 실패한다.")
