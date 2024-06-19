@@ -13,6 +13,7 @@ import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import jakarta.persistence.criteria.CriteriaBuilder.In;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -51,6 +52,11 @@ public record RegisterAlgorithmStudyRequest(
             .problemCount(problemCount)
             .build();
 
+    }
+
+    @AssertTrue
+    private boolean isDifficultyBeginLteDifficultyEnd() {
+        return difficultyBegin <= difficultyEnd;
     }
 
 }

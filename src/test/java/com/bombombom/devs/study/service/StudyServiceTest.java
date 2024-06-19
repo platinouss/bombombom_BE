@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,6 +52,7 @@ class StudyServiceTest {
 
     @InjectMocks
     private StudyService studyService;
+
 
     @Test
     @DisplayName("readStudy 메소드는 Page<StudyResult>를 반환한다")

@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -73,16 +74,1042 @@ class StudyControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
+    @Autowired
     private MockMvc mockMvc;
 
-    @BeforeEach
-    public void init() {
-        mockMvc = MockMvcBuilders.standaloneSetup(studyController)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .setCustomArgumentResolvers(
-                new PageableHandlerMethodArgumentResolver(), new LoginUserArgumentResolver())
-            .build();
+
+    @DisplayName("BookStudy 생성 테스트")
+    @Nested
+    class RegisterBookStudyTest {
+
+        @Test
+        @DisplayName("registerBookStudy 메소드는 BookStudyResponse를 반환한다")
+        void register_book_study_returns_book_study_response() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            BookStudyResult bookStudyResult =
+                BookStudyResult.builder()
+                    .id(1L)
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .headCount(1)
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .bookId(15L)
+                    .build();
+
+            when(studyService.createBookStudy(
+                any(RegisterBookStudyCommand.class))).thenReturn(bookStudyResult);
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+            StudyResponse studyResponse = StudyResponse.fromResult(
+                bookStudyResult);
+            String expectedResponse = objectMapper.writeValueAsString(studyResponse);
+
+            resultActions.andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(expectedResponse));
+        }
+
+
+        @Test
+        @DisplayName("name이 공백이라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_name_is_empty() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name(" ")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.name").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName("name이 255자를 넘는다면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_name_size_exceed_255() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("하이요")
+                    .name("a".repeat(256))
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.name").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName("introduce가 공백이라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_introduce_is_empty() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce(" ")
+                    .name("aaa")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.introduce").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName("introduce가 500자를 넘는다면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_introduce_size_exceed_500() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("ㅋ".repeat(501))
+                    .name("아령하세요")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.introduce").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName("weeks가 1이상 " + MAX_WEEKS + "이하가 아니라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_weeks_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(MAX_WEEKS + 1)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.weeks").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName("penalty가 0이상 " + MAX_PENALTY + "이하가 아니라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_penalty_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(30)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(MAX_PENALTY + 1)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.penalty").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName(
+            "reliabilityLimit가 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_reliability_limit_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(MAX_RELIABLITY_LIMIT + 1)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName("bookId가 Null이라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_book_id_is_null() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("아니 테스트코드를 이렇게나 많이 짜는게 맞는건가?? ..")
+                    .name("아령하세요")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+//                .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.bookId").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+        }
+    }
+
+    @DisplayName("AlgorithmStudy 생성 테스트")
+    @Nested
+    class RegisterAlgorithmStudyTest {
+
+        @Test
+        @DisplayName("registerAlgorithmStudy 메소드는 AlgorithmStudyResponse를 반환한다")
+        void register_algorithm_study_returns_algorithm_study_response()
+            throws Exception {
+            /*
+            Given
+             */
+
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5).build();
+
+            AlgorithmStudyResult algorithmStudyResult = AlgorithmStudyResult.builder()
+                .id(1L)
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .headCount(1)
+                .capacity(10)
+                .startDate(LocalDate.of(2024, 06, 19))
+                .penalty(5000)
+                .weeks(5)
+                .state(StudyStatus.READY)
+                .difficultyDp(10f)
+                .difficultyDs(10f)
+                .difficultyImpl(10f)
+                .difficultyGraph(10f)
+                .difficultyGreedy(10f)
+                .difficultyMath(10f)
+                .difficultyString(10f)
+                .difficultyGeometry(10f)
+                .difficultyGap(5)
+                .problemCount(5).build();
+
+            when(studyService.createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class))).thenReturn(algorithmStudyResult);
+            /*
+            When
+             */
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+
+            /*
+            Then
+             */
+            StudyResponse studyResponse = StudyResponse.fromResult(
+                algorithmStudyResult);
+            String expectedResponse = objectMapper.writeValueAsString(studyResponse);
+
+            resultActions.andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(expectedResponse));
+
+        }
+
+        @Test
+        @DisplayName(
+            "name이 공백이라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_name_is_empty() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(50)
+                    .introduce("안녕하세요")
+                    .name("")
+                    .capacity(1)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(50)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.name").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+
+        @Test
+        @DisplayName(
+            "name이 255자을 넘는다면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_name_size_exceed_255() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(50)
+                    .introduce("when you get order your wild heart will live for younger days")
+                    .name("스".repeat(256))
+                    .capacity(1)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(50)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.name").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+
+        @Test
+        @DisplayName(
+            "introduce가 공백이라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_introduce_is_empty() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(50)
+                    .introduce("")
+                    .name("봄봄봄봄봄")
+                    .capacity(1)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(50)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.introduce").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+
+        @Test
+        @DisplayName(
+            "introduce가 500자를 넘는다면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_introduce_size_exceed_500() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(50)
+                    .introduce("a".repeat(501))
+                    .name("봄봄봄봄봄")
+                    .capacity(1)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(50)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.introduce").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName(
+            "weeks가 1이상 " + MAX_WEEKS + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_weeks_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(50)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(1)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(0)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.weeks").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName(
+            "penalty가 0이상 " + MAX_PENALTY + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_penalty_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(1)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(MAX_PENALTY + 1)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.penalty").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName(
+            "capacity가 1이상 " + MAX_CAPACITY + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_capacity_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(0)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.capacity").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName(
+            "reliablityLimit이 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_reliabilityLimit_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(MAX_RELIABLITY_LIMIT + 1)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(1)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+
+        @Test
+        @DisplayName(
+            "difficultyBegin이 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_difficulty_begin_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(-1)
+                    .difficultyEnd(10)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.difficultyBegin").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+
+        @Test
+        @DisplayName(
+            "difficultyEnd가 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_difficulty_end_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(MAX_DIFFICULTY_LEVEL + 1)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.difficultyEnd").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+        @Test
+        @DisplayName("problemCount가 1이상 " + MAX_PROBLEM_COUNT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_problem_count_not_in_range() throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(5)
+                    .difficultyEnd(10)
+                    .problemCount(0)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.problemCount").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+
+        @Test
+        @DisplayName(
+            "difficultyBegin이 difficultyEnd보다 크다면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_difficulty_begin_is_greater_than_difficulty_end()
+            throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.of(2024, 06, 19))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(9)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.difficultyBeginLteDifficultyEnd").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+
     }
 
     @Test
@@ -184,654 +1211,5 @@ class StudyControllerTest {
         resultActions.andDo(print())
             .andExpect(status().isBadRequest());
     }
-
-    @Test
-    @DisplayName("registerAlgorithmStudy 메소드는 AlgorithmStudyResponse를 반환한다")
-    void register_algorithm_study_returns_algorithm_study_response()
-        throws Exception {
-        /*
-        Given
-         */
-
-        RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
-            RegisterAlgorithmStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .difficultyBegin(10)
-                .difficultyEnd(15)
-                .problemCount(5).build();
-
-        AlgorithmStudyResult algorithmStudyResult = AlgorithmStudyResult.builder()
-            .id(1L)
-            .reliabilityLimit(37)
-            .introduce("안녕하세요")
-            .name("스터디1")
-            .headCount(1)
-            .capacity(10)
-            .startDate(LocalDate.of(2024, 06, 19))
-            .penalty(5000)
-            .weeks(5)
-            .state(StudyStatus.READY)
-            .difficultyDp(10f)
-            .difficultyDs(10f)
-            .difficultyImpl(10f)
-            .difficultyGraph(10f)
-            .difficultyGreedy(10f)
-            .difficultyMath(10f)
-            .difficultyString(10f)
-            .difficultyGeometry(10f)
-            .difficultyGap(5)
-            .problemCount(5).build();
-
-        when(studyService.createAlgorithmStudy(
-            any(RegisterAlgorithmStudyCommand.class))).thenReturn(algorithmStudyResult);
-        /*
-        When
-         */
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/algo")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
-        );
-
-
-        /*
-        Then
-         */
-        StudyResponse studyResponse = StudyResponse.fromResult(
-            algorithmStudyResult);
-        String expectedResponse = objectMapper.writeValueAsString(studyResponse);
-
-        resultActions.andDo(print())
-            .andExpect(status().isCreated())
-            .andExpect(content().json(expectedResponse));
-
-    }
-
-    @Test
-    @DisplayName("registerBookStudy 메소드는 BookStudyResponse를 반환한다")
-    void register_book_study_returns_book_study_response() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .bookId(15L)
-                .build();
-
-        BookStudyResult bookStudyResult =
-            BookStudyResult.builder()
-                .id(1L)
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .headCount(1)
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .state(StudyStatus.READY)
-                .bookId(15L)
-                .build();
-
-        when(studyService.createBookStudy(
-            any(RegisterBookStudyCommand.class))).thenReturn(bookStudyResult);
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-        StudyResponse studyResponse = StudyResponse.fromResult(
-            bookStudyResult);
-        String expectedResponse = objectMapper.writeValueAsString(studyResponse);
-
-        resultActions.andDo(print())
-            .andExpect(status().isCreated())
-            .andExpect(content().json(expectedResponse));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 reliabilityLimit가 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 생성할 수 없다")
-    void register_book_study_fails_if_reliability_limit_not_in_range() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(MAX_RELIABLITY_LIMIT + 1)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 penalty가 0이상 " + MAX_PENALTY + "이하가 아니라면 생성할 수 없다")
-    void register_book_study_fails_if_penalty_not_in_range() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(30)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(MAX_PENALTY + 1)
-                .weeks(5)
-                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.penalty").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 weeks가 1이상 " + MAX_WEEKS + "이하가 아니라면 생성할 수 없다")
-    void register_book_study_fails_if_weeks_not_in_range() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(MAX_WEEKS + 1)
-                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.weeks").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 name이 공백이라면 생성할 수 없다")
-    void register_book_study_fails_if_name_is_empty() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name(" ")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.name").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 introduce가 공백이라면 생성할 수 없다")
-    void register_book_study_fails_if_introduce_is_empty() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce(" ")
-                .name("aaa")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.introduce").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 name이 255자를 넘는다면 생성할 수 없다")
-    void register_book_study_fails_if_name_size_exceed_255() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("하이요")
-                .name("a".repeat(256))
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.name").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 introduce가 500자를 넘는다면 생성할 수 없다")
-    void register_book_study_fails_if_introduce_size_exceed_500() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("ㅋ".repeat(501))
-                .name("아령하세요")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.introduce").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("BookStudy의 bookId가 Null이라면 생성할 수 없다")
-    void register_book_study_fails_if_book_id_is_null() throws Exception {
-        /*
-        Given
-         */
-        RegisterBookStudyRequest registerBookStudyRequest =
-            RegisterBookStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("아니 테스트코드를 이렇게나 많이 짜는게 맞는건가?? ..")
-                .name("아령하세요")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-//                .bookId(15L)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/book")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.bookId").hasJsonPath()
-            );
-
-        verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName("AlgorithmStudy의 problemCount가 1이상 " + MAX_PROBLEM_COUNT + "이하가 아니라면 생성할 수 없다")
-    void register_algorithm_study_fails_if_problem_count_not_in_range() throws Exception {
-        /*
-        Given
-         */
-        RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
-            RegisterAlgorithmStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .difficultyBegin(5)
-                .difficultyEnd(10)
-                .problemCount(0)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/algo")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.problemCount").hasJsonPath()
-            );
-
-        verify(studyService, never()).createAlgorithmStudy(
-            any(RegisterAlgorithmStudyCommand.class));
-    }
-
-    @Test
-    @DisplayName(
-        "AlgorithmStudy의 difficultyBegin이 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 생성할 수 없다")
-    void register_algorithm_study_fails_if_difficulty_begin_not_in_range() throws Exception {
-        /*
-        Given
-         */
-        RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
-            RegisterAlgorithmStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .difficultyBegin(MAX_DIFFICULTY_LEVEL + 1)
-                .difficultyEnd(10)
-                .problemCount(5)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/algo")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.difficultyBegin").hasJsonPath()
-            );
-
-        verify(studyService, never()).createAlgorithmStudy(
-            any(RegisterAlgorithmStudyCommand.class));
-    }
-
-
-    @Test
-    @DisplayName(
-        "AlgorithmStudy의 difficultyEnd가 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 생성할 수 없다")
-    void register_algorithm_study_fails_if_difficulty_end_not_in_range() throws Exception {
-        /*
-        Given
-         */
-        RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
-            RegisterAlgorithmStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .difficultyBegin(10)
-                .difficultyEnd(MAX_DIFFICULTY_LEVEL + 1)
-                .problemCount(5)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/algo")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.difficultyEnd").hasJsonPath()
-            );
-
-        verify(studyService, never()).createAlgorithmStudy(
-            any(RegisterAlgorithmStudyCommand.class));
-    }
-
-
-    @Test
-    @DisplayName(
-        "AlgorithmStudy의 difficultyBegin이 difficultyEnd보다 크다면 생성할 수 없다")
-    void register_algorithm_study_fails_if_difficulty_begin_is_greater_than_difficulty_end()
-        throws Exception {
-        /*
-        Given
-         */
-        RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
-            RegisterAlgorithmStudyRequest.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
-                .penalty(5000)
-                .weeks(5)
-                .difficultyBegin(10)
-                .difficultyEnd(9)
-                .problemCount(5)
-                .build();
-
-        /*
-        When
-         */
-
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/algo")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
-        );
-
-        /*
-        Then
-         */
-
-        resultActions
-            .andExpectAll(
-                status().isBadRequest(),
-                jsonPath("$.errorDetails.*", hasSize(1)),
-                jsonPath("$.errorDetails.difficultyEnd").hasJsonPath()
-            );
-
-        verify(studyService, never()).createAlgorithmStudy(
-            any(RegisterAlgorithmStudyCommand.class));
-    }
-
 
 }
