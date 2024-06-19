@@ -45,7 +45,7 @@ public class StudyController {
         AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
             registerAlgorithmStudyRequest.toServiceDto());
 
-        AlgorithmStudyResponse algorithmStudyResponse = AlgorithmStudyResponse.of(
+        AlgorithmStudyResponse algorithmStudyResponse = AlgorithmStudyResponse.fromResult(
             algorithmStudyResult);
 
         return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + algorithmStudyResponse.id()))
@@ -59,7 +59,7 @@ public class StudyController {
         BookStudyResult bookStudyResult = studyService.createBookStudy(
             registerBookStudyRequest.toServiceDto());
 
-        BookStudyResponse bookStudyResponse = BookStudyResponse.of(bookStudyResult);
+        BookStudyResponse bookStudyResponse = BookStudyResponse.fromResult(bookStudyResult);
 
         return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + bookStudyResponse.id()))
             .body(bookStudyResponse);
@@ -69,7 +69,8 @@ public class StudyController {
     public ResponseEntity<StudyPageResponse> studyList(
         @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Page<StudyResponse> studyPage = studyService.readStudy(pageable).map(StudyResponse::of);
+        Page<StudyResponse> studyPage = studyService.readStudy(pageable)
+            .map(StudyResponse::fromResult);
 
         StudyPageResponse studyPageResponse = StudyPageResponse.builder()
             .contents(studyPage.getContent())

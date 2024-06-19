@@ -32,13 +32,13 @@ public interface StudyResponse {
     StudyStatus state();
 
     StudyType studyType();
-
-    static StudyResponse of(StudyResult study) {
+    
+    static StudyResponse fromResult(StudyResult study) {
 
         if (study instanceof AlgorithmStudyResult algorithmStudyResult) {
-            return AlgorithmStudyResponse.of(algorithmStudyResult);
+            return AlgorithmStudyResponse.fromResult(algorithmStudyResult);
         } else if (study instanceof BookStudyResult bookStudyResult) {
-            return BookStudyResponse.of(bookStudyResult);
+            return BookStudyResponse.fromResult(bookStudyResult);
         } else {
             return null;
         }

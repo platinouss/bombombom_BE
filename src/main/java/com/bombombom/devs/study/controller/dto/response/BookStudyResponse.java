@@ -28,7 +28,7 @@ public record BookStudyResponse(
     Long bookId)
     implements StudyResponse {
 
-    public static BookStudyResponse of(BookStudyResult res) {
+    public static BookStudyResponse fromResult(BookStudyResult res) {
 
         return builder()
             .id(res.id())
