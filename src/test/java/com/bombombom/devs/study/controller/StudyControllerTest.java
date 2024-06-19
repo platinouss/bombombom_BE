@@ -70,7 +70,7 @@ class StudyControllerTest {
 
     @Test
     @DisplayName("studyList 메소드는 StudyPageResponse룰 반환한다 ")
-    void study_list_return_study_page_response() throws Exception {
+    void study_list_returns_study_page_response() throws Exception {
         /*
         Given
          */
@@ -127,7 +127,8 @@ class StudyControllerTest {
         /*
         Then
          */
-        List<StudyResponse> studyResponses = studyResults.stream().map(StudyResponse::of).toList();
+        List<StudyResponse> studyResponses = studyResults.stream().map(StudyResponse::fromResult)
+            .toList();
         StudyPageResponse studyPageResponse = StudyPageResponse.builder()
             .pageNumber(0)
             .totalPages(1)
@@ -165,5 +166,17 @@ class StudyControllerTest {
          */
         resultActions.andDo(print())
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("registerAlgorithmStudy 메소드는 AlgorithmStudyResponse를 반환한다")
+    void register_algorithm_study_returns_algorithm_study_response() {
+
+    }
+
+    @Test
+    @DisplayName("registerBookStudy 메소드는 BookStudyResponse를 반환한다")
+    void register_book_study_returns_book_study_response() {
+
     }
 }

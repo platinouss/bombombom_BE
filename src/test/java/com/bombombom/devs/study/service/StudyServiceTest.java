@@ -43,7 +43,7 @@ class StudyServiceTest {
     private StudyService studyService;
 
     @Test
-    @DisplayName("스터디 서비스의 readStudy 메소드는 Page<StudyResult>를 반환한다")
+    @DisplayName("readStudy 메소드는 Page<StudyResult>를 반환한다")
     void read_study_returns_page_of_study_result() throws Exception {
         /*
         Given
@@ -123,7 +123,8 @@ class StudyServiceTest {
             .penalty(1000)
             .state(StudyStatus.READY)
             .build();
-        JoinStudyCommand joinStudyCommand = JoinStudyCommand.builder().studyId(study.getId()).build();
+        JoinStudyCommand joinStudyCommand = JoinStudyCommand.builder().studyId(study.getId())
+            .build();
         when(userStudyRepository.existsByUserIdAndStudyId(testuser.getId(), study.getId()))
             .thenReturn(true);
 
@@ -134,6 +135,18 @@ class StudyServiceTest {
             testuser.getId(), joinStudyCommand))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Already Joined Study");
+    }
+
+    @Test
+    @DisplayName("createAlgorithmStudy 메소드는 AlgorithmStudyResult를 반환한다")
+    void create_algorithm_study_returns_algorithm_study_result() throws Exception {
+    }
+
+
+    @Test
+    @DisplayName("createBookStudy 메소드는 BookStudyResult를 반환한다")
+    void create_book_study_returns_book_study_result() throws Exception {
+
     }
 
 }

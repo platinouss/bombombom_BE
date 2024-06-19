@@ -1,6 +1,7 @@
 package com.bombombom.devs.study;
 
 
+import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -145,7 +146,7 @@ public class StudyIntegrationTest {
         Then
          */
         List<StudyResponse> studies = new ArrayList<>();
-        studies.add(StudyResponse.of(StudyResult.fromEntity(study1)));
+        studies.add(StudyResponse.fromResult(StudyResult.fromEntity(study1)));
 
         StudyPageResponse studyPageResponse = StudyPageResponse.builder()
             .totalPages(2)
@@ -197,6 +198,24 @@ public class StudyIntegrationTest {
          */
         resultActions.andDo(print())
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("로그인한 사용자는 알고리즘 스터디를 생성할 수 있다")
+    void authenticated_user_can_create_algorithm_study() {
+
+    }
+
+    @Test
+    @DisplayName("로그인하지 않은 사용자는 알고리즘 스터디를 생성할 수 없다")
+    void unauthenticated_user_can_create_algorithm_study() {
+
+    }
+
+    @Test //-> 단위테스트로 이동
+    @DisplayName("capcity가 1이상 " + MAX_CAPACITY + "이하인 스터디는 생성할 수 없다")
+    void study_capacity_is_from_1_to_max_capcity() {
+
     }
 
 
