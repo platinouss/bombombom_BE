@@ -21,7 +21,13 @@ spring:
         expire-length: ${ACCESS_TOKEN_EXPIRE}
       refresh-token:
         expire-length: ${REFRESH_TOKEN_EXPIRE}
-
+naver:
+  url:
+    search:
+      book: https://openapi.naver.com/v1/search/book.json
+  client:
+    id: ${NAVER_CLIENT_ID}
+    secret: ${NAVER_CLIENT_SECRET}
 
 # 로컬 프로파일 설정
 ---
