@@ -36,18 +36,51 @@ public class StudyService {
 
     public AlgorithmStudyResult createAlgorithmStudy(
         RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
-        AlgorithmStudy algorithmStudy = algorithmStudyRepository.save(
-            registerAlgorithmStudyCommand.toEntity());
 
-        return AlgorithmStudyResult.fromEntity(algorithmStudy);
+        int difficultyGap = registerAlgorithmStudyCommand.difficultyEnd()
+            - registerAlgorithmStudyCommand.difficultyBegin();
+        float db = registerAlgorithmStudyCommand.difficultyBegin();
+
+        AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
+            .name(registerAlgorithmStudyCommand.name())
+            .introduce(registerAlgorithmStudyCommand.introduce())
+            .capacity(registerAlgorithmStudyCommand.capacity())
+            .weeks(registerAlgorithmStudyCommand.weeks())
+            .startDate(registerAlgorithmStudyCommand.startDate())
+            .reliabilityLimit(registerAlgorithmStudyCommand.reliabilityLimit())
+            .penalty(registerAlgorithmStudyCommand.penalty())
+            .difficultyGraph(db)
+            .difficultyString(db)
+            .difficultyImpl(db)
+            .difficultyMath(db)
+            .difficultyDp(db)
+            .difficultyGraph(db)
+            .difficultyDs(db)
+            .difficultyGeometry(db)
+            .difficultyGreedy(db)
+            .difficultyGap(difficultyGap)
+            .problemCount(registerAlgorithmStudyCommand.problemCount())
+            .build();
+
+        return AlgorithmStudyResult.fromEntity(algorithmStudyRepository.save(
+            algorithmStudy));
     }
 
 
     public BookStudyResult createBookStudy(RegisterBookStudyCommand registerBookStudyCommand) {
 
-        BookStudy bookStudy = bookStudyRepository.save(registerBookStudyCommand.toEntity());
+        BookStudy bookStudy = BookStudy.builder()
+            .name(registerBookStudyCommand.name())
+            .introduce(registerBookStudyCommand.introduce())
+            .capacity(registerBookStudyCommand.capacity())
+            .weeks(registerBookStudyCommand.weeks())
+            .startDate(registerBookStudyCommand.startDate())
+            .reliabilityLimit(registerBookStudyCommand.reliabilityLimit())
+            .penalty(registerBookStudyCommand.penalty())
+            .bookId(registerBookStudyCommand.bookId())
+            .build();
 
-        return BookStudyResult.fromEntity(bookStudy);
+        return BookStudyResult.fromEntity(bookStudyRepository.save(bookStudy));
     }
 
     @Transactional(readOnly = true)

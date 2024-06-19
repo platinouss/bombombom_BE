@@ -19,31 +19,5 @@ public record RegisterAlgorithmStudyCommand(
     Integer difficultyEnd,
     Integer problemCount) {
 
-    public AlgorithmStudy toEntity() {
-        int difficultyGap = difficultyEnd - difficultyBegin;
-        float db = difficultyBegin;
-
-        return AlgorithmStudy.builder()
-            .name(name)
-            .introduce(introduce)
-            .capacity(capacity)
-            .weeks(weeks)
-            .startDate(startDate)
-            .reliabilityLimit(reliabilityLimit)
-            .penalty(penalty)
-            .difficultyGraph(db)
-            .difficultyString(db)
-            .difficultyImpl(db)
-            .difficultyMath(db)
-            .difficultyDp(db)
-            .difficultyGraph(db)
-            .difficultyDs(db)
-            .difficultyGeometry(db)
-            .difficultyGreedy(db)
-            .difficultyGap(difficultyGap)
-            .problemCount(problemCount)
-            .build();
-
-    }
 
 }

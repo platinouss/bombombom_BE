@@ -17,20 +17,5 @@ public record RegisterBookStudyCommand(
     Long bookId
 ) {
 
-    public BookStudy toEntity() {
-
-        return BookStudy.builder()
-            .name(name)
-            .introduce(introduce)
-            .capacity(capacity)
-            .weeks(weeks)
-            .startDate(startDate)
-            .reliabilityLimit(reliabilityLimit)
-            .penalty(penalty)
-            .bookId(bookId)
-            .build();
-
-    }
-
 
 }
