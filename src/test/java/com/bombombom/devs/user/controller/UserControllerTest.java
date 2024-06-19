@@ -1,5 +1,11 @@
 package com.bombombom.devs.user.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.bombombom.devs.global.exception.GlobalExceptionHandler;
 import com.bombombom.devs.user.controller.dto.SignupRequest;
 import com.bombombom.devs.user.service.UserService;
@@ -13,16 +19,12 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+@ActiveProfiles("test")
 @SpringBootTest
 public class UserControllerTest {
 
@@ -43,8 +45,8 @@ public class UserControllerTest {
     @BeforeEach
     public void init() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .build();
     }
 
     @DisplayName("회원가입을 할 수 있다.")
@@ -54,9 +56,9 @@ public class UserControllerTest {
         Given
          */
         SignupCommand signupCommand = SignupCommand.builder()
-                .username(USERNAME)
-                .password(PASSWORD)
-                .build();
+            .username(USERNAME)
+            .password(PASSWORD)
+            .build();
 
         doNothing().when(userService).addUser(any(SignupCommand.class));
 
@@ -64,9 +66,9 @@ public class UserControllerTest {
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/users/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signupCommand))
+            post("/api/v1/users/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupCommand))
         );
 
         /*
@@ -82,23 +84,23 @@ public class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-                .username(USERNAME)
-                .build();
+            .password(PASSWORD)
+            .build();
 
         /*
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/users/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signupRequest))
+            post("/api/v1/users/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupRequest))
         );
 
         /*
         Then
          */
         resultActions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
+            .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
     }
 
     @DisplayName("password가 빈 경우 회원가입이 실패한다.")
@@ -108,23 +110,23 @@ public class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-                .password(PASSWORD)
-                .build();
+            .username(USERNAME)
+            .build();
 
         /*
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/users/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signupRequest))
+            post("/api/v1/users/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupRequest))
         );
 
         /*
         Then
          */
         resultActions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
+            .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
     }
 
     @DisplayName("소개글이 255자를 넘을 경우 회원가입이 실패한다.")
@@ -134,24 +136,24 @@ public class UserControllerTest {
         Given
          */
         SignupRequest signupRequest = SignupRequest.builder()
-                .username(USERNAME)
-                .password(PASSWORD)
-                .introduce("봄".repeat(256))
-                .build();
+            .username(USERNAME)
+            .password(PASSWORD)
+            .introduce("봄".repeat(256))
+            .build();
 
         /*
         When
          */
         ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/users/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signupRequest))
+            post("/api/v1/users/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupRequest))
         );
 
         /*
         Then
          */
         resultActions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("255자를 넘을 수 없습니다."));
+            .andExpect(jsonPath("$.message").value("255자를 넘을 수 없습니다."));
     }
 }

@@ -27,11 +27,9 @@ public class NaverClient {
     @Value("${naver.url.search.book}")
     private String naverBookApiUrl;
 
-    public NaverBookApiResponse searchBooks(NaverBookApiRequest naverBookApiRequest) {
-        if (naverBookApiRequest.query().isBlank()) {
-            throw new ExternalApiArgumentNotValidException("query는 공백일 수 없습니다.");
-        }
-        WebClient webClient = WebClient.builder().baseUrl(naverBookApiUrl).build();
+    public NaverBookApiResponse requestBookApi(NaverBookApiRequest naverBookApiRequest,
+        String apiUrl) {
+        WebClient webClient = WebClient.builder().baseUrl(apiUrl).build();
         return webClient.get()
             .uri(uriBuilder -> uriBuilder.queryParams(
                 MultiValueMapConverter.convert(objectMapper, naverBookApiRequest)).build())
@@ -44,5 +42,12 @@ public class NaverClient {
             )
             .bodyToMono(NaverBookApiResponse.class)
             .block();
+    }
+
+    NaverBookApiResponse searchBooks(NaverBookApiRequest naverBookApiRequest) {
+        if (naverBookApiRequest.query().isBlank()) {
+            throw new ExternalApiArgumentNotValidException("query는 공백일 수 없습니다.");
+        }
+        return requestBookApi(naverBookApiRequest, naverBookApiUrl);
     }
 }
