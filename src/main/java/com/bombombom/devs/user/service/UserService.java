@@ -6,10 +6,8 @@ import com.bombombom.devs.user.repository.UserRepository;
 import com.bombombom.devs.user.service.dto.SignupCommand;
 import com.bombombom.devs.user.service.dto.UserProfileResult;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +28,7 @@ public class UserService {
 
     public UserProfileResult findById(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found"));
+            .orElseThrow(() -> new IllegalStateException("User Not Found"));
         return UserProfileResult.fromEntity(user);
     }
 }

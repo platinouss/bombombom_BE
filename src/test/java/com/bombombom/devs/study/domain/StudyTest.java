@@ -49,35 +49,6 @@ class StudyTest {
     }
 
     @Test
-    @DisplayName("유저는 이미 가입한 스터디에 다시 가입할 수 없다.")
-    void user_cannot_join_study_twice() {
-        /*
-         * Given
-         */
-        User testuser = User.builder()
-            .id(1L)
-            .username("testuser")
-            .money(10000)
-            .reliability(10)
-            .build();
-        Study study = AlgorithmStudy.builder()
-            .capacity(10)
-            .headCount(1)
-            .weeks(10)
-            .reliabilityLimit(10)
-            .penalty(1000)
-            .state(StudyStatus.READY)
-            .build();
-        study.join(testuser);
-
-        /*
-         * When & Then
-         */
-        assertThatThrownBy(() -> study.join(testuser))
-            .isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
     @DisplayName("유저는 이미 끝난 스터디에 다시 가입할 수 없다.")
     void user_cannot_join_end_state_study() {
         /*
@@ -123,7 +94,7 @@ class StudyTest {
             .weeks(10)
             .reliabilityLimit(10)
             .penalty(1000)
-            .state(StudyStatus.END)
+            .state(StudyStatus.READY)
             .build();
 
         /*

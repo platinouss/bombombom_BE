@@ -21,10 +21,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -69,15 +67,15 @@ public class StudyService {
     }
 
     @Transactional
-    public void joinAlgorithmStudy(Long userId, JoinStudyCommand joinStudyCommand) {
+    public void joinStudy(Long userId, JoinStudyCommand joinStudyCommand) {
         if (userStudyRepository.existsByUserIdAndStudyId(userId, joinStudyCommand.studyId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Already Joined Study");
+            throw new IllegalStateException("Already Joined Study");
         }
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found"));
+            .orElseThrow(() -> new IllegalStateException("User Not Found"));
         Study study = studyRepository.findById(joinStudyCommand.studyId())
             .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study Not Found"));
+                () -> new IllegalStateException("Study Not Found"));
         UserStudy userStudy = study.join(user);
         userStudyRepository.save(userStudy);
     }
