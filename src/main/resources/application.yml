@@ -37,7 +37,7 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}?&rewriteBatchedStatements=true
   jpa:
     hibernate:
       ddl-auto: update
@@ -52,7 +52,7 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:3306/${TEST_MYSQL_DATABASE}
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${TEST_MYSQL_DATABASE}?&rewriteBatchedStatements=true
   jpa:
     hibernate:
       ddl-auto: create-drop
