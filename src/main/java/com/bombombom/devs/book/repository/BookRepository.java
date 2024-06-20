@@ -6,5 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    List<Book> findBooksByTitleContainingOrAuthorContaining(String title, String author);
+    List<Book> findTop50BooksByTitleContainingOrAuthorContaining(String title, String author);
+
+    List<Book> findTop50BooksByTitleContaining(String title);
+
+    List<Book> findTop50BooksByAuthorContaining(String author);
 }

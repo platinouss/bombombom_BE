@@ -1,5 +1,6 @@
 package com.bombombom.devs.book.service;
 
+import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.naverapi.NaverClient;
 import com.bombombom.devs.book.repository.BookBulkRepository;
@@ -25,8 +26,15 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public SearchBooksResult searchBook(SearchBookQuery searchBookQuery) {
-        List<Book> books = bookRepository.findBooksByTitleContainingOrAuthorContaining(
-            searchBookQuery.keyword(), searchBookQuery.keyword());
+        List<Book> books;
+        if (searchBookQuery.searchOption() == SearchOption.TITLE) {
+            books = bookRepository.findTop50BooksByTitleContaining(searchBookQuery.keyword());
+        } else if (searchBookQuery.searchOption() == SearchOption.AUTHOR) {
+            books = bookRepository.findTop50BooksByAuthorContaining(searchBookQuery.keyword());
+        } else {
+            books = bookRepository.findTop50BooksByTitleContainingOrAuthorContaining(
+                searchBookQuery.keyword(), searchBookQuery.keyword());
+        }
         return SearchBooksResult.builder().booksResult(
             books.stream().map(SearchBooksResult::fromEntity).collect(Collectors.toList())).build();
     }
