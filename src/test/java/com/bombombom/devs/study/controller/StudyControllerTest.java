@@ -61,13 +61,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@AutoConfigureMockMvc(addFilters = false)
-@WebMvcTest(controllers = StudyController.class, properties = "spring.main.lazy-initialization=true")
+@AutoConfigureMockMvc
+@WebMvcTest(StudyController.class)
 @Import(TestUserDetailsServiceConfig.class)
 class StudyControllerTest {
 
-    @Autowired
-    private StudyController studyController;
 
     @MockBean
     private StudyService studyService;

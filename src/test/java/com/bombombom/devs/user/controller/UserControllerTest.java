@@ -50,7 +50,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @AutoConfigureMockMvc
-@WebMvcTest(controllers = UserController.class, properties = "spring.main.lazy-initialization=true")
+@WebMvcTest(UserController.class)
 @Import({TestUserDetailsServiceConfig.class, JwtUtils.class, SystemClock.class})
 class UserControllerTest {
 

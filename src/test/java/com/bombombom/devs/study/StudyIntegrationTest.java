@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -37,6 +38,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,8 +48,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest
-@ContextConfiguration
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
 public class StudyIntegrationTest {
 
     @Autowired
@@ -68,28 +69,77 @@ public class StudyIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    /*
-    TODO: 유저 인증 혹은 요청 유저의 데이터가 필요없는 테스트의 경우
-     아래 BeforeEach로 User를 저장하는 것이 불 필요한 작업이 된다.
-     StudyIntegrationTest | StudyIntegrationWithAuthenticationTest
-     그렇다면 위처럼 2가지 클래스로 나누어야 할까? (특정 메소드만 DB세팅 하는 방법이 없음)
-     */
-    @BeforeEach
-    public void init() {
-        mockMvc = MockMvcBuilders.standaloneSetup(studyController)
-            .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(), new LoginUserArgumentResolver())
-            .build();
-        User user = User.builder()
-            .id(1L)
-            .username("testuser")
-            .password(passwordEncoder.encode("password"))
-            .role(Role.USER)
-            .introduce("introduce")
-            .image("image")
-            .reliability(50)
-            .money(10000)
-            .build();
-        userRepository.save(user);
+    @Nested
+    @DisplayName("인증이 필요한 테스트")
+    class TestWithAuthentication {
+
+        @BeforeEach
+        public void init() {
+            User user = User.builder()
+                .id(1L)
+                .username("testuser")
+                .password(passwordEncoder.encode("password"))
+                .role(Role.USER)
+                .introduce("introduce")
+                .image("image")
+                .reliability(50)
+                .money(10000)
+                .build();
+            userRepository.save(user);
+        }
+
+        @Test
+        @DisplayName("스터디 입장 조건에 맞는 유저는 입장할 수 있다.")
+        @WithUserDetails(value = "testuser",
+            userDetailsServiceBeanName = "appUserDetailsService",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        void can_join_study_if_user_meets_the_conditions() throws Exception {
+        /*
+         Given
+         */
+            Study study =
+                BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .capacity(10)
+                    .introduce("안녕하세요")
+                    .startDate(LocalDate.of(2024, 06, 14))
+                    .name("스터디")
+                    .penalty(1000)
+                    .weeks(5)
+                    .bookId(1024L)
+                    .build();
+            studyRepository.save(study);
+            JoinStudyRequest request = JoinStudyRequest.builder()
+                .studyId(study.getId()).build();
+
+        /*
+         When
+         */
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/join")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            );
+
+        /*
+        Then
+         */
+            resultActions.andDo(print())
+                .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("알고리즘 스터디를 생성할 수 있다")
+        void can_register_algorithm_study() {
+
+        }
+
+        @Test
+        @DisplayName("책 스터디를 생성할 수 없다")
+        void can_create_book_study() {
+
+        }
+
     }
 
     @Test
@@ -158,58 +208,6 @@ public class StudyIntegrationTest {
         resultActions.andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedResponse));
-    }
-
-    @Test
-    @DisplayName("스터디 입장 조건에 맞는 유저는 입장할 수 있다.")
-    @WithUserDetails(value = "testuser",
-        userDetailsServiceBeanName = "appUserDetailsService",
-        setupBefore = TestExecutionEvent.TEST_EXECUTION)
-    void can_join_study_if_user_meets_the_conditions() throws Exception {
-        /*
-         Given
-         */
-        Study study =
-            BookStudy.builder()
-                .reliabilityLimit(37)
-                .capacity(10)
-                .introduce("안녕하세요")
-                .startDate(LocalDate.of(2024, 06, 14))
-                .name("스터디")
-                .penalty(1000)
-                .weeks(5)
-                .bookId(1024L)
-                .build();
-        studyRepository.save(study);
-        JoinStudyRequest request = JoinStudyRequest.builder()
-            .studyId(study.getId()).build();
-
-        /*
-         When
-         */
-        ResultActions resultActions = mockMvc.perform(
-            post("/api/v1/studies/join")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request))
-        );
-
-        /*
-        Then
-         */
-        resultActions.andDo(print())
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("알고리즘 스터디를 생성할 수 있다")
-    void can_register_algorithm_study() {
-        
-    }
-
-    @Test
-    @DisplayName("책 스터디를 생성할 수 없다")
-    void can_create_book_study() {
-
     }
 
 

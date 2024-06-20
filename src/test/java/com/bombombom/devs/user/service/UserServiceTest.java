@@ -9,8 +9,10 @@ import com.bombombom.devs.user.service.dto.UserProfileResult;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
     private final String USERNAME = "bombombom";
@@ -38,9 +40,9 @@ public class UserServiceTest {
         Given
          */
         SignupCommand signupCommand = SignupCommand.builder()
-                .username(USERNAME)
-                .password(PASSWORD)
-                .build();
+            .username(USERNAME)
+            .password(PASSWORD)
+            .build();
 
         doReturn(true).when(userRepository).existsByUsername(any(String.class));
 
