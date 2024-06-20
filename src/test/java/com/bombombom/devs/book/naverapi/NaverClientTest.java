@@ -3,8 +3,8 @@ package com.bombombom.devs.book.naverapi;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.bombombom.devs.book.naverapi.dto.NaverBookApiRequest;
 import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
+import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -46,12 +46,12 @@ public class NaverClientTest {
         /*
         Given
          */
-        NaverBookApiRequest bookApiRequest = new NaverBookApiRequest("가상 면접 사례로 배우는");
+        NaverBookApiQuery bookApiQuery = new NaverBookApiQuery("가상 면접 사례로 배우는");
 
         /*
         When & Then
          */
-        assertThatCode(() -> naverClient.searchBooks(bookApiRequest))
+        assertThatCode(() -> naverClient.searchBooks(bookApiQuery))
             .doesNotThrowAnyException();
     }
 
@@ -63,12 +63,12 @@ public class NaverClientTest {
          */
         mockWebServer.enqueue(new MockResponse().setResponseCode(400));
         String mockWebServerUrl = mockWebServer.url("/v1/search/book.json").toString();
-        NaverBookApiRequest bookApiRequest = new NaverBookApiRequest("가상 면접 사례로 배우는");
+        NaverBookApiQuery bookApiQuery = new NaverBookApiQuery("가상 면접 사례로 배우는");
 
         /*
         When & Then
          */
-        assertThrows(ExternalApiException.class, () -> naverClient.requestBookApi(bookApiRequest,
+        assertThrows(ExternalApiException.class, () -> naverClient.requestBookApi(bookApiQuery,
             mockWebServer.url(mockWebServerUrl).toString()));
     }
 }
