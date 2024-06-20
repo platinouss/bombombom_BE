@@ -2,28 +2,28 @@ package com.bombombom.devs.study;
 
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bombombom.devs.global.web.LoginUserArgumentResolver;
 import com.bombombom.devs.study.controller.StudyController;
+import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
-import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.repository.StudyRepository;
-import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.bombombom.devs.user.models.Role;
+import com.bombombom.devs.user.models.User;
+import com.bombombom.devs.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -39,10 +45,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest
+@ContextConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class StudyIntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private StudyRepository studyRepository;
@@ -53,18 +64,32 @@ public class StudyIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    /*
+    TODO: 유저 인증 혹은 요청 유저의 데이터가 필요없는 테스트의 경우
+     아래 BeforeEach로 User를 저장하는 것이 불 필요한 작업이 된다.
+     StudyIntegrationTest | StudyIntegrationWithAuthenticationTest
+     그렇다면 위처럼 2가지 클래스로 나누어야 할까? (특정 메소드만 DB세팅 하는 방법이 없음)
+     */
     @BeforeEach
     public void init() {
         mockMvc = MockMvcBuilders.standaloneSetup(studyController)
-            .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+            .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(), new LoginUserArgumentResolver())
             .build();
+        User user = User.builder()
+            .id(1L)
+            .username("testuser")
+            .password(passwordEncoder.encode("password"))
+            .role(Role.USER)
+            .introduce("introduce")
+            .image("image")
+            .reliability(50)
+            .money(10000)
+            .build();
+        userRepository.save(user);
     }
-
-    @AfterEach
-    public void afterSetup() {
-        studyRepository.deleteAll();
-    }
-
 
     @Test
     @DisplayName("스터디 목록을 offset기반 pagination을 통해 조회할 수 있다")
@@ -132,9 +157,46 @@ public class StudyIntegrationTest {
         resultActions.andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedResponse));
-        ;
+    }
 
+    @Test
+    @DisplayName("스터디 입장 조건에 맞는 유저는 입장할 수 있다.")
+    @WithUserDetails(value = "testuser",
+        userDetailsServiceBeanName = "appUserDetailsService",
+        setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    void can_join_study_if_user_meets_the_conditions() throws Exception {
+        /*
+         Given
+         */
+        Study study =
+            BookStudy.builder()
+                .reliabilityLimit(37)
+                .capacity(10)
+                .introduce("안녕하세요")
+                .startDate(LocalDate.of(2024, 06, 14))
+                .name("스터디")
+                .penalty(1000)
+                .weeks(5)
+                .bookId(1024L)
+                .build();
+        studyRepository.save(study);
+        JoinStudyRequest request = JoinStudyRequest.builder()
+            .studyId(study.getId()).build();
 
+        /*
+         When
+         */
+        ResultActions resultActions = mockMvc.perform(
+            post("/api/v1/studies/join")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        );
+
+        /*
+        Then
+         */
+        resultActions.andDo(print())
+            .andExpect(status().isOk());
     }
 
 

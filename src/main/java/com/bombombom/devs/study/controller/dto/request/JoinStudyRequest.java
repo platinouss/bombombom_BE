@@ -2,12 +2,13 @@ package com.bombombom.devs.study.controller.dto.request;
 
 
 import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
 public record JoinStudyRequest(
-    @NotNull Long studyId
+    @NotNull @Min(1) Long studyId
 ) {
     public JoinStudyCommand toServiceDto() {
         return JoinStudyCommand.builder()
