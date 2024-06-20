@@ -1,8 +1,8 @@
 package com.bombombom.devs.book.naverapi;
 
-import com.bombombom.devs.book.naverapi.dto.NaverBookApiRequest;
-import com.bombombom.devs.book.naverapi.dto.NaverBookApiResponse;
 import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
+import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
+import com.bombombom.devs.book.service.dto.NaverBookApiResult;
 import com.bombombom.devs.global.util.converter.MultiValueMapConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,24 +26,23 @@ public class NaverClient {
     @Value("${naver.url.search.book}")
     private String naverBookApiUrl;
 
-    public NaverBookApiResponse requestBookApi(NaverBookApiRequest naverBookApiRequest,
-        String apiUrl) {
+    public NaverBookApiResult requestBookApi(NaverBookApiQuery naverBookApiQuery, String apiUrl) {
         WebClient webClient = WebClient.builder().baseUrl(apiUrl).build();
         return webClient.get()
             .uri(uriBuilder -> uriBuilder.queryParams(
-                MultiValueMapConverter.convert(objectMapper, naverBookApiRequest)).build())
+                MultiValueMapConverter.convert(objectMapper, naverBookApiQuery)).build())
             .header("X-Naver-Client-Id", naverClientId)
             .header("X-Naver-Client-Secret", naverClientSecret)
             .retrieve()
             .onStatus(status -> !status.is2xxSuccessful(),
                 clientResponse -> Mono.just(
-                    new ExternalApiException("NAVER Open API 요청에 실패했습니다."))
+                    new ExternalApiException(clientResponse.releaseBody().toString()))
             )
-            .bodyToMono(NaverBookApiResponse.class)
+            .bodyToMono(NaverBookApiResult.class)
             .block();
     }
 
-    NaverBookApiResponse searchBooks(NaverBookApiRequest naverBookApiRequest) {
-        return requestBookApi(naverBookApiRequest, naverBookApiUrl);
+    public NaverBookApiResult searchBooks(NaverBookApiQuery naverBookApiQuery) {
+        return requestBookApi(naverBookApiQuery, naverBookApiUrl);
     }
 }
