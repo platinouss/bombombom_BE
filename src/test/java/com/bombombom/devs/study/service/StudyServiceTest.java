@@ -1,5 +1,6 @@
 package com.bombombom.devs.study.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -8,8 +9,12 @@ import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
+import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.repository.StudyRepository;
+import com.bombombom.devs.study.repository.UserStudyRepository;
+import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
+import com.bombombom.devs.user.models.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +35,9 @@ class StudyServiceTest {
 
     @Mock
     private StudyRepository studyRepository;
+
+    @Mock
+    private UserStudyRepository userStudyRepository;
 
     @InjectMocks
     private StudyService studyService;
@@ -99,5 +107,37 @@ class StudyServiceTest {
 
     }
 
+    @Test
+    @DisplayName("유저는 이미 가입한 스터디에 다시 가입할 수 없다.")
+    void user_cannot_join_study_twice() {
+        /*
+         * Given
+         */
+        User testuser = User.builder()
+            .id(1L)
+            .username("testuser")
+            .money(100000)
+            .reliability(10)
+            .build();
+        Study study = AlgorithmStudy.builder()
+            .capacity(10)
+            .headCount(1)
+            .weeks(10)
+            .reliabilityLimit(10)
+            .penalty(1000)
+            .state(StudyStatus.READY)
+            .build();
+        JoinStudyCommand joinStudyCommand = JoinStudyCommand.builder().studyId(study.getId()).build();
+        when(userStudyRepository.existsByUserIdAndStudyId(testuser.getId(), study.getId()))
+            .thenReturn(true);
+
+        /*
+         * When & Then
+         */
+        assertThatThrownBy(() -> studyService.joinStudy(
+            testuser.getId(), joinStudyCommand))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Already Joined Study");
+    }
 
 }

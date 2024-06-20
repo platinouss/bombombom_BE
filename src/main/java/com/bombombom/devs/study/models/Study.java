@@ -1,7 +1,7 @@
 package com.bombombom.devs.study.models;
 
 import com.bombombom.devs.global.audit.BaseEntity;
-import com.bombombom.devs.study.service.dto.result.StudyResult;
+import com.bombombom.devs.user.models.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -20,7 +20,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 
 
@@ -71,10 +70,25 @@ public abstract class Study extends BaseEntity {
 
     abstract public StudyType getStudyType();
 
-
     @PrePersist
     private void onCreate() {
         state = StudyStatus.READY;
         headCount = 1;
+    }
+
+    public UserStudy join(User user) {
+        if (state.equals(StudyStatus.END)) {
+            throw new IllegalStateException("The Study is End");
+        }
+        if (headCount >= capacity) {
+            throw new IllegalStateException("The Study is full");
+        }
+        if (reliabilityLimit != null && user.getReliability() < reliabilityLimit) {
+            throw new IllegalStateException("User reliability is low");
+        }
+        user.payMoney(penalty * weeks);
+        headCount++;
+
+        return UserStudy.of(user, this, penalty * weeks);
     }
 }
