@@ -14,6 +14,7 @@ public record NaverBookApiResult(
     List<SearchBookItem> items
 ) {
 
+    @Builder
     public record SearchBookItem(
         String title,
         String link,

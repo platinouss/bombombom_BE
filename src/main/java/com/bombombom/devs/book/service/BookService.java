@@ -28,11 +28,11 @@ public class BookService {
     public SearchBooksResult searchBook(SearchBookQuery searchBookQuery) {
         List<Book> books;
         if (searchBookQuery.searchOption() == SearchOption.TITLE) {
-            books = bookRepository.findTop50BooksByTitleContaining(searchBookQuery.keyword());
+            books = bookRepository.findTop30BooksByTitleContaining(searchBookQuery.keyword());
         } else if (searchBookQuery.searchOption() == SearchOption.AUTHOR) {
-            books = bookRepository.findTop50BooksByAuthorContaining(searchBookQuery.keyword());
+            books = bookRepository.findTop30BooksByAuthorContaining(searchBookQuery.keyword());
         } else {
-            books = bookRepository.findTop50BooksByTitleContainingOrAuthorContaining(
+            books = bookRepository.findTop30BooksByTitleContainingOrAuthorContaining(
                 searchBookQuery.keyword(), searchBookQuery.keyword());
         }
         return SearchBooksResult.builder().booksResult(
