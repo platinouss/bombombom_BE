@@ -47,7 +47,7 @@ public class BookServiceTest {
 
     @DisplayName("통합 검색을 통해 서적명 또는 저자와 매칭되는 기술 서적을 검색할 수 있다.")
     @Test
-    void test1() {
+    void search_book_by_title_or_author_success() {
         /*
         Given
          */
@@ -88,7 +88,7 @@ public class BookServiceTest {
 
     @DisplayName("서적명 검색 조건으로 기술 서적을 검색할 수 있다.")
     @Test
-    void test2() {
+    void search_book_by_title_success() {
         /*
         Given
          */
@@ -128,7 +128,7 @@ public class BookServiceTest {
 
     @DisplayName("저자 검색 조건으로 기술 서적을 검색할 수 있다.")
     @Test
-    void test3() {
+    void search_book_by_author_success() {
         /*
         Given
          */
@@ -168,7 +168,7 @@ public class BookServiceTest {
 
     @DisplayName("NAVER Open API를 통해 서적을 검색할 수 있다.")
     @Test
-    void test5() {
+    void search_book_using_naver_open_api_success() {
         /*
         Given
          */
@@ -204,7 +204,7 @@ public class BookServiceTest {
 
     @DisplayName("새로운 서적을 추가한다.")
     @Test
-    void test4() {
+    void add_new_book_success() {
         /*
         Given
          */
