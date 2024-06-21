@@ -63,7 +63,7 @@ public class BookControllerTest {
 
     @DisplayName("서적을 검색할 수 있다.")
     @Test
-    void test1() throws Exception {
+    void search_book_success() throws Exception {
         /*
         Given
          */
@@ -106,7 +106,7 @@ public class BookControllerTest {
 
     @DisplayName("지원하지 않는 검색 조건이면 검색이 실패한다.")
     @Test
-    void test4() throws Exception {
+    void search_book_with_unsupported_option_fail() throws Exception {
         /*
         Given
          */
@@ -130,7 +130,7 @@ public class BookControllerTest {
 
     @DisplayName("검색 키워드가 빈 경우 검색이 실패한다.")
     @Test
-    void test6() throws Exception {
+    void search_book_without_keyword_fail() throws Exception {
         /*
         Given
          */
@@ -154,7 +154,7 @@ public class BookControllerTest {
 
     @DisplayName("검색 키워드와 함께 NAVER Open API를 호출하여 서적 정보를 저장하고 반환한다.")
     @Test
-    void test7() throws Exception {
+    void fetch_and_save_book_details_using_naver_open_api_success() throws Exception {
         /*
         Given
          */
@@ -214,7 +214,7 @@ public class BookControllerTest {
 
     @DisplayName("검색 키워드가 빈 경우 NAVER Open API를 호출에 실패한다.")
     @Test
-    void test8() throws Exception {
+    void call_naver_open_api_without_keyword_fail() throws Exception {
         /*
         Given
          */
