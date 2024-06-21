@@ -1,15 +1,16 @@
 package com.bombombom.devs.study.controller;
 
+import com.bombombom.devs.global.web.LoginUser;
+import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
-import com.bombombom.devs.study.controller.dto.response.StudyResponse;
-import com.bombombom.devs.study.models.Study;
+import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.service.StudyService;
+import com.bombombom.devs.global.security.AppUserDetails;
+import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -30,24 +31,33 @@ public class StudyController {
     private final StudyService studyService;
 
     @PostMapping("/algo")
-    public ResponseEntity<Void> registerAlgorithmStudy(@RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest){
+    public ResponseEntity<Void> registerAlgorithmStudy(
+        @Valid @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
         log.info("{}", registerAlgorithmStudyRequest);
         Long id = studyService.createAlgorithmStudy(registerAlgorithmStudyRequest.toServiceDto());
-        return ResponseEntity.created(URI.create(RESOURCE_PATH+"/"+id)).build();
+        return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + id)).build();
     }
 
     @PostMapping("/book")
-    public ResponseEntity<Void> registerBookStudy(@RequestBody RegisterBookStudyRequest registerBookStudyRequest){
+    public ResponseEntity<Void> registerBookStudy(
+        @Valid @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
         log.info("{}", registerBookStudyRequest);
-        Long id =studyService.createBookStudy(registerBookStudyRequest.toServiceDto());
-        return ResponseEntity.created(URI.create(RESOURCE_PATH+id)).build();
+        Long id = studyService.createBookStudy(registerBookStudyRequest.toServiceDto());
+        return ResponseEntity.created(URI.create(RESOURCE_PATH + id)).build();
     }
 
     @GetMapping
-    public ResponseEntity<List<StudyResponse>> studyList(@PageableDefault(sort="id", direction= Sort.Direction.DESC) Pageable pageable){
-        List<StudyResponse> studyResponses = studyService.readStudy(pageable);
-        log.info("{}", studyResponses);
-        return ResponseEntity.ok(studyResponses);
+    public ResponseEntity<StudyPageResponse> studyList(
+        @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        StudyPageResponse studyPageResponse = studyService.readStudy(pageable);
+        return ResponseEntity.ok(studyPageResponse);
+    }
+
+    @PostMapping("/join")
+    public ResponseEntity<Void> joinStudy(@LoginUser AppUserDetails userDetails,
+        @Valid @RequestBody JoinStudyRequest joinStudyRequest) {
+        studyService.joinStudy(userDetails.getId(), joinStudyRequest.toServiceDto());
+        return ResponseEntity.ok().build();
     }
 
 }

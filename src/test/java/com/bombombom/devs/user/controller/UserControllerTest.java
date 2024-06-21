@@ -2,53 +2,53 @@ package com.bombombom.devs.user.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.global.exception.GlobalExceptionHandler;
+import com.bombombom.devs.config.TestUserDetailsServiceConfig;
+import com.bombombom.devs.global.security.JwtUtils;
+import com.bombombom.devs.global.util.SystemClock;
 import com.bombombom.devs.user.controller.dto.SignupRequest;
+import com.bombombom.devs.user.models.Role;
 import com.bombombom.devs.user.service.UserService;
 import com.bombombom.devs.user.service.dto.SignupCommand;
+import com.bombombom.devs.user.service.dto.UserProfileResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ActiveProfiles("test")
-@SpringBootTest
-public class UserControllerTest {
+@AutoConfigureMockMvc
+@WebMvcTest(controllers = UserController.class, properties = "spring.main.lazy-initialization=true")
+@Import({TestUserDetailsServiceConfig.class, JwtUtils.class, SystemClock.class})
+class UserControllerTest {
 
     private final String USERNAME = "bombombom";
     private final String PASSWORD = "1234";
 
-    @InjectMocks
-    private UserController userController;
-
-    @Mock
+    @MockBean
     private UserService userService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @BeforeEach
-    public void init() {
-        mockMvc = MockMvcBuilders.standaloneSetup(userController)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-    }
-
+    @WithMockUser
     @DisplayName("회원가입을 할 수 있다.")
     @Test
     void signup_success() throws Exception {
@@ -67,6 +67,7 @@ public class UserControllerTest {
          */
         ResultActions resultActions = mockMvc.perform(
             post("/api/v1/users/signup")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signupCommand))
         );
@@ -77,6 +78,7 @@ public class UserControllerTest {
         resultActions.andExpect(status().isOk());
     }
 
+    @WithMockUser
     @DisplayName("username이 빈 경우 회원가입이 실패한다.")
     @Test
     void signup_without_username_fail() throws Exception {
@@ -92,6 +94,7 @@ public class UserControllerTest {
          */
         ResultActions resultActions = mockMvc.perform(
             post("/api/v1/users/signup")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signupRequest))
         );
@@ -103,6 +106,7 @@ public class UserControllerTest {
             .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
     }
 
+    @WithMockUser
     @DisplayName("password가 빈 경우 회원가입이 실패한다.")
     @Test
     void signup_without_password_fail() throws Exception {
@@ -118,6 +122,7 @@ public class UserControllerTest {
          */
         ResultActions resultActions = mockMvc.perform(
             post("/api/v1/users/signup")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signupRequest))
         );
@@ -129,6 +134,7 @@ public class UserControllerTest {
             .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
     }
 
+    @WithMockUser
     @DisplayName("소개글이 255자를 넘을 경우 회원가입이 실패한다.")
     @Test
     void signup_when_introduce_exceed_255_characters_fail() throws Exception {
@@ -146,6 +152,7 @@ public class UserControllerTest {
          */
         ResultActions resultActions = mockMvc.perform(
             post("/api/v1/users/signup")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signupRequest))
         );
@@ -154,6 +161,38 @@ public class UserControllerTest {
         Then
          */
         resultActions.andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("255자를 넘을 수 없습니다."));
+                .andExpect(jsonPath("$.message").value("255자를 넘을 수 없습니다."));
+    }
+
+    /*
+    HandlerMethodArgumentResolver 는 Component 일지라도 등록이 된다.
+    다른 문제를 찾아야 함
+     */
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "testUserDetailsService")
+    @DisplayName("로그인한 유저는 자기 자신의 정보를 조회할 수 있다.")
+    @Test
+    void login_user_can_retrieve_own_information() throws Exception {
+        /*
+        Given
+         */
+        when(userService.findById(any())).thenReturn(UserProfileResult.builder()
+            .id(1L)
+            .username("testuser")
+            .role(Role.USER)
+            .image("image")
+            .introduce("introduce")
+            .reliability(0)
+            .money(0)
+            .build());
+
+        /*
+        When
+         */
+        ResultActions resultActions = this.mockMvc.perform(get("/api/v1/users/me"));
+
+        /*
+        Then
+         */
+        resultActions.andExpect(status().isOk());
     }
 }
