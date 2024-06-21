@@ -12,7 +12,7 @@ public record BookListResponse(
 ) {
 
     @Builder
-    record BookInfo(
+    public record BookInfo(
         String title,
         String author,
         String publisher,
@@ -27,8 +27,10 @@ public record BookListResponse(
             .booksInfo(searchBooksResult.booksResult().stream()
                 .map(bookResult -> BookInfo.builder()
                     .title(bookResult.title())
-                    .author(bookResult.author()).publisher(bookResult.publisher())
-                    .isbn(bookResult.isbn()).tableOfContents(bookResult.tableOfContents())
+                    .author(bookResult.author())
+                    .publisher(bookResult.publisher())
+                    .isbn(bookResult.isbn())
+                    .tableOfContents(bookResult.tableOfContents())
                     .build())
                 .collect(Collectors.toList()))
             .build();
