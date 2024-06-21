@@ -3,6 +3,7 @@ package com.bombombom.devs.study.service;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
+import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.UserStudy;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -28,13 +29,17 @@ public class StudyService {
     private final UserRepository userRepository;
     private final UserStudyRepository userStudyRepository;
 
-
+    @Transactional
     public AlgorithmStudyResult createAlgorithmStudy(
+        Long userId,
         RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
 
         int difficultyGap = registerAlgorithmStudyCommand.difficultyEnd()
             - registerAlgorithmStudyCommand.difficultyBegin();
         float db = registerAlgorithmStudyCommand.difficultyBegin();
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalStateException("User Not Found"));
 
         AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
             .name(registerAlgorithmStudyCommand.name())
@@ -44,6 +49,9 @@ public class StudyService {
             .startDate(registerAlgorithmStudyCommand.startDate())
             .reliabilityLimit(registerAlgorithmStudyCommand.reliabilityLimit())
             .penalty(registerAlgorithmStudyCommand.penalty())
+            .headCount(registerAlgorithmStudyCommand.headCount())
+            .state(registerAlgorithmStudyCommand.state())
+            .user(user)
             .difficultyGraph(db)
             .difficultyString(db)
             .difficultyImpl(db)
@@ -57,12 +65,20 @@ public class StudyService {
             .problemCount(registerAlgorithmStudyCommand.problemCount())
             .build();
 
-        return AlgorithmStudyResult.fromEntity(studyRepository.save(
-            algorithmStudy));
+        studyRepository.save(algorithmStudy);
+
+        UserStudy userStudy = algorithmStudy.join(user);
+        userStudyRepository.save(userStudy);
+
+        return AlgorithmStudyResult.fromEntity(algorithmStudy);
     }
 
+    @Transactional
+    public BookStudyResult createBookStudy(
+        Long userId, RegisterBookStudyCommand registerBookStudyCommand) {
 
-    public BookStudyResult createBookStudy(RegisterBookStudyCommand registerBookStudyCommand) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalStateException("User Not Found"));
 
         BookStudy bookStudy = BookStudy.builder()
             .name(registerBookStudyCommand.name())
@@ -72,10 +88,17 @@ public class StudyService {
             .startDate(registerBookStudyCommand.startDate())
             .reliabilityLimit(registerBookStudyCommand.reliabilityLimit())
             .penalty(registerBookStudyCommand.penalty())
+            .headCount(registerBookStudyCommand.headCount())
+            .state(registerBookStudyCommand.state())
+            .user(user)
             .bookId(registerBookStudyCommand.bookId())
             .build();
+        studyRepository.save(bookStudy);
 
-        return BookStudyResult.fromEntity(studyRepository.save(bookStudy));
+        UserStudy userStudy = bookStudy.join(user);
+        userStudyRepository.save(userStudy);
+
+        return BookStudyResult.fromEntity(bookStudy);
     }
 
     @Transactional(readOnly = true)

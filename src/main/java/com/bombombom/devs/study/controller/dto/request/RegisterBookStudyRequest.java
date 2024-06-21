@@ -5,7 +5,9 @@ import static com.bombombom.devs.study.Constants.MAX_PENALTY;
 import static com.bombombom.devs.study.Constants.MAX_RELIABLITY_LIMIT;
 import static com.bombombom.devs.study.Constants.MAX_WEEKS;
 
+import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -36,9 +38,16 @@ public record RegisterBookStudyRequest(
             .reliabilityLimit(reliabilityLimit)
             .penalty(penalty)
             .bookId(bookId)
+            .state(StudyStatus.READY)
+            .headCount(0)
             .build();
 
     }
 
+    @AssertTrue
+    private boolean isStartDateAfterOrEqualToday() {
+        LocalDate now = LocalDate.now();
+        return startDate.isAfter(now) || startDate.isEqual(now);
+    }
 
 }

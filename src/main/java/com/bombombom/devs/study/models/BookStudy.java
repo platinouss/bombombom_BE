@@ -18,7 +18,6 @@ import org.hibernate.annotations.DynamicInsert;
 @Table(name = "book_study")
 @DiscriminatorValue(StudyType.Values.BOOK)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicInsert
 public class BookStudy extends Study {
 
     @NotNull

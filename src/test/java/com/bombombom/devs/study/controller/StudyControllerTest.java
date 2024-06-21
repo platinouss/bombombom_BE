@@ -113,7 +113,7 @@ class StudyControllerTest {
                     .bookId(15L)
                     .build();
 
-            when(studyService.createBookStudy(
+            when(studyService.createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class))).thenReturn(bookStudyResult);
 
             /*
@@ -178,7 +178,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.name").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
 
         @Test
@@ -220,7 +221,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.name").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
 
         @Test
@@ -262,7 +264,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.introduce").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
 
         @Test
@@ -304,7 +307,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.introduce").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
 
         @Test
@@ -346,7 +350,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.weeks").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
 
         @Test
@@ -388,7 +393,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.penalty").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
 
         @Test
@@ -431,7 +437,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
 
         @Test
@@ -473,7 +480,8 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.bookId").hasJsonPath()
                 );
 
-            verify(studyService, never()).createBookStudy(any(RegisterBookStudyCommand.class));
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
         }
     }
 
@@ -524,7 +532,7 @@ class StudyControllerTest {
                 .difficultyGap(5)
                 .problemCount(5).build();
 
-            when(studyService.createAlgorithmStudy(
+            when(studyService.createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class))).thenReturn(algorithmStudyResult);
             /*
             When
@@ -591,7 +599,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.name").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -638,7 +646,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.name").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -685,7 +693,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.introduce").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -732,7 +740,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.introduce").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -778,7 +786,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.weeks").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -824,7 +832,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.penalty").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -870,7 +878,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.capacity").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -916,7 +924,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -963,7 +971,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.difficultyBegin").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -1010,7 +1018,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.difficultyEnd").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -1055,7 +1063,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.problemCount").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
@@ -1103,7 +1111,7 @@ class StudyControllerTest {
                     jsonPath("$.errorDetails.difficultyBeginLteDifficultyEnd").hasJsonPath()
                 );
 
-            verify(studyService, never()).createAlgorithmStudy(
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
         }
 

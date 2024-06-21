@@ -10,6 +10,7 @@ import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.global.security.AppUserDetails;
+import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,11 +40,14 @@ public class StudyController {
     private final StudyService studyService;
 
     @PostMapping("/algo")
-
     public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(
+        @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
 
+        Long userId = userDetails.getId();
+
         AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
+            userId,
             registerAlgorithmStudyRequest.toServiceDto());
 
         AlgorithmStudyResponse algorithmStudyResponse = AlgorithmStudyResponse.fromResult(
@@ -54,9 +59,13 @@ public class StudyController {
 
     @PostMapping("/book")
     public ResponseEntity<StudyResponse> registerBookStudy(
+        @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
 
+        Long userId = userDetails.getId();
+
         BookStudyResult bookStudyResult = studyService.createBookStudy(
+            userId,
             registerBookStudyRequest.toServiceDto());
 
         BookStudyResponse bookStudyResponse = BookStudyResponse.fromResult(bookStudyResult);

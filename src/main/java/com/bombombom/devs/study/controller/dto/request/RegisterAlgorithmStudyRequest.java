@@ -20,6 +20,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.Builder;
 import org.hibernate.validator.constraints.Range;
 
@@ -50,6 +51,8 @@ public record RegisterAlgorithmStudyRequest(
             .difficultyBegin(difficultyBegin)
             .difficultyEnd(difficultyEnd)
             .problemCount(problemCount)
+            .state(StudyStatus.READY)
+            .headCount(0)
             .build();
 
     }
@@ -59,4 +62,9 @@ public record RegisterAlgorithmStudyRequest(
         return difficultyBegin <= difficultyEnd;
     }
 
+    @AssertTrue
+    private boolean isStartDateAfterToday() {
+        LocalDate now = LocalDate.now();
+        return startDate.isAfter(now) || startDate.isEqual(now);
+    }
 }

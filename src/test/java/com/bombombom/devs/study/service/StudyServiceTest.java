@@ -14,6 +14,7 @@ import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
+import com.bombombom.devs.study.models.UserStudy;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
@@ -23,9 +24,11 @@ import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.User;
+import com.bombombom.devs.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -49,6 +52,8 @@ class StudyServiceTest {
 
     @Mock
     private UserStudyRepository userStudyRepository;
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private StudyService studyService;
@@ -155,6 +160,12 @@ class StudyServiceTest {
         /*
         Given
          */
+        User testuser = User.builder()
+            .id(1L)
+            .username("testuser")
+            .money(100000)
+            .reliability(40)
+            .build();
 
         RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand =
             RegisterAlgorithmStudyCommand.builder()
@@ -165,12 +176,14 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 19))
                 .penalty(5000)
                 .weeks(5)
+                .headCount(0)
+                .state(StudyStatus.READY)
                 .difficultyBegin(10)
                 .difficultyEnd(15)
                 .problemCount(5).build();
 
         AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
-            .id(1L)
+
             .reliabilityLimit(37)
             .introduce("안녕하세요")
             .name("스터디1")
@@ -192,12 +205,14 @@ class StudyServiceTest {
             .problemCount(5)
             .build();
 
-        when(studyRepository.save(
-            any(Study.class))).thenReturn(algorithmStudy);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testuser));
+
+
         /*
         When
          */
         AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
+            testuser.getId(),
             registerAlgorithmStudyCommand);
 
         /*
@@ -216,6 +231,13 @@ class StudyServiceTest {
         /*
         Given
          */
+        User testuser = User.builder()
+            .id(1L)
+            .username("testuser")
+            .money(100000)
+            .reliability(40)
+            .build();
+
         RegisterBookStudyCommand registerBookStudyCommand =
             RegisterBookStudyCommand.builder()
                 .reliabilityLimit(37)
@@ -225,11 +247,12 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 19))
                 .penalty(5000)
                 .weeks(5)
+                .state(StudyStatus.READY)
+                .headCount(0)
                 .bookId(15L)
                 .build();
 
         BookStudy bookStudy = BookStudy.builder()
-            .id(1L)
             .reliabilityLimit(37)
             .introduce("안녕하세요")
             .name("스터디1")
@@ -238,17 +261,17 @@ class StudyServiceTest {
             .startDate(LocalDate.of(2024, 06, 19))
             .penalty(5000)
             .weeks(5)
-            .state(StudyStatus.READY)
             .bookId(15L)
+            .state(StudyStatus.READY)
             .build();
 
-        when(studyRepository.save(
-            any(Study.class))).thenReturn(bookStudy);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testuser));
 
         /*
         When
          */
         BookStudyResult bookStudyResult = studyService.createBookStudy(
+            testuser.getId(),
             registerBookStudyCommand);
 
         /*
