@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -21,6 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.global.exception.GlobalExceptionHandler;
+import com.bombombom.devs.global.security.JwtUtils;
+import com.bombombom.devs.global.util.SystemClock;
 import com.bombombom.devs.global.web.LoginUserArgumentResolver;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -56,6 +59,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -63,7 +68,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @AutoConfigureMockMvc
 @WebMvcTest(StudyController.class)
-@Import(TestUserDetailsServiceConfig.class)
+@Import({TestUserDetailsServiceConfig.class, JwtUtils.class, SystemClock.class})
 class StudyControllerTest {
 
 
@@ -75,14 +80,14 @@ class StudyControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-
     @DisplayName("BookStudy 생성 테스트")
     @Nested
     class RegisterBookStudyTest {
 
         @Test
-        @DisplayName("registerBookStudy 메소드는 BookStudyResponse를 반환한다")
-        void register_book_study_returns_book_study_response() throws Exception {
+        @WithUserDetails(value = "testuser")
+        @DisplayName("성공 시 BookStudyResponse를 반환한다")
+        void register_book_study_returns_book_study_response_if_success() throws Exception {
             /*
             Given
              */
@@ -92,7 +97,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .bookId(15L)
@@ -106,7 +111,7 @@ class StudyControllerTest {
                     .name("스터디1")
                     .headCount(1)
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .state(StudyStatus.READY)
@@ -122,6 +127,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -140,6 +146,7 @@ class StudyControllerTest {
 
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("name이 공백이라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_name_is_empty() throws Exception {
             /*
@@ -151,7 +158,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name(" ")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .bookId(15L)
@@ -163,6 +170,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -183,6 +191,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("name이 255자를 넘는다면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_name_size_exceed_255() throws Exception {
             /*
@@ -194,7 +203,7 @@ class StudyControllerTest {
                     .introduce("하이요")
                     .name("a".repeat(256))
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .bookId(15L)
@@ -206,6 +215,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -226,6 +236,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("introduce가 공백이라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_introduce_is_empty() throws Exception {
             /*
@@ -237,7 +248,7 @@ class StudyControllerTest {
                     .introduce(" ")
                     .name("aaa")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .bookId(15L)
@@ -249,6 +260,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -269,6 +281,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("introduce가 500자를 넘는다면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_introduce_size_exceed_500() throws Exception {
             /*
@@ -280,7 +293,7 @@ class StudyControllerTest {
                     .introduce("ㅋ".repeat(501))
                     .name("아령하세요")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .bookId(15L)
@@ -292,6 +305,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -312,6 +326,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("weeks가 1이상 " + MAX_WEEKS + "이하가 아니라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_weeks_not_in_range() throws Exception {
             /*
@@ -323,7 +338,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(MAX_WEEKS + 1)
                     .bookId(15L)
@@ -335,6 +350,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -355,6 +371,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("penalty가 0이상 " + MAX_PENALTY + "이하가 아니라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_penalty_not_in_range() throws Exception {
             /*
@@ -366,7 +383,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(MAX_PENALTY + 1)
                     .weeks(5)
                     .bookId(15L)
@@ -378,6 +395,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -398,6 +416,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "reliabilityLimit가 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_reliability_limit_not_in_range() throws Exception {
@@ -410,7 +429,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .bookId(15L)
@@ -422,6 +441,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -442,6 +462,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("bookId가 Null이라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_book_id_is_null() throws Exception {
             /*
@@ -453,7 +474,7 @@ class StudyControllerTest {
                     .introduce("아니 테스트코드를 이렇게나 많이 짜는게 맞는건가?? ..")
                     .name("아령하세요")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
 //                .bookId(15L)
@@ -465,6 +486,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/book")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
@@ -483,6 +505,95 @@ class StudyControllerTest {
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
         }
+
+
+        @Test
+        @WithUserDetails(value = "testuser")
+        @DisplayName("startDate가 오늘 이전이라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_start_date_is_before_today() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("아니 테스트코드를 이렇게나 많이 짜는게 맞는건가?? ..")
+                    .name("아령하세요")
+                    .capacity(10)
+                    .startDate(LocalDate.now().minusMonths(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.startDateAfterOrEqualToday").hasJsonPath()
+                );
+
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
+        }
+
+        @Test
+        @WithAnonymousUser
+        @DisplayName("인증받지 않은 사용자는 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_not_authenticated() throws Exception {
+            /*
+            Given
+             */
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("아니 테스트코드를 이렇게나 많이 짜는게 맞는건가?? ..")
+                    .name("아령하세요")
+                    .capacity(10)
+                    .startDate(LocalDate.now())
+                    .penalty(5000)
+                    .weeks(5)
+                    .bookId(15L)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isUnauthorized()
+                );
+
+            verify(studyService, never()).createBookStudy(any(Long.class),
+                any(RegisterBookStudyCommand.class));
+        }
     }
 
     @DisplayName("AlgorithmStudy 생성 테스트")
@@ -490,8 +601,9 @@ class StudyControllerTest {
     class RegisterAlgorithmStudyTest {
 
         @Test
-        @DisplayName("registerAlgorithmStudy 메소드는 AlgorithmStudyResponse를 반환한다")
-        void register_algorithm_study_returns_algorithm_study_response()
+        @WithUserDetails(value = "testuser")
+        @DisplayName("성공 시 AlgorithmStudyResponse를 반환한다")
+        void register_algorithm_study_returns_algorithm_study_response_if_success()
             throws Exception {
             /*
             Given
@@ -503,7 +615,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .difficultyBegin(10)
@@ -517,7 +629,7 @@ class StudyControllerTest {
                 .name("스터디1")
                 .headCount(1)
                 .capacity(10)
-                .startDate(LocalDate.of(2024, 06, 19))
+                .startDate(LocalDate.now())
                 .penalty(5000)
                 .weeks(5)
                 .state(StudyStatus.READY)
@@ -539,6 +651,7 @@ class StudyControllerTest {
              */
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -558,6 +671,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "name이 공백이라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_name_is_empty() throws Exception {
@@ -570,7 +684,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("")
                     .capacity(1)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(50)
                     .difficultyBegin(10)
@@ -584,6 +698,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -605,6 +720,7 @@ class StudyControllerTest {
 
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "name이 255자을 넘는다면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_name_size_exceed_255() throws Exception {
@@ -617,7 +733,7 @@ class StudyControllerTest {
                     .introduce("when you get order your wild heart will live for younger days")
                     .name("스".repeat(256))
                     .capacity(1)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(50)
                     .difficultyBegin(10)
@@ -631,6 +747,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -652,6 +769,7 @@ class StudyControllerTest {
 
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "introduce가 공백이라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_introduce_is_empty() throws Exception {
@@ -664,7 +782,7 @@ class StudyControllerTest {
                     .introduce("")
                     .name("봄봄봄봄봄")
                     .capacity(1)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(50)
                     .difficultyBegin(10)
@@ -678,6 +796,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -699,6 +818,7 @@ class StudyControllerTest {
 
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "introduce가 500자를 넘는다면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_introduce_size_exceed_500() throws Exception {
@@ -711,7 +831,7 @@ class StudyControllerTest {
                     .introduce("a".repeat(501))
                     .name("봄봄봄봄봄")
                     .capacity(1)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(50)
                     .difficultyBegin(10)
@@ -725,6 +845,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -745,6 +866,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "weeks가 1이상 " + MAX_WEEKS + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_weeks_not_in_range() throws Exception {
@@ -757,7 +879,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(1)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(0)
                     .difficultyBegin(10)
@@ -771,6 +893,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -791,6 +914,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "penalty가 0이상 " + MAX_PENALTY + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_penalty_not_in_range() throws Exception {
@@ -803,7 +927,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(1)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(MAX_PENALTY + 1)
                     .weeks(5)
                     .difficultyBegin(10)
@@ -817,6 +941,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -837,6 +962,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "capacity가 1이상 " + MAX_CAPACITY + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_capacity_not_in_range() throws Exception {
@@ -849,7 +975,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(0)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .difficultyBegin(10)
@@ -863,6 +989,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -883,6 +1010,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "reliablityLimit이 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_reliabilityLimit_not_in_range() throws Exception {
@@ -895,7 +1023,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(1)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .difficultyBegin(10)
@@ -909,6 +1037,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -930,6 +1059,7 @@ class StudyControllerTest {
 
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "difficultyBegin이 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_difficulty_begin_not_in_range() throws Exception {
@@ -942,7 +1072,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .difficultyBegin(-1)
@@ -956,6 +1086,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -977,6 +1108,7 @@ class StudyControllerTest {
 
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "difficultyEnd가 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_difficulty_end_not_in_range() throws Exception {
@@ -989,7 +1121,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .difficultyBegin(10)
@@ -1003,6 +1135,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -1023,6 +1156,7 @@ class StudyControllerTest {
         }
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName("problemCount가 1이상 " + MAX_PROBLEM_COUNT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_problem_count_not_in_range() throws Exception {
             /*
@@ -1034,7 +1168,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .difficultyBegin(5)
@@ -1048,6 +1182,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -1069,6 +1204,7 @@ class StudyControllerTest {
 
 
         @Test
+        @WithUserDetails(value = "testuser")
         @DisplayName(
             "difficultyBegin이 difficultyEnd보다 크다면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_difficulty_begin_is_greater_than_difficulty_end()
@@ -1082,7 +1218,7 @@ class StudyControllerTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.of(2024, 06, 19))
+                    .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
                     .difficultyBegin(10)
@@ -1096,6 +1232,7 @@ class StudyControllerTest {
 
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/algo")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
@@ -1115,10 +1252,105 @@ class StudyControllerTest {
                 any(RegisterAlgorithmStudyCommand.class));
         }
 
+        @Test
+        @WithUserDetails(value = "testuser")
+        @DisplayName(
+            "startDate가 오늘 이전이라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_start_date_is_before_today()
+            throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.now().minusDays(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
 
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isBadRequest(),
+                    jsonPath("$.errorDetails.*", hasSize(1)),
+                    jsonPath("$.errorDetails.startDateAfterOrEqualToday").hasJsonPath()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
+                any(RegisterAlgorithmStudyCommand.class));
+        }
+
+        @Test
+        @WithAnonymousUser
+        @DisplayName(
+            "startDate가 오늘 이전이라면 AlgorithmStudy를 생성할 수 없다")
+        void register_algorithm_study_fails_if_not_authenticated()
+            throws Exception {
+            /*
+            Given
+             */
+            RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
+                RegisterAlgorithmStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.now())
+                    .penalty(5000)
+                    .weeks(5)
+                    .difficultyBegin(10)
+                    .difficultyEnd(15)
+                    .problemCount(5)
+                    .build();
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/algo")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            );
+
+            /*
+            Then
+             */
+
+            resultActions
+                .andExpectAll(
+                    status().isUnauthorized()
+                );
+
+            verify(studyService, never()).createAlgorithmStudy(any(Long.class),
+                any(RegisterAlgorithmStudyCommand.class));
+        }
     }
 
     @Test
+    @WithMockUser
     @DisplayName("studyList 메소드는 StudyPageResponse룰 반환한다 ")
     void study_list_returns_study_page_response() throws Exception {
         /*
@@ -1194,7 +1426,7 @@ class StudyControllerTest {
 
     @Test
     @DisplayName("스터디 가입 요청의 studyId는 1이상의 값이어야 한다.")
-    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "testUserDetailsService")
+    @WithUserDetails(value = "testuser")
     void join_study_request_study_id_should_be_greater_than_0() throws Exception {
         /*
          Given
@@ -1207,8 +1439,10 @@ class StudyControllerTest {
          */
         ResultActions resultActions = mockMvc.perform(
             post("/api/v1/studies/join")
+
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody)
+                .with(csrf())
         );
 
         /*

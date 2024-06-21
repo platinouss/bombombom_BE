@@ -63,7 +63,7 @@ public record RegisterAlgorithmStudyRequest(
     }
 
     @AssertTrue
-    private boolean isStartDateAfterToday() {
+    private boolean isStartDateAfterOrEqualToday() {
         LocalDate now = LocalDate.now();
         return startDate.isAfter(now) || startDate.isEqual(now);
     }
