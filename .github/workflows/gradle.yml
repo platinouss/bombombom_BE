@@ -24,29 +24,29 @@ jobs:
           MYSQL_DATABASE: testdb
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 
-    - name: Wait for MySQL
-      run: |
-        # Wait until MySQL is ready
-        while ! mysqladmin ping -h "127.0.0.1" --silent; do
-          echo "Waiting for MySQL..."
-          sleep 2
-        done
+      - name: Wait for MySQL
+        run: |
+          # Wait until MySQL is ready
+          while ! mysqladmin ping -h "127.0.0.1" --silent; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
 
-    - name: Initialize database
-      run: |
-        mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS test;"
-        mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS bombombom;"
+      - name: Initialize database
+        run: |
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS test;"
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS bombombom;"
 
-    - name: Build with Gradle Wrapper
-      run: |
-        ACCESS_TOKEN_EXPIRE=300000000 JWT_SECRET_KEY=abcadsadsaqwdwqdfasdasd3r3214t4tk4ninifnewfokncknwfnopefw MYSQL_DATABASE=bombombom MYSQL_HOST=localhost MYSQL_PASSWORD=root MYSQL_USERNAME=root REFRESH_TOKEN_EXPIRE=7120000 TEST_MYSQL_DATABASE=test PORT=8080 LOG_LEVEL=DEBUG ./gradlew build
+      - name: Build with Gradle Wrapper
+        run: |
+          ACCESS_TOKEN_EXPIRE=300000000 JWT_SECRET_KEY=abcadsadsaqwdwqdfasdasd3r3214t4tk4ninifnewfokncknwfnopefw MYSQL_DATABASE=bombombom MYSQL_HOST=localhost MYSQL_PASSWORD=root MYSQL_USERNAME=root REFRESH_TOKEN_EXPIRE=7120000 TEST_MYSQL_DATABASE=test PORT=8080 LOG_LEVEL=DEBUG NAVER_CLIENT_ID={{secret.NAVER_CLIENT_ID}} NAVER_CLIENT_SECRET={{secret.NAVER_CLIENT_SECRET}} ./gradlew build
