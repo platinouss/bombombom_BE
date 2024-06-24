@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
 import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
+import com.bombombom.devs.global.util.converter.MultiValueMapConverter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -12,22 +14,25 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+@Import({NaverClient.class, MultiValueMapConverter.class})
 public class NaverClientTest {
 
-    private final NaverClient naverClient;
+    @InjectMocks
+    private NaverClient naverClient;
+
+    @Spy
+    private ObjectMapper objectMapper;
 
     private static MockWebServer mockWebServer;
-
-    @Autowired
-    public NaverClientTest(NaverClient naverClient) {
-        this.naverClient = naverClient;
-    }
 
     @BeforeAll
     static void mockMvcServerSetup() throws IOException {
@@ -46,12 +51,15 @@ public class NaverClientTest {
         /*
         Given
          */
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        String mockWebServerUrl = mockWebServer.url("/v1/search/book.json").toString();
         NaverBookApiQuery bookApiQuery = new NaverBookApiQuery("가상 면접 사례로 배우는");
 
         /*
         When & Then
          */
-        assertThatCode(() -> naverClient.searchBooks(bookApiQuery))
+        assertThatCode(
+            () -> naverClient.requestBookApi(bookApiQuery, mockWebServerUrl, objectMapper))
             .doesNotThrowAnyException();
     }
 
@@ -69,7 +77,7 @@ public class NaverClientTest {
         When & Then
          */
         assertThrows(ExternalApiException.class, () -> naverClient.requestBookApi(bookApiQuery,
-            mockWebServer.url(mockWebServerUrl).toString()));
+            mockWebServer.url(mockWebServerUrl).toString(), objectMapper));
     }
 }
 

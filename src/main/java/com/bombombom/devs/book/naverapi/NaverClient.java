@@ -26,7 +26,8 @@ public class NaverClient {
     @Value("${naver.url.search.book}")
     private String naverBookApiUrl;
 
-    public NaverBookApiResult requestBookApi(NaverBookApiQuery naverBookApiQuery, String apiUrl) {
+    public NaverBookApiResult requestBookApi(NaverBookApiQuery naverBookApiQuery, String apiUrl,
+        ObjectMapper objectMapper) {
         WebClient webClient = WebClient.builder().baseUrl(apiUrl).build();
         return webClient.get()
             .uri(uriBuilder -> uriBuilder.queryParams(
@@ -43,6 +44,6 @@ public class NaverClient {
     }
 
     public NaverBookApiResult searchBooks(NaverBookApiQuery naverBookApiQuery) {
-        return requestBookApi(naverBookApiQuery, naverBookApiUrl);
+        return requestBookApi(naverBookApiQuery, naverBookApiUrl, objectMapper);
     }
 }
