@@ -16,7 +16,7 @@ public class BookBulkRepository {
 
     @Transactional
     public void saveAll(List<Book> books) {
-        String sql = "INSERT IGNORE INTO BOOK (title, author, publisher, isbn, table_of_contents)"
+        String sql = "INSERT IGNORE INTO book (title, author, publisher, isbn, table_of_contents)"
             + "VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.batchUpdate(sql, books, books.size(), (PreparedStatement ps, Book book) -> {
             ps.setString(1, book.getTitle());
