@@ -48,7 +48,7 @@ public record AlgorithmStudyResponse(
     Integer problemCount)
     implements StudyResponse {
 
-    public static AlgorithmStudyResponse of(AlgorithmStudyResult res) {
+    public static AlgorithmStudyResponse fromResult(AlgorithmStudyResult res) {
 
         return builder()
             .id(res.id())

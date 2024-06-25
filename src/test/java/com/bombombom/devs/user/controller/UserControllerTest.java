@@ -1,5 +1,23 @@
 package com.bombombom.devs.user.controller;
 
+import com.bombombom.devs.global.exception.GlobalExceptionHandler;
+import com.bombombom.devs.user.controller.dto.SignupRequest;
+import com.bombombom.devs.user.service.UserService;
+import com.bombombom.devs.user.service.dto.SignupCommand;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Nested;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -32,7 +50,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @AutoConfigureMockMvc
-@WebMvcTest(controllers = UserController.class, properties = "spring.main.lazy-initialization=true")
+@WebMvcTest(UserController.class)
 @Import({TestUserDetailsServiceConfig.class, JwtUtils.class, SystemClock.class})
 class UserControllerTest {
 

@@ -1,6 +1,10 @@
 package com.bombombom.devs.global.exception;
 
 import com.bombombom.devs.user.exception.ExistUsernameException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -23,13 +27,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<ErrorResponse> handleInvalidDtoField(
-        MethodArgumentNotValidException e) {
-        FieldError fieldError = e.getFieldErrors().get(0);
-        ErrorResponse errorResponse = new ErrorResponse(
+    protected ResponseEntity<DetailedErrorResponse> handleInvalidDtoField(
+        MethodArgumentNotValidException e) throws JsonProcessingException {
+
+        Map<String, String> errorDetails = new HashMap<>();
+
+        e.getFieldErrors()
+            .forEach(action -> errorDetails.put(action.getField(), action.getDefaultMessage()));
+
+        DetailedErrorResponse detailedErrorResponse = new DetailedErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
-            fieldError.getDefaultMessage()
+            e.getFieldErrors().getFirst().getDefaultMessage(),
+            errorDetails
         );
-        return ResponseEntity.badRequest().body(errorResponse);
+        return ResponseEntity.badRequest().body(detailedErrorResponse);
     }
 }

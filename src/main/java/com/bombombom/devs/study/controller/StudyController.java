@@ -4,17 +4,26 @@ import com.bombombom.devs.global.web.LoginUser;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
+import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
+import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.global.security.AppUserDetails;
+import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
+import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.study.service.dto.result.StudyResult;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,25 +40,50 @@ public class StudyController {
     private final StudyService studyService;
 
     @PostMapping("/algo")
-    public ResponseEntity<Void> registerAlgorithmStudy(
+    public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(
+        @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
-        log.info("{}", registerAlgorithmStudyRequest);
-        Long id = studyService.createAlgorithmStudy(registerAlgorithmStudyRequest.toServiceDto());
-        return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + id)).build();
+
+        AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
+            userDetails.getId(),
+            registerAlgorithmStudyRequest.toServiceDto());
+
+        AlgorithmStudyResponse algorithmStudyResponse = AlgorithmStudyResponse.fromResult(
+            algorithmStudyResult);
+
+        return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + algorithmStudyResponse.id()))
+            .body(algorithmStudyResponse);
     }
 
     @PostMapping("/book")
-    public ResponseEntity<Void> registerBookStudy(
+    public ResponseEntity<StudyResponse> registerBookStudy(
+        @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
-        log.info("{}", registerBookStudyRequest);
-        Long id = studyService.createBookStudy(registerBookStudyRequest.toServiceDto());
-        return ResponseEntity.created(URI.create(RESOURCE_PATH + id)).build();
+
+        BookStudyResult bookStudyResult = studyService.createBookStudy(
+            userDetails.getId(),
+            registerBookStudyRequest.toServiceDto());
+
+        BookStudyResponse bookStudyResponse = BookStudyResponse.fromResult(bookStudyResult);
+
+        return ResponseEntity.created(URI.create(RESOURCE_PATH + "/" + bookStudyResponse.id()))
+            .body(bookStudyResponse);
     }
 
     @GetMapping
     public ResponseEntity<StudyPageResponse> studyList(
         @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        StudyPageResponse studyPageResponse = studyService.readStudy(pageable);
+
+        Page<StudyResponse> studyPage = studyService.readStudy(pageable)
+            .map(StudyResponse::fromResult);
+
+        StudyPageResponse studyPageResponse = StudyPageResponse.builder()
+            .contents(studyPage.getContent())
+            .pageNumber(studyPage.getNumber())
+            .totalPages(studyPage.getTotalPages())
+            .totalElements(studyPage.getTotalElements())
+            .build();
+
         return ResponseEntity.ok(studyPageResponse);
     }
 
