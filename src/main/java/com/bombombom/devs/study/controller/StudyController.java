@@ -44,10 +44,8 @@ public class StudyController {
         @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
 
-        Long userId = userDetails.getId();
-
         AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
-            userId,
+            userDetails.getId(),
             registerAlgorithmStudyRequest.toServiceDto());
 
         AlgorithmStudyResponse algorithmStudyResponse = AlgorithmStudyResponse.fromResult(
@@ -62,10 +60,8 @@ public class StudyController {
         @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
 
-        Long userId = userDetails.getId();
-
         BookStudyResult bookStudyResult = studyService.createBookStudy(
-            userId,
+            userDetails.getId(),
             registerBookStudyRequest.toServiceDto());
 
         BookStudyResponse bookStudyResponse = BookStudyResponse.fromResult(bookStudyResult);

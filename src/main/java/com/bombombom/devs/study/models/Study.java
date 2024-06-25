@@ -58,7 +58,7 @@ public abstract class Study extends BaseEntity {
     protected Integer weeks;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader_id")
+    @JoinColumn(name = "leader")
     private User user;
 
     @Column(name = "start_date")
