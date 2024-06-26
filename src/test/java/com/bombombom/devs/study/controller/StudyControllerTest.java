@@ -8,7 +8,6 @@ import static com.bombombom.devs.study.Constants.MAX_RELIABILITY_LIMIT;
 import static com.bombombom.devs.study.Constants.MAX_WEEKS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
