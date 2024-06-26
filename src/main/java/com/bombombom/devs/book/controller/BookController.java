@@ -30,7 +30,7 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookListResponse> bookAdd(
+    public ResponseEntity<BookListResponse> addBook(
         @Valid @RequestBody BookAddRequest bookAddRequest) {
         NaverBookApiResult naverBookApiResult = bookService.findBookUsingOpenApi(
             bookAddRequest.toServiceDto());

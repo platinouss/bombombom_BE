@@ -19,9 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 @Import({NaverClient.class, MultiValueMapConverter.class})
 public class NaverClientTest {

@@ -11,17 +11,6 @@ public record BookListResponse(
     List<BookInfo> booksInfo
 ) {
 
-    @Builder
-    public record BookInfo(
-        String title,
-        String author,
-        String publisher,
-        Long isbn,
-        String tableOfContents
-    ) {
-
-    }
-
     public static BookListResponse fromResult(SearchBooksResult searchBooksResult) {
         return BookListResponse.builder()
             .booksInfo(searchBooksResult.booksResult().stream()

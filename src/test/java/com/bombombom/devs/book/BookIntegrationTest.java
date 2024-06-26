@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bombombom.devs.book.controller.BookController;
 import com.bombombom.devs.book.controller.dto.BookAddRequest;
 import com.bombombom.devs.book.controller.dto.BookListResponse;
+import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,7 +56,7 @@ public class BookIntegrationTest {
         Given
          */
         String keyword = "가상 면접 사례로 배우는 대규모 시스템 설계 기초";
-        String searchOption = "TOTAL";
+        String searchOption = SearchOption.TOTAL.name();
         SearchBooksResult.BookResult bookResult = SearchBooksResult.BookResult.builder()
             .title("가상 면접 사례로 배우는 대규모 시스템 설계 기초")
             .author("알렉스 쉬")

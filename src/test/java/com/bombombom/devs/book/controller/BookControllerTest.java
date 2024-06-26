@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.book.controller.dto.BookAddRequest;
 import com.bombombom.devs.book.controller.dto.BookListResponse;
+import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.service.BookService;
 import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
 import com.bombombom.devs.book.service.dto.NaverBookApiResult;
@@ -30,14 +31,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-@ActiveProfiles("test")
 @WebMvcTest(BookController.class)
 @Import({JwtUtils.class, SystemClock.class})
 public class BookControllerTest {
@@ -68,7 +67,7 @@ public class BookControllerTest {
         Given
          */
         String keyword = "대규모 시스템 설계 기초";
-        String searchOption = "TOTAL";
+        String searchOption = SearchOption.TOTAL.name();
         BookResult bookResult1 = BookResult.builder()
             .title("가상 면접 사례로 배우는 대규모 시스템 설계 기초")
             .author("알렉스 쉬")
@@ -135,7 +134,7 @@ public class BookControllerTest {
         Given
          */
         String keyword = " ";
-        String searchOption = "TOTAL";
+        String searchOption = SearchOption.TOTAL.name();
 
         /*
         When
