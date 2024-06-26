@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ -z "$BRANCHES_TO_SKIP" ]; then
+  BRANCHES_TO_SKIP=(master develop release)
+fi
+
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+BRANCH_NAME="${BRANCH_NAME##*/}"
+JIRA_ID=`echo $BRANCH_NAME | egrep -o 'bbb-[0-9]+'`
+
+
+BRANCH_IN_COMMIT=$(head -n 1 $1 | grep -c "$JIRA_ID")
+
+
+if [ -n $JIRA_ID ] && ! [[ $BRANCH_EXCLUDED -eq 1 ]] && ! [[ $BRANCH_IN_COMMIT -ge 1 ]]; then
+  echo "HOOKS JIRA_ID: $JIRA_ID"  
+  sed -i.bak -e "1s/^/[$JIRA_ID] /" $1
+fi
