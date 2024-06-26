@@ -12,10 +12,10 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
@@ -39,6 +39,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/studies/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/books/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/books/**").authenticated()
                 .anyRequest().permitAll())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

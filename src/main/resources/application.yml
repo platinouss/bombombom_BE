@@ -21,7 +21,13 @@ spring:
         expire-length: ${ACCESS_TOKEN_EXPIRE}
       refresh-token:
         expire-length: ${REFRESH_TOKEN_EXPIRE}
-
+naver:
+  url:
+    search:
+      book: https://openapi.naver.com/v1/search/book.json
+  client:
+    id: ${NAVER_CLIENT_ID}
+    secret: ${NAVER_CLIENT_SECRET}
 
 # 로컬 프로파일 설정
 ---
@@ -31,7 +37,7 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}?&rewriteBatchedStatements=true
   jpa:
     hibernate:
       ddl-auto: update
@@ -46,7 +52,11 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:3306/${TEST_MYSQL_DATABASE}
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${TEST_MYSQL_DATABASE}?&rewriteBatchedStatements=true
   jpa:
     hibernate:
       ddl-auto: create-drop
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
