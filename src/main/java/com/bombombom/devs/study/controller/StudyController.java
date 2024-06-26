@@ -1,5 +1,8 @@
 package com.bombombom.devs.study.controller;
 
+import com.bombombom.devs.algo.service.AlgoProblemService;
+import com.bombombom.devs.client.solvedac.SolvedacClient;
+import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.global.web.LoginUser;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -16,6 +19,7 @@ import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -38,6 +43,8 @@ public class StudyController {
 
     public static final String RESOURCE_PATH = "/api/v1/studies";
     private final StudyService studyService;
+    private final SolvedacClient solvedacClient;
+    private final AlgoProblemService algoProblemService;
 
     @PostMapping("/algo")
     public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(
@@ -92,6 +99,15 @@ public class StudyController {
         @Valid @RequestBody JoinStudyRequest joinStudyRequest) {
         studyService.joinStudy(userDetails.getId(), joinStudyRequest.toServiceDto());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unresolved")
+    public ResponseEntity<ProblemListResponse> unresolvedProblemList(
+        @RequestParam("studyId") Long studyId) {
+        algoProblemService.getProblemCountForEachTag(10);
+        List<String> baekjoonIds = studyService.getBaekjoonIds(studyId);
+        ProblemListResponse unResolvedProblems = solvedacClient.getUnResolvedProblems(baekjoonIds);
+        return ResponseEntity.ok(unResolvedProblems);
     }
 
 }

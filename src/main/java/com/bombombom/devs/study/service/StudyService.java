@@ -122,4 +122,11 @@ public class StudyService {
         UserStudy userStudy = study.join(user);
         userStudyRepository.save(userStudy);
     }
+
+    public List<String> getBaekjoonIds(Long studyId) {
+        List<UserStudy> userStudies = userStudyRepository.findByStudyId(studyId);
+        return userStudies.stream()
+            .map(userStudy -> userStudy.getUser().getBaekjoon())
+            .toList();
+    }
 }
