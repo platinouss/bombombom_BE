@@ -8,32 +8,29 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ProbabilityConfig {
 
-    @Value("${problem.algo.probability.math}")
+    @Value("${algo.probability.math}")
     private Double math;
 
-    @Value("${problem.algo.probability.dp}")
+    @Value("${algo.probability.dp}")
     private Double dp;
 
-    @Value("${problem.algo.probability.greedy}")
+    @Value("${algo.probability.greedy}")
     private Double greedy;
 
-    @Value("${problem.algo.probability.impl}")
+    @Value("${algo.probability.impl}")
     private Double impl;
 
-    @Value("${problem.algo.probability.graph}")
+    @Value("${algo.probability.graph}")
     private Double graph;
 
-    @Value("${problem.algo.probability.geometry}")
+    @Value("${algo.probability.geometry}")
     private Double geometry;
 
-    @Value("${problem.algo.probability.ds}")
+    @Value("${algo.probability.ds}")
     private Double ds;
 
-    @Value("${problem.algo.probability.string}")
+    @Value("${algo.probability.string}")
     private Double string;
-
-    @Value("${problem.algo.probability.gap}")
-    private Double gap;
 
     public static Double totalProbability;
 
@@ -47,7 +44,6 @@ public class ProbabilityConfig {
         AlgoTag.GEOMETRY.setProbability(geometry);
         AlgoTag.DS.setProbability(ds);
         AlgoTag.STRING.setProbability(string);
-        AlgoTag.GAP.setProbability(gap);
 
         double choiceSpreadStart = 0;
         for (AlgoTag tag : AlgoTag.values()) {
@@ -55,7 +51,7 @@ public class ProbabilityConfig {
             tag.setChoiceSpreadEnd(choiceSpreadStart + tag.getProbability());
             choiceSpreadStart = tag.getChoiceSpreadEnd();
         }
-        totalProbability = math + dp + greedy + impl + graph + geometry + ds + string + gap;
+        totalProbability = math + dp + greedy + impl + graph + geometry + ds + string;
     }
 
 }

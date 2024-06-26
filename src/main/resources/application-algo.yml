@@ -1,0 +1,10 @@
+algo:
+  probability:
+    math: 0.5
+    dp: 0.5
+    greedy: 0.5
+    impl: 0.5
+    graph: 0.5
+    geometry: 0.5
+    ds: 0.5
+    string: 0.5

@@ -12,8 +12,7 @@ public enum AlgoTag {
     GRAPH,
     GEOMETRY,
     DS,
-    STRING,
-    GAP;
+    STRING;
 
     @Setter
     private Double probability;
@@ -22,4 +21,7 @@ public enum AlgoTag {
     @Setter
     private Double choiceSpreadEnd;
 
+    public boolean isInRange(double rand) {
+        return this.choiceSpreadStart <= rand && rand < this.choiceSpreadEnd;
+    }
 }

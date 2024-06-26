@@ -4,6 +4,8 @@ server:
 spring:
   profiles:
     default: local
+  config:
+    import: application-algo.yml
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USERNAME}

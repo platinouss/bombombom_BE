@@ -1,9 +1,10 @@
 package com.bombombom.devs.study.service;
 
+import com.bombombom.devs.client.solvedac.SolvedacClient;
+import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
-import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.UserStudy;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -15,6 +16,7 @@ import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ public class StudyService {
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
     private final UserStudyRepository userStudyRepository;
+    private final SolvedacClient solvedacClient;
 
     @Transactional
     public AlgorithmStudyResult createAlgorithmStudy(
@@ -123,10 +126,21 @@ public class StudyService {
         userStudyRepository.save(userStudy);
     }
 
-    public List<String> getBaekjoonIds(Long studyId) {
-        List<UserStudy> userStudies = userStudyRepository.findByStudyId(studyId);
-        return userStudies.stream()
-            .map(userStudy -> userStudy.getUser().getBaekjoon())
-            .toList();
+    public AlgorithmStudy getAlgorithmStudyWithUsers(Long studyId) {
+        Study study = studyRepository.findStudyWithUsersById(studyId)
+            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+        if (study instanceof AlgorithmStudy algorithmStudy) {
+            return algorithmStudy;
+        } else {
+            throw new IllegalStateException("The Study is not Algorithm Study");
+        }
+    }
+
+    public ProblemListResponse getUnResolvedProblemList(
+        AlgorithmStudy study,
+        Map<String, Integer> problemCountForEachTag
+    ) {
+        return solvedacClient.getUnResolvedProblems(
+            study.getBaekjoonIds(), problemCountForEachTag, study.getDifficultySpreadForEachTag());
     }
 }

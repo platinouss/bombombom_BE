@@ -4,7 +4,7 @@ import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
 import static com.bombombom.devs.study.Constants.MAX_DIFFICULTY_LEVEL;
 import static com.bombombom.devs.study.Constants.MAX_PENALTY;
 import static com.bombombom.devs.study.Constants.MAX_PROBLEM_COUNT;
-import static com.bombombom.devs.study.Constants.MAX_RELIABLITY_LIMIT;
+import static com.bombombom.devs.study.Constants.MAX_RELIABILITY_LIMIT;
 import static com.bombombom.devs.study.Constants.MAX_WEEKS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,18 +21,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.config.TestUserDetailsServiceConfig;
-import com.bombombom.devs.global.exception.GlobalExceptionHandler;
 import com.bombombom.devs.global.security.JwtUtils;
 import com.bombombom.devs.global.util.SystemClock;
-import com.bombombom.devs.global.web.LoginUserArgumentResolver;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
-import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
-import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
-import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
@@ -40,12 +35,10 @@ import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -57,14 +50,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @AutoConfigureMockMvc
 @WebMvcTest(StudyController.class)
@@ -418,14 +409,14 @@ class StudyControllerTest {
         @Test
         @WithUserDetails(value = "testuser")
         @DisplayName(
-            "reliabilityLimit가 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 BookStudy를 생성할 수 없다")
+            "reliabilityLimit가 0이상 " + MAX_RELIABILITY_LIMIT + "이하가 아니라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_reliability_limit_not_in_range() throws Exception {
             /*
             Given
              */
             RegisterBookStudyRequest registerBookStudyRequest =
                 RegisterBookStudyRequest.builder()
-                    .reliabilityLimit(MAX_RELIABLITY_LIMIT + 1)
+                    .reliabilityLimit(MAX_RELIABILITY_LIMIT + 1)
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
@@ -1012,14 +1003,14 @@ class StudyControllerTest {
         @Test
         @WithUserDetails(value = "testuser")
         @DisplayName(
-            "reliablityLimit이 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+            "reliablityLimit이 0이상 " + MAX_RELIABILITY_LIMIT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_reliabilityLimit_not_in_range() throws Exception {
             /*
             Given
              */
             RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
                 RegisterAlgorithmStudyRequest.builder()
-                    .reliabilityLimit(MAX_RELIABLITY_LIMIT + 1)
+                    .reliabilityLimit(MAX_RELIABILITY_LIMIT + 1)
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(1)

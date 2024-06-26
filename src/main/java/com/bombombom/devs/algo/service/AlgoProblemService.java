@@ -2,9 +2,11 @@ package com.bombombom.devs.algo.service;
 
 import com.bombombom.devs.algo.config.ProbabilityConfig;
 import com.bombombom.devs.algo.models.AlgoTag;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,31 +30,17 @@ public class AlgoProblemService {
     오버엔지니어링이 될 수 있으므로 최소 스펙으로 구현하였음
      */
 
-    public Map<AlgoTag, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
-        Map<AlgoTag, Integer> problemCountByTag = new HashMap<>();
+    public Map<String, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
+        Map<String, Integer> problemCountByTag = new HashMap<>();
         Random random = new Random();
-        for (int i = 0; i < totalProblemCount; i++) {
+        IntStream.range(0, totalProblemCount).forEach(i -> {
             double rand = random.nextDouble(ProbabilityConfig.totalProbability);
-            if (AlgoTag.MATH.getChoiceSpreadStart() <= rand && rand < AlgoTag.MATH.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.MATH, problemCountByTag.getOrDefault(AlgoTag.MATH, 0) + 1);
-            } else if (AlgoTag.DP.getChoiceSpreadStart() <= rand && rand < AlgoTag.DP.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.DP, problemCountByTag.getOrDefault(AlgoTag.DP, 0) + 1);
-            } else if (AlgoTag.GREEDY.getChoiceSpreadStart() <= rand && rand < AlgoTag.GREEDY.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.GREEDY, problemCountByTag.getOrDefault(AlgoTag.GREEDY, 0) + 1);
-            } else if (AlgoTag.IMPL.getChoiceSpreadStart() <= rand && rand < AlgoTag.IMPL.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.IMPL, problemCountByTag.getOrDefault(AlgoTag.IMPL, 0) + 1);
-            } else if (AlgoTag.GRAPH.getChoiceSpreadStart() <= rand && rand < AlgoTag.GRAPH.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.GRAPH, problemCountByTag.getOrDefault(AlgoTag.GRAPH, 0) + 1);
-            } else if (AlgoTag.GEOMETRY.getChoiceSpreadStart() <= rand && rand < AlgoTag.GEOMETRY.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.GEOMETRY, problemCountByTag.getOrDefault(AlgoTag.GEOMETRY, 0) + 1);
-            } else if (AlgoTag.DS.getChoiceSpreadStart() <= rand && rand < AlgoTag.DS.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.DS, problemCountByTag.getOrDefault(AlgoTag.DS, 0) + 1);
-            } else if (AlgoTag.STRING.getChoiceSpreadStart() <= rand && rand < AlgoTag.STRING.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.STRING, problemCountByTag.getOrDefault(AlgoTag.STRING, 0) + 1);
-            } else if (AlgoTag.GAP.getChoiceSpreadStart() <= rand && rand < AlgoTag.GAP.getChoiceSpreadEnd()) {
-                problemCountByTag.put(AlgoTag.GAP, problemCountByTag.getOrDefault(AlgoTag.GAP, 0) + 1);
-            }
-        }
+            Arrays.stream(AlgoTag.values()).forEach(tag -> {
+                if (tag.isInRange(rand)) {
+                    problemCountByTag.merge(tag.name(), 1, Integer::sum);
+                }
+            });
+        });
         return problemCountByTag;
     }
 
