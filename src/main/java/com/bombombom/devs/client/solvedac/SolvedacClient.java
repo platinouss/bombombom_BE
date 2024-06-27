@@ -25,29 +25,29 @@ public class SolvedacClient {
     private static final String DIFFICULTY_GAP = "..";
     private static final String SPACE = " ";
 
-    public ProblemListResponse getUnResolvedProblems(
+    public ProblemListResponse getUnSolvedProblems(
         List<String> baekjoonIds,
         Map<String, Integer> problemCountForEachTag,
         Map<String, Pair<Integer, Integer>> difficultySpreadForEachTag
     ) {
-        ProblemListResponse unResolvedProblems = new ProblemListResponse(new ArrayList<>());
+        ProblemListResponse unSolvedProblems = new ProblemListResponse(new ArrayList<>());
         WebClient webClient = WebClient.builder().baseUrl(BASE_URL).build();
         for (String tag : problemCountForEachTag.keySet()) {
             Integer numberOfProblems = problemCountForEachTag.get(tag);
             Pair<Integer, Integer> difficultySpread = difficultySpreadForEachTag.get(tag);
-            ProblemListResponse problemsByTag = getUnResolvedProblemsByTag(
+            ProblemListResponse problemsByTag = getUnSolvedProblemsByTag(
                 webClient,
                 baekjoonIds,
                 tag,
                 numberOfProblems,
                 difficultySpread
             );
-            unResolvedProblems.items().addAll(problemsByTag.items());
+            unSolvedProblems.items().addAll(problemsByTag.items());
         }
-        return unResolvedProblems;
+        return unSolvedProblems;
     }
 
-    private ProblemListResponse getUnResolvedProblemsByTag(
+    private ProblemListResponse getUnSolvedProblemsByTag(
         WebClient webClient,
         List<String> baekjoonIds,
         String tag,
@@ -57,7 +57,7 @@ public class SolvedacClient {
         CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
         String queryParam = makeGetUnSolvedProblemsQueryParams(baekjoonIds, tag, numberOfProblems,
             difficultySpread);
-        log.debug("getUnResolvedProblemsByTag() Query: {}", queryParam);
+        log.debug("getUnSolvedProblemsByTag() Query: {}", queryParam);
         Mono<ProblemListResponse> mono = webClient.get()
             .uri(uriBuilder -> uriBuilder
                 .path(SEARCH_PROBLEM_PATH)
@@ -72,10 +72,10 @@ public class SolvedacClient {
 
         mono.subscribe(
             response -> {
-                log.debug("getUnResolvedProblems() Response: {}", response);
+                log.debug("getUnSolvedProblems() Response: {}", response);
                 completableFuture.complete(response);
             },
-            error -> log.error("Error during getUnResolvedProblems: " + error.getMessage())
+            error -> log.error("Error during getUnSolvedProblems: " + error.getMessage())
         );
         return completableFuture.join();
     }

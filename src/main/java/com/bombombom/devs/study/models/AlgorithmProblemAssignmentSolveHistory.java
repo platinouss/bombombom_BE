@@ -1,7 +1,6 @@
 package com.bombombom.devs.study.models;
 
 import com.bombombom.devs.global.audit.BaseEntity;
-import com.bombombom.devs.user.models.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -13,40 +12,29 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
-@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "user_study")
-public class UserStudy extends BaseEntity {
+@Table(name = "algorithm_problem_assignment_solve_history")
+public class AlgorithmProblemAssignmentSolveHistory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false,
+    @JoinColumn(name = "assignment_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private User user;
+    private AlgorithmProblemAssignment assignment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_id", nullable = false,
-        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private Study study;
+    @Column(name = "solved_at")
+    private LocalDateTime solvedAt;
 
-    @Column(name = "security_deposit")
-    private Integer securityDeposit;
-
-    public static UserStudy of(User user, Study study, Integer securityDeposit) {
-        return UserStudy.builder()
-            .user(user)
-            .study(study)
-            .securityDeposit(securityDeposit)
-            .build();
-    }
+    @Column(name = "try_count")
+    private Integer tryCount;
 }

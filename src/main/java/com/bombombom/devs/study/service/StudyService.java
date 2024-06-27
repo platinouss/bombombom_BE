@@ -4,6 +4,7 @@ import com.bombombom.devs.client.solvedac.SolvedacClient;
 import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
+import com.bombombom.devs.study.models.Episode;
 import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.UserStudy;
 import com.bombombom.devs.study.repository.StudyRepository;
@@ -54,7 +55,7 @@ public class StudyService {
             .penalty(registerAlgorithmStudyCommand.penalty())
             .headCount(registerAlgorithmStudyCommand.headCount())
             .state(registerAlgorithmStudyCommand.state())
-            .user(user)
+            .leader(user)
             .difficultyGraph(db)
             .difficultyString(db)
             .difficultyImpl(db)
@@ -93,7 +94,7 @@ public class StudyService {
             .penalty(registerBookStudyCommand.penalty())
             .headCount(registerBookStudyCommand.headCount())
             .state(registerBookStudyCommand.state())
-            .user(user)
+            .leader(user)
             .bookId(registerBookStudyCommand.bookId())
             .build();
         studyRepository.save(bookStudy);
@@ -136,11 +137,17 @@ public class StudyService {
         }
     }
 
-    public ProblemListResponse getUnResolvedProblemList(
+    public ProblemListResponse getUnSolvedProblemListAndSave(
         AlgorithmStudy study,
         Map<String, Integer> problemCountForEachTag
     ) {
-        return solvedacClient.getUnResolvedProblems(
+        ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
             study.getBaekjoonIds(), problemCountForEachTag, study.getDifficultySpreadForEachTag());
+        // TODO: save problemListResponse
+        return problemListResponse;
+    }
+
+    public Episode createEpisode(AlgorithmStudy study) {
+
     }
 }

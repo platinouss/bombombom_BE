@@ -4,11 +4,13 @@ import com.bombombom.devs.global.audit.BaseEntity;
 import com.bombombom.devs.user.models.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -58,8 +60,9 @@ public abstract class Study extends BaseEntity {
     protected Integer weeks;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader")
-    private User user;
+    @JoinColumn(name = "leader_id",
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private User leader;
 
     @Column(name = "start_date")
     protected LocalDate startDate;
@@ -76,6 +79,9 @@ public abstract class Study extends BaseEntity {
 
     @OneToMany(mappedBy="study", cascade= CascadeType.PERSIST)
     protected List<UserStudy> userStudies;
+
+    @OneToMany(mappedBy="study", cascade= CascadeType.PERSIST)
+    protected List<Episode> episodes;
 
     abstract public StudyType getStudyType();
 
@@ -100,4 +106,5 @@ public abstract class Study extends BaseEntity {
             .map(userStudy -> userStudy.getUser().getBaekjoon())
             .toList();
     }
+
 }

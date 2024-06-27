@@ -2,6 +2,7 @@ package com.bombombom.devs.study.controller;
 
 import com.bombombom.devs.algo.service.AlgoProblemService;
 import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
+import com.bombombom.devs.global.security.AppUserDetails;
 import com.bombombom.devs.global.web.LoginUser;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -11,8 +12,8 @@ import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
+import com.bombombom.devs.study.models.Episode;
 import com.bombombom.devs.study.service.StudyService;
-import com.bombombom.devs.global.security.AppUserDetails;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import jakarta.validation.Valid;
@@ -99,18 +100,21 @@ public class StudyController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/unresolved")
-    public ResponseEntity<ProblemListResponse> unresolvedProblemList(
+    @GetMapping("/unsolved")
+    public ResponseEntity<ProblemListResponse> unSolvedProblemList(
         @RequestParam("studyId") Long studyId
     ) {
         AlgorithmStudy study = studyService.getAlgorithmStudyWithUsers(studyId);
         Map<String, Integer> problemCountForEachTag =
             algoProblemService.getProblemCountForEachTag(study.getProblemCount());
 
-        ProblemListResponse unResolvedProblems =
-            studyService.getUnResolvedProblemList(study, problemCountForEachTag);
+        ProblemListResponse unSolvedProblems =
+            studyService.getUnSolvedProblemListAndSave(study, problemCountForEachTag);
 
-        return ResponseEntity.ok(unResolvedProblems);
+        Episode episode = studyService.createEpisode(study);
+        studyService.assginProblemToEpisode(episode, unSolvedProblems);
+
+        return ResponseEntity.ok(unSolvedProblems);
     }
 
 }
