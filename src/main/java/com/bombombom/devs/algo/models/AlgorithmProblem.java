@@ -10,9 +10,11 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
+@SuperBuilder
 @Table(name = "algorithm_problem")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AlgorithmProblem extends BaseEntity {
@@ -30,5 +32,5 @@ public class AlgorithmProblem extends BaseEntity {
 
     private String link;
 
-    private String difficulty;
+    private Integer difficulty;
 }
