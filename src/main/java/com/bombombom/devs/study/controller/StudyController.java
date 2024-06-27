@@ -1,6 +1,5 @@
 package com.bombombom.devs.study.controller;
 
-import com.bombombom.devs.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.global.security.AppUserDetails;
 import com.bombombom.devs.global.web.LoginUser;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
@@ -36,7 +35,6 @@ public class StudyController {
 
     public static final String RESOURCE_PATH = "/api/v1/studies";
     private final StudyService studyService;
-    private final AlgorithmProblemService algoProblemService;
 
     @PostMapping("/algo")
     public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(

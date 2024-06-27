@@ -97,8 +97,10 @@ public abstract class Study extends BaseEntity {
         }
         user.payMoney(penalty * weeks);
         headCount++;
+        UserStudy userStudy = UserStudy.of(user, this, penalty * weeks);
+        userStudies.add(userStudy);
 
-        return UserStudy.of(user, this, penalty * weeks);
+        return userStudy;
     }
 
     public List<String> getBaekjoonIds() {

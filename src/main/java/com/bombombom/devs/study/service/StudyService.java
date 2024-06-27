@@ -24,6 +24,7 @@ import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +80,8 @@ public class StudyService {
             .difficultyGreedy(db)
             .difficultyGap(difficultyGap)
             .problemCount(registerAlgorithmStudyCommand.problemCount())
+            .userStudies(new ArrayList<>())
+            .rounds(new ArrayList<>())
             .build();
         algorithmStudy.createRounds();
         studyRepository.save(algorithmStudy);
@@ -108,6 +111,8 @@ public class StudyService {
             .state(registerBookStudyCommand.state())
             .leader(user)
             .bookId(registerBookStudyCommand.bookId())
+            .userStudies(new ArrayList<>())
+            .rounds(new ArrayList<>())
             .build();
         bookStudy.createRounds();
         studyRepository.save(bookStudy);
