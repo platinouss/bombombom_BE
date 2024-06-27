@@ -1,6 +1,7 @@
 package com.bombombom.devs.study.models;
 
 import com.bombombom.devs.global.audit.BaseEntity;
+import com.bombombom.devs.user.models.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -16,9 +17,11 @@ import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "algorithm_problem_assignment_solve_history")
 public class AlgorithmProblemAssignmentSolveHistory extends BaseEntity {
@@ -26,6 +29,11 @@ public class AlgorithmProblemAssignmentSolveHistory extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id",
