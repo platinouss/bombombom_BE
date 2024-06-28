@@ -4,6 +4,7 @@ import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.user.models.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public record BookStudyResponse(
     Integer reliabilityLimit,
     Integer penalty,
     StudyStatus state,
+    User leader,
     StudyType studyType,
     Book book)
     implements StudyResponse {
@@ -34,6 +36,7 @@ public record BookStudyResponse(
             .capacity(res.capacity())
             .headCount(res.headCount())
             .weeks(res.weeks())
+            .leader(res.leader())
             .startDate(res.startDate())
             .reliabilityLimit(res.reliabilityLimit())
             .penalty(res.penalty())

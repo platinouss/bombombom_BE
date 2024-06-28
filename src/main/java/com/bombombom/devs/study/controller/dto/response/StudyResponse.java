@@ -5,8 +5,8 @@ import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
+import com.bombombom.devs.user.models.User;
 import java.time.LocalDate;
-import lombok.Builder;
 
 
 public interface StudyResponse {
@@ -23,6 +23,8 @@ public interface StudyResponse {
 
     Integer weeks();
 
+    User leader();
+
     LocalDate startDate();
 
     Integer reliabilityLimit();
@@ -32,7 +34,7 @@ public interface StudyResponse {
     StudyStatus state();
 
     StudyType studyType();
-    
+
     static StudyResponse fromResult(StudyResult study) {
 
         if (study instanceof AlgorithmStudyResult algorithmStudyResult) {
