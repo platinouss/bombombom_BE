@@ -5,7 +5,7 @@ import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
-import com.bombombom.devs.user.models.User;
+import com.bombombom.devs.user.controller.dto.UserProfileResponse;
 import java.time.LocalDate;
 
 
@@ -23,7 +23,7 @@ public interface StudyResponse {
 
     Integer weeks();
 
-    User leader();
+    UserProfileResponse leader();
 
     LocalDate startDate();
 
