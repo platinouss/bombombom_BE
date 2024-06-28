@@ -8,7 +8,6 @@ import static com.bombombom.devs.study.Constants.MAX_RELIABLITY_LIMIT;
 import static com.bombombom.devs.study.Constants.MAX_WEEKS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,18 +20,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.config.TestUserDetailsServiceConfig;
-import com.bombombom.devs.global.exception.GlobalExceptionHandler;
 import com.bombombom.devs.global.security.JwtUtils;
 import com.bombombom.devs.global.util.SystemClock;
-import com.bombombom.devs.global.web.LoginUserArgumentResolver;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
-import com.bombombom.devs.study.controller.dto.response.AlgorithmStudyResponse;
-import com.bombombom.devs.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.study.controller.dto.response.StudyResponse;
-import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
@@ -40,12 +34,10 @@ import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -57,14 +49,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @AutoConfigureMockMvc
 @WebMvcTest(StudyController.class)
@@ -100,7 +90,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             BookStudyResult bookStudyResult =
@@ -161,7 +151,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -206,7 +196,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -251,7 +241,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -296,7 +286,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -341,7 +331,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(MAX_WEEKS + 1)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -386,7 +376,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(MAX_PENALTY + 1)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -432,7 +422,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -463,8 +453,8 @@ class StudyControllerTest {
 
         @Test
         @WithUserDetails(value = "testuser")
-        @DisplayName("bookId가 Null이라면 BookStudy를 생성할 수 없다")
-        void register_book_study_fails_if_book_id_is_null() throws Exception {
+        @DisplayName("isbn이 Null이라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_isbn_is_null() throws Exception {
             /*
             Given
              */
@@ -499,7 +489,7 @@ class StudyControllerTest {
                 .andExpectAll(
                     status().isBadRequest(),
                     jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.bookId").hasJsonPath()
+                    jsonPath("$.errorDetails.isbn").hasJsonPath()
                 );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
@@ -523,7 +513,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now().minusMonths(1))
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -568,7 +558,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*

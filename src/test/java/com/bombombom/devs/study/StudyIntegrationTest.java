@@ -1,21 +1,15 @@
 package com.bombombom.devs.study;
 
 
-import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.global.web.LoginUserArgumentResolver;
+import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.study.controller.StudyController;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -28,8 +22,6 @@ import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.repository.StudyRepository;
-import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
-import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
@@ -40,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,19 +39,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
@@ -76,6 +63,8 @@ public class StudyIntegrationTest {
 
     @Autowired
     private StudyRepository studyRepository;
+    @Autowired
+    private BookRepository bookRepository;
 
     @Autowired
     private StudyController studyController;
@@ -118,6 +107,15 @@ public class StudyIntegrationTest {
         /*
          Given
          */
+            Book book = Book.builder()
+                .title("테스트용 책")
+                .author("세계최강민석")
+                .isbn(123456789L)
+                .publisher("메가스터디")
+                .tableOfContents("1. 2. 3. 4.")
+                .build();
+            bookRepository.save(book);
+
             Study study =
                 BookStudy.builder()
                     .reliabilityLimit(37)
@@ -129,7 +127,7 @@ public class StudyIntegrationTest {
                     .weeks(5)
                     .state(StudyStatus.READY)
                     .headCount(0)
-                    .bookId(1024L)
+                    .book(book)
                     .build();
             studyRepository.save(study);
             JoinStudyRequest request = JoinStudyRequest.builder()
@@ -230,6 +228,15 @@ public class StudyIntegrationTest {
             /*
             Given
              */
+            Book book = Book.builder()
+                .title("테스트용 책")
+                .author("세계최강민석")
+                .isbn(123456789L)
+                .publisher("메가스터디")
+                .tableOfContents("1. 2. 3. 4.")
+                .build();
+            bookRepository.save(book);
+
             RegisterBookStudyRequest registerBookStudyRequest =
                 RegisterBookStudyRequest.builder()
                     .reliabilityLimit(37)
@@ -239,7 +246,7 @@ public class StudyIntegrationTest {
                     .startDate(LocalDate.now())
                     .penalty(1000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(123456789L)
                     .build();
 
             BookStudyResult bookStudyResult =
@@ -291,6 +298,15 @@ public class StudyIntegrationTest {
         /*
         Given
          */
+
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
+        bookRepository.save(book);
         Study study1 =
             AlgorithmStudy.builder()
                 .reliabilityLimit(37)
@@ -321,7 +337,7 @@ public class StudyIntegrationTest {
                 .name("스터디1")
                 .penalty(5000)
                 .weeks(5)
-                .bookId(1024L)
+                .book(book)
                 .state(StudyStatus.READY)
                 .headCount(0)
                 .build();

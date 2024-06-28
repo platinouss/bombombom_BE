@@ -3,18 +3,13 @@ package com.bombombom.devs.study.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
-import com.bombombom.devs.study.controller.dto.response.StudyResponse;
+import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
-import com.bombombom.devs.study.models.UserStudy;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
@@ -31,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,14 +35,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
 
 @ExtendWith(MockitoExtension.class)
 class StudyServiceTest {
 
     @Mock
     private StudyRepository studyRepository;
+    @Mock
+    private BookRepository bookRepository;
 
     @Mock
     private UserStudyRepository userStudyRepository;
@@ -66,6 +60,14 @@ class StudyServiceTest {
         Given
          */
         List<Study> repositoryResponses = new ArrayList<>();
+
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
 
         Study study1 =
             AlgorithmStudy.builder()
@@ -95,7 +97,7 @@ class StudyServiceTest {
                 .name("스터디1")
                 .penalty(5000)
                 .weeks(5)
-                .bookId(1024L)
+                .book(book)
                 .build();
 
         repositoryResponses.add(study1);
@@ -237,6 +239,13 @@ class StudyServiceTest {
             .money(100000)
             .reliability(40)
             .build();
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
 
         RegisterBookStudyCommand registerBookStudyCommand =
             RegisterBookStudyCommand.builder()
@@ -249,7 +258,7 @@ class StudyServiceTest {
                 .weeks(5)
                 .state(StudyStatus.READY)
                 .headCount(0)
-                .bookId(15L)
+                .isbn(12345689L)
                 .build();
 
         BookStudy bookStudy = BookStudy.builder()
@@ -261,11 +270,12 @@ class StudyServiceTest {
             .startDate(LocalDate.of(2024, 06, 19))
             .penalty(5000)
             .weeks(5)
-            .bookId(15L)
+            .book(book)
             .state(StudyStatus.READY)
             .build();
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(testuser));
+        when(bookRepository.findByIsbn(123456789L)).thenReturn(Optional.of(book));
 
         /*
         When
