@@ -109,7 +109,7 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public Page<StudyResult> readStudy(Pageable pageable) {
-        Page<Study> studyPage = studyRepository.findAll(pageable);
+        Page<Study> studyPage = studyRepository.findAllWithUserAndBook(pageable);
 
         return studyPage.map(StudyResult::fromEntity);
 
