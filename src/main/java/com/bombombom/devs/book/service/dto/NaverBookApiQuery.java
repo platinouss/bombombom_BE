@@ -1,6 +1,6 @@
 package com.bombombom.devs.book.service.dto;
 
-import com.bombombom.devs.book.naverapi.enums.SortType;
+import com.bombombom.devs.client.naver.enums.SortType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
