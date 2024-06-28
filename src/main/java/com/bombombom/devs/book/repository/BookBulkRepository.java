@@ -16,14 +16,16 @@ public class BookBulkRepository {
 
     @Transactional
     public void saveAll(List<Book> books) {
-        String sql = "INSERT IGNORE INTO book (title, author, publisher, isbn, table_of_contents)"
-            + "VALUES (?, ?, ?, ?, ?)";
+        String sql =
+            "INSERT IGNORE INTO book (title, author, publisher, isbn, table_of_contents, image_url)"
+                + "VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.batchUpdate(sql, books, books.size(), (PreparedStatement ps, Book book) -> {
             ps.setString(1, book.getTitle());
             ps.setString(2, book.getAuthor());
             ps.setString(3, book.getPublisher());
             ps.setLong(4, book.getIsbn());
             ps.setString(5, book.getTableOfContents());
+            ps.setString(6, book.getImageUrl());
         });
     }
 }

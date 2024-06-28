@@ -20,6 +20,7 @@ public record BookListResponse(
                     .publisher(bookResult.publisher())
                     .isbn(bookResult.isbn())
                     .tableOfContents(bookResult.tableOfContents())
+                    .imageUrl(bookResult.imageUrl())
                     .build())
                 .collect(Collectors.toList()))
             .build();
@@ -34,6 +35,7 @@ public record BookListResponse(
                     .publisher(item.publisher())
                     .isbn(item.isbn())
                     .tableOfContents("")
+                    .imageUrl(item.image())
                     .build())
                 .collect(Collectors.toList()))
             .build();

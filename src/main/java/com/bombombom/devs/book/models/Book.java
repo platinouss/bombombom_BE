@@ -34,4 +34,7 @@ public class Book {
 
     @Column(name = "table_of_contents")
     private String tableOfContents;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }

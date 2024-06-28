@@ -36,6 +36,7 @@ public record NaverBookApiResult(
                 .author(item.author)
                 .publisher(item.publisher)
                 .isbn(item.isbn)
+                .imageUrl(item.image)
                 .build())
             .collect(Collectors.toList());
     }
