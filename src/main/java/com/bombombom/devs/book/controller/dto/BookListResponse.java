@@ -16,14 +16,7 @@ public record BookListResponse(
         return BookListResponse.builder()
             .booksInfo(searchBooksResult.booksResult().stream()
                 .filter(bookResult -> Objects.nonNull(bookResult.isbn()))
-                .map(bookResult -> BookInfo.builder()
-                    .title(bookResult.title())
-                    .author(bookResult.author())
-                    .publisher(bookResult.publisher())
-                    .isbn(bookResult.isbn())
-                    .tableOfContents(bookResult.tableOfContents())
-                    .imageUrl(bookResult.imageUrl())
-                    .build())
+                .map(BookInfo::fromResult)
                 .collect(Collectors.toList()))
             .build();
     }
@@ -32,14 +25,7 @@ public record BookListResponse(
         return BookListResponse.builder()
             .booksInfo(naverBookApiResult.items().stream()
                 .filter(bookResult -> Objects.nonNull(bookResult.isbn()))
-                .map(item -> BookInfo.builder()
-                    .title(item.title())
-                    .author(item.author())
-                    .publisher(item.publisher())
-                    .isbn(item.isbn())
-                    .tableOfContents("")
-                    .imageUrl(item.image())
-                    .build())
+                .map(BookInfo::fromResult)
                 .collect(Collectors.toList()))
             .build();
     }
