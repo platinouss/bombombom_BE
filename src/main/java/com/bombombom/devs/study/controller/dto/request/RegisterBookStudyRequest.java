@@ -24,7 +24,7 @@ public record RegisterBookStudyRequest(
     @NotNull LocalDate startDate,
     @NotNull @Range(max = MAX_RELIABLITY_LIMIT) Integer reliabilityLimit,
     @NotNull @Range(max = MAX_PENALTY) Integer penalty,
-    @NotNull Long bookId
+    @NotNull Long isbn
 ) {
 
     public RegisterBookStudyCommand toServiceDto() {
@@ -37,7 +37,7 @@ public record RegisterBookStudyRequest(
             .startDate(startDate)
             .reliabilityLimit(reliabilityLimit)
             .penalty(penalty)
-            .bookId(bookId)
+            .isbn(isbn)
             .state(StudyStatus.READY)
             .headCount(0)
             .build();

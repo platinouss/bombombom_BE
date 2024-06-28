@@ -1,8 +1,6 @@
 package com.bombombom.devs.study.service.dto.command;
 
-import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.StudyStatus;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.Builder;
 
@@ -17,7 +15,7 @@ public record RegisterBookStudyCommand(
     Integer penalty,
     StudyStatus state,
     Integer headCount,
-    Long bookId
+    Long isbn
 ) implements RegisterStudyCommand {
 
 
