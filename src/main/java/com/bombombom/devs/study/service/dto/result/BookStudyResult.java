@@ -1,6 +1,7 @@
 package com.bombombom.devs.study.service.dto.result;
 
-import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
@@ -22,7 +23,7 @@ public record BookStudyResult(
     StudyStatus state,
     UserProfileResult leader,
     StudyType studyType,
-    Book book
+    BookResult bookResult
 ) implements StudyResult {
 
     public static BookStudyResult fromEntity(BookStudy bookStudy) {
@@ -39,7 +40,7 @@ public record BookStudyResult(
             .penalty(bookStudy.getPenalty())
             .state(bookStudy.getState())
             .leader(UserProfileResult.fromEntity(bookStudy.getUser()))
-            .book(bookStudy.getBook())
+            .bookResult(SearchBooksResult.fromEntity(bookStudy.getBook()))
             .studyType(bookStudy.getStudyType())
             .build();
     }
