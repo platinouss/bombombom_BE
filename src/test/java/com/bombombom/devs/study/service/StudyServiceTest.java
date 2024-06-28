@@ -18,6 +18,7 @@ import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
+import com.bombombom.devs.user.models.Role;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import java.time.LocalDate;
@@ -68,7 +69,15 @@ class StudyServiceTest {
             .publisher("메가스터디")
             .tableOfContents("1. 2. 3. 4.")
             .build();
-
+        User leader = User.builder()
+            .id(5L)
+            .username("leader")
+            .role(Role.USER)
+            .introduce("introduce")
+            .image("image")
+            .reliability(50)
+            .money(10000)
+            .build();
         Study study1 =
             AlgorithmStudy.builder()
                 .reliabilityLimit(37)
@@ -77,7 +86,7 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 14))
                 .penalty(5000)
                 .weeks(5)
-
+                .user(leader)
                 .difficultyDp(12.4f)
                 .difficultyDs(12f)
                 .difficultyGraph(12.9f)
@@ -96,6 +105,7 @@ class StudyServiceTest {
                 .introduce("안녕하세요")
                 .startDate(LocalDate.of(2024, 06, 14))
                 .name("스터디1")
+                .user(leader)
                 .penalty(5000)
                 .weeks(5)
                 .book(book)
