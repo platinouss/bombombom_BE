@@ -25,6 +25,7 @@ public class BookStudy extends Study {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "isbn",
+        nullable = false,
         referencedColumnName = "isbn",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private Book book;
