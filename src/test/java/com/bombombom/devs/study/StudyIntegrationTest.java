@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.book.models.Book;
@@ -300,6 +301,49 @@ public class StudyIntegrationTest {
                 .andExpect(content().json(expectedResponse));
         }
 
+
+        @Test
+        @DisplayName("책을 찾지 못한 경우 기술서적 스터디를 생성할 수 없다")
+        @WithUserDetails(value = "testuser",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        void register_book_study_fails_if_book_is_not_found() throws Exception {
+            /*
+            Given
+             */
+
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.now())
+                    .penalty(1000)
+                    .weeks(5)
+                    .isbn(123456789L)
+                    .build();
+
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+            resultActions.andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Book Not Found"));
+
+
+        }
     }
 
     @Test
