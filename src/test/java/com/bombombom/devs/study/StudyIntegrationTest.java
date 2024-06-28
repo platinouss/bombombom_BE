@@ -85,7 +85,6 @@ public class StudyIntegrationTest {
         @BeforeEach
         public void init() {
             User testuser = User.builder()
-                .id(1L)
                 .username("testuser")
                 .password(passwordEncoder.encode("password"))
                 .role(Role.USER)
@@ -116,6 +115,17 @@ public class StudyIntegrationTest {
                 .build();
             bookRepository.save(book);
 
+            User leader = User.builder()
+                .username("leader")
+                .password(passwordEncoder.encode("password"))
+                .role(Role.USER)
+                .introduce("introduce")
+                .image("image")
+                .reliability(50)
+                .money(10000)
+                .build();
+            userRepository.save(leader);
+
             Study study =
                 BookStudy.builder()
                     .reliabilityLimit(37)
@@ -123,6 +133,7 @@ public class StudyIntegrationTest {
                     .introduce("안녕하세요")
                     .startDate(LocalDate.now())
                     .name("스터디")
+                    .user(leader)
                     .penalty(1000)
                     .weeks(5)
                     .state(StudyStatus.READY)
@@ -299,6 +310,17 @@ public class StudyIntegrationTest {
         Given
          */
 
+        User leader = User.builder()
+            .username("leader")
+            .password(passwordEncoder.encode("password"))
+            .role(Role.USER)
+            .introduce("introduce")
+            .image("image")
+            .reliability(50)
+            .money(10000)
+            .build();
+        userRepository.save(leader);
+
         Book book = Book.builder()
             .title("테스트용 책")
             .author("세계최강민석")
@@ -317,6 +339,7 @@ public class StudyIntegrationTest {
                 .weeks(5)
                 .state(StudyStatus.READY)
                 .headCount(0)
+                .user(leader)
                 .difficultyDp(12.4f)
                 .difficultyDs(12f)
                 .difficultyGraph(12.9f)
@@ -337,6 +360,7 @@ public class StudyIntegrationTest {
                 .name("스터디1")
                 .penalty(5000)
                 .weeks(5)
+                .user(leader)
                 .book(book)
                 .state(StudyStatus.READY)
                 .headCount(0)
