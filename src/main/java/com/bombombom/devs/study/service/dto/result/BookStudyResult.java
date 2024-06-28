@@ -1,5 +1,6 @@
 package com.bombombom.devs.study.service.dto.result;
 
+import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
@@ -19,7 +20,7 @@ public record BookStudyResult(
     Integer penalty,
     StudyStatus state,
     StudyType studyType,
-    Long bookId
+    Book book
 ) implements StudyResult {
 
     public static BookStudyResult fromEntity(BookStudy bookStudy) {
@@ -35,7 +36,7 @@ public record BookStudyResult(
             .reliabilityLimit(bookStudy.getReliabilityLimit())
             .penalty(bookStudy.getPenalty())
             .state(bookStudy.getState())
-//            .book(bookStudy.getBook())
+            .book(bookStudy.getBook())
             .studyType(bookStudy.getStudyType())
             .build();
     }

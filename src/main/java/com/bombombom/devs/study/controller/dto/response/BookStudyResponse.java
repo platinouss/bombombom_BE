@@ -1,5 +1,6 @@
 package com.bombombom.devs.study.controller.dto.response;
 
+import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
@@ -21,7 +22,7 @@ public record BookStudyResponse(
     Integer penalty,
     StudyStatus state,
     StudyType studyType,
-    Long bookId)
+    Book book)
     implements StudyResponse {
 
     public static BookStudyResponse fromResult(BookStudyResult res) {
@@ -38,7 +39,7 @@ public record BookStudyResponse(
             .penalty(res.penalty())
             .state(res.state())
             .studyType(res.studyType())
-//            .book(res.book())
+            .book(res.book())
             .build();
 
     }
