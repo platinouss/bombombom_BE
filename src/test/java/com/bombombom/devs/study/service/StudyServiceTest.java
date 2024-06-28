@@ -258,7 +258,7 @@ class StudyServiceTest {
                 .weeks(5)
                 .state(StudyStatus.READY)
                 .headCount(0)
-                .isbn(12345689L)
+                .isbn(123456789L)
                 .build();
 
         BookStudy bookStudy = BookStudy.builder()
