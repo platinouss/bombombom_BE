@@ -105,7 +105,6 @@ class StudyControllerTest {
                     .penalty(5000)
                     .weeks(5)
                     .state(StudyStatus.READY)
-                    .bookId(15L)
                     .build();
 
             when(studyService.createBookStudy(any(Long.class),
@@ -1376,7 +1375,6 @@ class StudyControllerTest {
                 .name("스터디1")
                 .penalty(5000)
                 .weeks(5)
-                .bookId(1024L)
                 .build();
 
         studyResults.add(studyResult);

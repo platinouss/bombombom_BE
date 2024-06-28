@@ -77,6 +77,7 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 14))
                 .penalty(5000)
                 .weeks(5)
+
                 .difficultyDp(12.4f)
                 .difficultyDs(12f)
                 .difficultyGraph(12.9f)
@@ -104,7 +105,7 @@ class StudyServiceTest {
         repositoryResponses.add(study2);
 
         Page<Study> studies = new PageImpl<>(repositoryResponses);
-        when(studyRepository.findAll(any(Pageable.class))).thenReturn(studies);
+        when(studyRepository.findAllWithUserAndBook(any(Pageable.class))).thenReturn(studies);
 
         /*
         When
@@ -195,6 +196,7 @@ class StudyServiceTest {
             .penalty(5000)
             .weeks(5)
             .state(StudyStatus.READY)
+            .user(testuser)
             .difficultyDp(10f)
             .difficultyDs(10f)
             .difficultyImpl(10f)
@@ -256,6 +258,7 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 19))
                 .penalty(5000)
                 .weeks(5)
+
                 .state(StudyStatus.READY)
                 .headCount(0)
                 .isbn(123456789L)
@@ -269,6 +272,7 @@ class StudyServiceTest {
             .capacity(10)
             .startDate(LocalDate.of(2024, 06, 19))
             .penalty(5000)
+            .user(testuser)
             .weeks(5)
             .book(book)
             .state(StudyStatus.READY)
