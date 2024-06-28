@@ -2,14 +2,10 @@ package com.bombombom.devs.study.controller.dto.response;
 
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
-import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.time.LocalDate;
 import lombok.Builder;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Builder
 public record BookStudyResponse(
@@ -42,7 +38,7 @@ public record BookStudyResponse(
             .penalty(res.penalty())
             .state(res.state())
             .studyType(res.studyType())
-            .bookId(res.bookId())
+//            .book(res.book())
             .build();
 
     }

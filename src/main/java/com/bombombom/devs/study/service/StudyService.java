@@ -1,9 +1,10 @@
 package com.bombombom.devs.study.service;
 
+import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
-import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.UserStudy;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -27,6 +28,7 @@ public class StudyService {
 
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
+    private final BookRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
 
     @Transactional
@@ -80,6 +82,9 @@ public class StudyService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalStateException("User Not Found"));
 
+        Book book = bookRepository.findByIsbn(registerBookStudyCommand.isbn())
+            .orElseThrow(() -> new IllegalStateException("Book Not Found"));
+
         BookStudy bookStudy = BookStudy.builder()
             .name(registerBookStudyCommand.name())
             .introduce(registerBookStudyCommand.introduce())
@@ -91,7 +96,7 @@ public class StudyService {
             .headCount(registerBookStudyCommand.headCount())
             .state(registerBookStudyCommand.state())
             .user(user)
-            .bookId(registerBookStudyCommand.bookId())
+            .book(book)
             .build();
         studyRepository.save(bookStudy);
 
