@@ -2,6 +2,7 @@ package com.bombombom.devs.study.service;
 
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.study.exception.NotFoundException;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
@@ -41,7 +42,7 @@ public class StudyService {
         float db = registerAlgorithmStudyCommand.difficultyBegin();
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalStateException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException("User Not Found"));
 
         AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
             .name(registerAlgorithmStudyCommand.name())
@@ -80,10 +81,10 @@ public class StudyService {
         Long userId, RegisterBookStudyCommand registerBookStudyCommand) {
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalStateException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException("User Not Found"));
 
         Book book = bookRepository.findByIsbn(registerBookStudyCommand.isbn())
-            .orElseThrow(() -> new IllegalStateException("Book Not Found"));
+            .orElseThrow(() -> new NotFoundException("Book Not Found"));
 
         BookStudy bookStudy = BookStudy.builder()
             .name(registerBookStudyCommand.name())
