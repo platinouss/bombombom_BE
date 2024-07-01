@@ -24,9 +24,9 @@ import lombok.experimental.SuperBuilder;
 public class BookStudy extends Study {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "isbn",
+    @JoinColumn(
+        name = "book_id",
         nullable = false,
-        referencedColumnName = "isbn",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private Book book;
 
