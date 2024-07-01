@@ -8,7 +8,8 @@ public record AddBookCommand(
     String title,
     String author,
     String publisher,
-    Long isbn
+    Long isbn,
+    String imageUrl
 ) {
 
     public Book toEntity() {
@@ -18,6 +19,7 @@ public record AddBookCommand(
             .publisher(publisher)
             .isbn(isbn)
             .tableOfContents("")
+            .imageUrl(imageUrl)
             .build();
     }
 }

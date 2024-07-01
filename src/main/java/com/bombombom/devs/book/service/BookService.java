@@ -2,7 +2,6 @@ package com.bombombom.devs.book.service;
 
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.models.Book;
-import com.bombombom.devs.book.naverapi.NaverClient;
 import com.bombombom.devs.book.repository.BookBulkRepository;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.book.service.dto.AddBookCommand;
@@ -10,6 +9,7 @@ import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
 import com.bombombom.devs.book.service.dto.NaverBookApiResult;
 import com.bombombom.devs.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.client.naver.NaverClient;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;

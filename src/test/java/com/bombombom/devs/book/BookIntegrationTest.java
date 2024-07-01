@@ -98,6 +98,8 @@ public class BookIntegrationTest {
             .publisher("한빛미디어")
             .isbn(9791162241776L)
             .tableOfContents("")
+            .imageUrl(
+                "https://shopping-phinf.pstatic.net/main_3243601/32436011847.20221228073547.jpg")
             .build();
         SearchBooksResult searchBooksResult = SearchBooksResult.builder()
             .booksResult(List.of(bookResult))

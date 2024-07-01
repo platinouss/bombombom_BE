@@ -1,4 +1,4 @@
-package com.bombombom.devs.book.naverapi.exception;
+package com.bombombom.devs.client.naver.exception;
 
 public class ExternalApiException extends RuntimeException {
 
