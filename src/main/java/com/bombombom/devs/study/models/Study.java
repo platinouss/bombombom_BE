@@ -58,10 +58,10 @@ public abstract class Study extends BaseEntity {
     protected Integer weeks;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader",
+    @JoinColumn(name = "leader_id",
         nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private User user;
+    private User leader;
 
     @Column(name = "start_date")
     protected LocalDate startDate;

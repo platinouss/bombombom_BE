@@ -54,7 +54,7 @@ public class StudyService {
             .penalty(registerAlgorithmStudyCommand.penalty())
             .headCount(registerAlgorithmStudyCommand.headCount())
             .state(registerAlgorithmStudyCommand.state())
-            .user(user)
+            .leader(user)
             .difficultyGraph(db)
             .difficultyString(db)
             .difficultyImpl(db)
@@ -96,7 +96,7 @@ public class StudyService {
             .penalty(registerBookStudyCommand.penalty())
             .headCount(registerBookStudyCommand.headCount())
             .state(registerBookStudyCommand.state())
-            .user(user)
+            .leader(user)
             .book(book)
             .build();
         studyRepository.save(bookStudy);
