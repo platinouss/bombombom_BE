@@ -29,7 +29,7 @@ public class BookDocument {
     private String publisher;
 
     @Field(type = FieldType.Text, index = false)
-    private String image;
+    private String imageUrl;
 
     @Field(type = FieldType.Text, index = false)
     private String tableOfContents;

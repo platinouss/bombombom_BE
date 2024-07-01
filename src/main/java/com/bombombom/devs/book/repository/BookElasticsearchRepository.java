@@ -7,4 +7,8 @@ import org.springframework.data.repository.ListCrudRepository;
 public interface BookElasticsearchRepository extends ListCrudRepository<BookDocument, String> {
 
     List<BookDocument> findByTitle(String title);
+
+    List<BookDocument> findByAuthor(String author);
+
+    List<BookDocument> findByTitleOrAuthor(String title, String author);
 }
