@@ -44,7 +44,7 @@ public record AlgorithmStudyResult(
             .startDate(algorithmStudy.getStartDate())
             .reliabilityLimit(algorithmStudy.getReliabilityLimit())
             .penalty(algorithmStudy.getPenalty())
-            .leader(UserProfileResult.fromEntity(algorithmStudy.getUser()))
+            .leader(UserProfileResult.fromEntity(algorithmStudy.getLeader()))
             .state(algorithmStudy.getState())
             .difficultyDs(algorithmStudy.getDifficultyDs())
             .difficultyGraph(algorithmStudy.getDifficultyGraph())

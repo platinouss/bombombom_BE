@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
 
-    @Query(value = "SELECT s FROM Study s LEFT JOIN FETCH s.user LEFT JOIN FETCH TREAT(s as BookStudy).book",
+    @Query(value = "SELECT s FROM Study s LEFT JOIN FETCH s.leader LEFT JOIN FETCH TREAT(s as BookStudy).book",
         countQuery = "SELECT count(s) FROM Study s")
     Page<Study> findAllWithUserAndBook(Pageable pageable);
 }

@@ -39,7 +39,7 @@ public record BookStudyResult(
             .reliabilityLimit(bookStudy.getReliabilityLimit())
             .penalty(bookStudy.getPenalty())
             .state(bookStudy.getState())
-            .leader(UserProfileResult.fromEntity(bookStudy.getUser()))
+            .leader(UserProfileResult.fromEntity(bookStudy.getLeader()))
             .bookResult(SearchBooksResult.fromEntity(bookStudy.getBook()))
             .studyType(bookStudy.getStudyType())
             .build();
