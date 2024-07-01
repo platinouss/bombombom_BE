@@ -5,6 +5,7 @@ import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
+import com.bombombom.devs.user.service.dto.UserProfileResult;
 import java.time.LocalDate;
 
 public interface StudyResult {
@@ -30,6 +31,8 @@ public interface StudyResult {
     StudyStatus state();
 
     StudyType studyType();
+
+    UserProfileResult leader();
 
     static StudyResult fromEntity(Study study) {
         if (study instanceof AlgorithmStudy algorithmStudy) {

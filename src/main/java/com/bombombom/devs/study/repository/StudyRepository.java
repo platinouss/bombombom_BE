@@ -1,12 +1,15 @@
 package com.bombombom.devs.study.repository;
 
-import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
-import java.awt.print.Pageable;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
 
+    @Query(value = "SELECT s FROM Study s LEFT JOIN FETCH s.leader LEFT JOIN FETCH TREAT(s as BookStudy).book",
+        countQuery = "SELECT count(s) FROM Study s")
+    Page<Study> findAllWithUserAndBook(Pageable pageable);
 }
 

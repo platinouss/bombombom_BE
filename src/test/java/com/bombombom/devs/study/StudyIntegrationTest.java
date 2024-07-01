@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.study.controller.StudyController;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -29,6 +30,7 @@ import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.Role;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import com.bombombom.devs.user.service.dto.UserProfileResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -82,10 +84,11 @@ public class StudyIntegrationTest {
     @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
     class TestWithAuthentication {
 
+        private User testuser;
 
         @BeforeEach
         public void init() {
-            User testuser = User.builder()
+            testuser = User.builder()
                 .username("testuser")
                 .password(passwordEncoder.encode("password"))
                 .role(Role.USER)
@@ -184,6 +187,16 @@ public class StudyIntegrationTest {
                     .difficultyEnd(15)
                     .problemCount(5).build();
 
+            UserProfileResult profile = UserProfileResult.builder()
+                .id(testuser.getId())
+                .role(testuser.getRole())
+                .introduce(testuser.getIntroduce())
+                .money(testuser.getMoney() - 5000)
+                .reliability(testuser.getReliability())
+                .username(testuser.getUsername())
+                .image(testuser.getImage())
+                .build();
+
             AlgorithmStudyResult algorithmStudyResult = AlgorithmStudyResult.builder()
                 .id(1L)
                 .reliabilityLimit(37)
@@ -194,6 +207,7 @@ public class StudyIntegrationTest {
                 .startDate(LocalDate.now())
                 .penalty(1000)
                 .weeks(5)
+                .leader(profile)
                 .state(StudyStatus.READY)
                 .studyType(StudyType.ALGORITHM)
                 .difficultyDp(10f)
@@ -240,6 +254,17 @@ public class StudyIntegrationTest {
             /*
             Given
              */
+            User leader = User.builder()
+                .username("leader")
+                .password(passwordEncoder.encode("password"))
+                .role(Role.USER)
+                .introduce("introduce")
+                .image("image")
+                .reliability(50)
+                .money(10000)
+                .build();
+            userRepository.save(leader);
+
             Book book = Book.builder()
                 .title("테스트용 책")
                 .author("세계최강민석")
@@ -248,6 +273,16 @@ public class StudyIntegrationTest {
                 .tableOfContents("1. 2. 3. 4.")
                 .build();
             bookRepository.save(book);
+            
+            UserProfileResult profile = UserProfileResult.builder()
+                .id(testuser.getId())
+                .role(testuser.getRole())
+                .introduce(testuser.getIntroduce())
+                .money(testuser.getMoney() - 5000)
+                .reliability(testuser.getReliability())
+                .username(testuser.getUsername())
+                .image(testuser.getImage())
+                .build();
 
             RegisterBookStudyRequest registerBookStudyRequest =
                 RegisterBookStudyRequest.builder()
@@ -272,9 +307,10 @@ public class StudyIntegrationTest {
                     .startDate(LocalDate.now())
                     .penalty(1000)
                     .weeks(5)
+                    .leader(profile)
                     .state(StudyStatus.READY)
                     .studyType(StudyType.BOOK)
-                    .bookId(15L)
+                    .bookResult(SearchBooksResult.fromEntity(book))
                     .build();
 
 
