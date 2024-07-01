@@ -1,7 +1,6 @@
 package com.bombombom.devs.study.service.dto.result;
 
 import com.bombombom.devs.study.models.BookStudy;
-import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import java.time.LocalDate;
@@ -24,6 +23,7 @@ public record BookStudyResult(
 ) implements StudyResult {
 
     public static BookStudyResult fromEntity(BookStudy bookStudy) {
+
         return BookStudyResult.builder()
             .id(bookStudy.getId())
             .name(bookStudy.getName())
@@ -35,7 +35,7 @@ public record BookStudyResult(
             .reliabilityLimit(bookStudy.getReliabilityLimit())
             .penalty(bookStudy.getPenalty())
             .state(bookStudy.getState())
-            .bookId(bookStudy.getBookId())
+//            .book(bookStudy.getBook())
             .studyType(bookStudy.getStudyType())
             .build();
     }

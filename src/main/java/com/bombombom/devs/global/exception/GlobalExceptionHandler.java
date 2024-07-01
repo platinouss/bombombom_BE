@@ -1,6 +1,7 @@
 package com.bombombom.devs.global.exception;
 
-import com.bombombom.devs.client.naver.exception.ExternalApiException;
+import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
+import com.bombombom.devs.study.exception.NotFoundException;
 import com.bombombom.devs.user.exception.ExistUsernameException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
@@ -25,6 +26,18 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
+    @ExceptionHandler(
+        NotFoundException.class
+    )
+    protected ResponseEntity<ErrorResponse> handleNotFound(RuntimeException e) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            e.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<DetailedErrorResponse> handleInvalidDtoField(
