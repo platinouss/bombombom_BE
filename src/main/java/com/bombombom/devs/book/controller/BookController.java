@@ -37,4 +37,20 @@ public class BookController {
         bookService.addBooks(naverBookApiResult.toServiceDto());
         return ResponseEntity.ok().body(BookListResponse.fromResult(naverBookApiResult));
     }
+
+    @GetMapping("/es")
+    public ResponseEntity<BookListResponse> bookListEs(@Valid BookListRequest bookListRequest) {
+        SearchBooksResult searchBooksResult = bookService.searchBookUsingES(
+            bookListRequest.toServiceDto());
+        return ResponseEntity.ok().body(BookListResponse.fromResult(searchBooksResult));
+    }
+
+    @PostMapping("/es")
+    public ResponseEntity<BookListResponse> indexBooks(
+        @Valid @RequestBody BookAddRequest bookAddRequest) {
+        NaverBookApiResult naverBookApiResult = bookService.findBookUsingOpenApi(
+            bookAddRequest.toServiceDto());
+        bookService.addBooksUsingEs(naverBookApiResult.toServiceDto());
+        return ResponseEntity.ok().body(BookListResponse.fromResult(naverBookApiResult));
+    }
 }

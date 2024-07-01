@@ -2,7 +2,9 @@ package com.bombombom.devs.book.service;
 
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.models.BookDocument;
 import com.bombombom.devs.book.repository.BookBulkRepository;
+import com.bombombom.devs.book.repository.BookElasticsearchRepository;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.book.service.dto.AddBookCommand;
 import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
@@ -23,6 +25,7 @@ public class BookService {
     private final NaverClient naverClient;
     private final BookRepository bookRepository;
     private final BookBulkRepository bookBulkRepository;
+    private final BookElasticsearchRepository bookElasticsearchRepository;
 
     @Transactional(readOnly = true)
     public SearchBooksResult searchBook(SearchBookQuery searchBookQuery) {
@@ -46,5 +49,19 @@ public class BookService {
     public void addBooks(List<AddBookCommand> addBookCommand) {
         bookBulkRepository.saveAll(
             addBookCommand.stream().map(AddBookCommand::toEntity).collect(Collectors.toList()));
+    }
+
+    public SearchBooksResult searchBookUsingES(SearchBookQuery searchBookQuery) {
+        List<BookDocument> bookDocuments = bookElasticsearchRepository.findByTitle(
+            searchBookQuery.keyword());
+        return SearchBooksResult.builder().booksResult(
+            bookDocuments.stream().map(SearchBooksResult::fromDocument)
+                .collect(Collectors.toList())).build();
+    }
+
+    public void addBooksUsingEs(List<AddBookCommand> addBookCommands) {
+        bookElasticsearchRepository.saveAll(
+            addBookCommands.stream().map(AddBookCommand::toDocument).collect(
+                Collectors.toList()));
     }
 }
