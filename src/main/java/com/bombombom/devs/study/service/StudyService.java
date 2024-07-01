@@ -2,7 +2,7 @@ package com.bombombom.devs.study.service;
 
 import com.bombombom.devs.algo.models.AlgorithmProblem;
 import com.bombombom.devs.algo.models.AlgorithmProblemConverter;
-import com.bombombom.devs.algo.repository.AlgorithmProblemBulkRepository;
+import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.client.solvedac.SolvedacClient;
 import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.global.util.Clock;
@@ -12,7 +12,7 @@ import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Round;
 import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.UserStudy;
-import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentBulkRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -43,8 +43,9 @@ public class StudyService {
     private final UserStudyRepository userStudyRepository;
     private final SolvedacClient solvedacClient;
     private final RoundRepository roundRepository;
-    private final AlgorithmProblemBulkRepository algoProblemBulkRepository;
-    private final AlgorithmProblemAssignmentBulkRepository algorithmProblemAssignmentBulkRepository;
+    private final AlgorithmProblemRepository algoProblemRepository;
+    private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
+    private final AlgorithmProblemConverter algorithmProblemConverter;
 
     @Transactional
     public AlgorithmStudyResult createAlgorithmStudy(
@@ -152,19 +153,20 @@ public class StudyService {
     ) {
         ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
             study.getBaekjoonIds(), problemCountForEachTag, study.getDifficultySpreadForEachTag());
-        List<AlgorithmProblem> problems = AlgorithmProblemConverter.convert(problemListResponse);
-        algoProblemBulkRepository.saveAll(problems);
-        return problems;
+        List<AlgorithmProblem> problems = algorithmProblemConverter.convert(problemListResponse);
+        return algoProblemRepository.saveAll(problems);
     }
 
     @Transactional
-    public void assignProblemToRound(Round round, List<AlgorithmProblem> unSolvedProblems) {
+    public void assignProblemToRound(
+        Round round, List<AlgorithmProblem> unSolvedProblems) {
         List<AlgorithmProblemAssignment> assignments = round.assignProblems(unSolvedProblems);
-        algorithmProblemAssignmentBulkRepository.saveAll(assignments);
+        algorithmProblemAssignmentRepository.saveAll(assignments);
     }
 
+    @Transactional
     public List<Round> findRoundsHaveToStart() {
-        return roundRepository.findRoundsWithRoundsByStartDate(clock.today());
+        return roundRepository.findRoundsWithStudyByStartDate(clock.today());
     }
 
 }

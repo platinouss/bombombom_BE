@@ -39,10 +39,10 @@ public class SolvedacClient {
                 webClient,
                 baekjoonIds,
                 tag,
-                numberOfProblems,
                 difficultySpread
             );
-            unSolvedProblems.items().addAll(problemsByTag.items());
+            log.debug("problemsByTag.items.size: {}", problemsByTag.items().size());
+            unSolvedProblems.items().addAll(problemsByTag.items().subList(0, numberOfProblems));
         }
         return unSolvedProblems;
     }
@@ -51,12 +51,10 @@ public class SolvedacClient {
         WebClient webClient,
         List<String> baekjoonIds,
         String tag,
-        Integer numberOfProblems,
         Pair<Integer, Integer> difficultySpread
     ) {
         CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
-        String queryParam = makeGetUnSolvedProblemsQueryParams(baekjoonIds, tag, numberOfProblems,
-            difficultySpread);
+        String queryParam = makeGetUnSolvedProblemsQueryParams(baekjoonIds, tag, difficultySpread);
         log.debug("getUnSolvedProblemsByTag() Query: {}", queryParam);
         Mono<ProblemListResponse> mono = webClient.get()
             .uri(uriBuilder -> uriBuilder
@@ -83,7 +81,6 @@ public class SolvedacClient {
     private String makeGetUnSolvedProblemsQueryParams(
         List<String> baekjoonIds,
         String tag,
-        Integer numberOfProblems,
         Pair<Integer, Integer> difficultySpread
     ) {
         StringBuilder queryBuilder = new StringBuilder();

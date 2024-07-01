@@ -18,6 +18,7 @@ import org.quartz.InterruptableJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -30,9 +31,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
+
     private static final String DEVELOPER_NAME = "송승훈";
     private static final String JOB_DESCRIPTION = "라운드 시작 작업";
-    private static final String SCHEDULE_EXPRESSION = "0 0 0 * * ?";
+    private static final String SCHEDULE_EXPRESSION = "0/20 * * * * ?";
     private static final String JOB_IDENTITY = "Dev";
     private static final String JOB_WORK = "Work";
 
@@ -41,12 +43,43 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
     private final AlgorithmProblemService algorithmProblemService;
     private boolean isInterrupted = false;
 
+    public static Trigger buildJobTrigger() {
+        return TriggerBuilder.newTrigger()
+            .withSchedule(CronScheduleBuilder.cronSchedule(SCHEDULE_EXPRESSION)).build();
+    }
+
+    public static JobDetail buildJobDetail() {
+        return newJob(RoundStartJob.class)
+            .withIdentity("roundStartJob", "roundStartGroup")
+            .usingJobData(newJobDataMap())
+            .build();
+    }
+
+   /*
+   RoundJob 은 해당 날짜에 시작하는 라운드들을 조회하여 문제를 선정 및 배정한다.
+      1. 시작해야 하는 라운드들을 조회한다. (Study 와 Fetch Join)
+      2. round 에 연결된 Study 의 종류에 따라 해야할 일을 수행한다.
+   */
+
+    private static JobDataMap newJobDataMap() {
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put(JOB_IDENTITY, RoundStartJob.DEVELOPER_NAME);
+        jobDataMap.put(JOB_WORK, RoundStartJob.JOB_DESCRIPTION);
+        return jobDataMap;
+    }
 
     @PostConstruct
     public void scheduleJob() {
         JobDetail jobDetail = RoundStartJob.buildJobDetail();
+        Trigger trigger = RoundStartJob.buildJobTrigger();
         try {
-            scheduler.scheduleJob(jobDetail, RoundStartJob.buildJobTrigger());
+            JobKey jobKey = jobDetail.getKey();
+            if (!scheduler.checkExists(jobKey)) {
+                scheduler.scheduleJob(jobDetail, trigger);
+                log.info("Scheduled new job with key: {}", jobKey);
+            } else {
+                log.warn("Job already exists with key: {}", jobKey);
+            }
         } catch (SchedulerException e) {
             log.error(e.getMessage());
         }
@@ -57,12 +90,6 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
         isInterrupted = true;
         log.error("RoundStartJob::interrupt() Called!");
     }
-
-   /*
-   RoundJob 은 해당 날짜에 시작하는 라운드들을 조회하여 문제를 선정 및 배정한다.
-      1. 시작해야 하는 라운드들을 조회한다. (Study 와 Fetch Join)
-      2. round 에 연결된 Study 의 종류에 따라 해야할 일을 수행한다.
-   */
 
     @Override
     protected void executeInternal(@NonNull JobExecutionContext context) {
@@ -88,23 +115,5 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
         long executionTime = endTime - startTime;
 
         log.debug("RoundJob 수행 시간: " + executionTime + "ms");
-    }
-
-    public static Trigger buildJobTrigger() {
-        return TriggerBuilder.newTrigger()
-                .withSchedule(CronScheduleBuilder.cronSchedule(SCHEDULE_EXPRESSION)).build();
-    }
-
-    public static JobDetail buildJobDetail() {
-        return newJob(RoundStartJob.class).withIdentity("scheduleJob")
-                .usingJobData(newJobDataMap())
-                .build();
-    }
-
-    private static JobDataMap newJobDataMap() {
-        JobDataMap jobDataMap = new JobDataMap();
-        jobDataMap.put(JOB_IDENTITY, RoundStartJob.DEVELOPER_NAME);
-        jobDataMap.put(JOB_WORK, RoundStartJob.JOB_DESCRIPTION);
-        return jobDataMap;
     }
 }

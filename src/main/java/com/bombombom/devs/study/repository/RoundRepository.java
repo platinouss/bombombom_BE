@@ -8,7 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface RoundRepository extends JpaRepository<Round, Long> {
 
-    @Query("select r from Round r join fetch r.study where r.startDate = :startDate")
-    List<Round> findRoundsWithRoundsByStartDate(LocalDate startDate);
+    @Query("select r from Round r "
+        + "join fetch r.study s "
+        + "join fetch s.userStudies us "
+        + "join fetch us.user "
+        + "where r.startDate = :startDate")
+    List<Round> findRoundsWithStudyByStartDate(LocalDate startDate);
 }
 

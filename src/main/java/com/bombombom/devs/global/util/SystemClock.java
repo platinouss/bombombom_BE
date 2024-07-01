@@ -1,6 +1,7 @@
 package com.bombombom.devs.global.util;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,11 @@ public class SystemClock implements Clock {
     @Override
     public LocalDate today() {
         return LocalDate.now();
+    }
+
+    @Override
+    public LocalDateTime now() {
+        return LocalDateTime.now();
     }
 
 }
