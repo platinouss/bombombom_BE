@@ -43,7 +43,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  elasticsearch:
+    uris: ${ELASTICSEARCH_HOST}
 logging.level:
+  tracer:
+    TRACE
   com.bombombom: ${LOG_LEVEL}
   org.springframework.security: TRACE
 
