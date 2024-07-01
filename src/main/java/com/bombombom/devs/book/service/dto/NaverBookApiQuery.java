@@ -12,6 +12,6 @@ public record NaverBookApiQuery(
 ) {
 
     public NaverBookApiQuery(String query) {
-        this(query, 10, 1, SortType.SIM);
+        this(query, 10, 1, SortType.SIMILARITY);
     }
 }
