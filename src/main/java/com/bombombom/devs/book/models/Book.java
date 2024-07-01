@@ -37,4 +37,15 @@ public class Book {
 
     @Column(name = "image_url")
     private String imageUrl;
+
+    public static Book fromDocument(BookDocument bookDocument) {
+        return Book.builder()
+            .title(bookDocument.getTitle())
+            .author(bookDocument.getAuthor())
+            .publisher(bookDocument.getPublisher())
+            .isbn(Long.parseLong(bookDocument.getAuthor()))
+            .tableOfContents(bookDocument.getTableOfContents())
+            .imageUrl(bookDocument.getImageUrl())
+            .build();
+    }
 }

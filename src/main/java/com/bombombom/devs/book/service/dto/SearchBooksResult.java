@@ -1,6 +1,5 @@
 package com.bombombom.devs.book.service.dto;
 
-import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.models.BookDocument;
 import java.util.List;
 import lombok.Builder;
@@ -23,18 +22,6 @@ public record SearchBooksResult(
 
     }
 
-    public static BookResult fromEntity(Book book) {
-        return BookResult.builder()
-            .id(book.getId())
-            .title(book.getTitle())
-            .author(book.getAuthor())
-            .publisher(book.getPublisher())
-            .isbn(book.getIsbn())
-            .tableOfContents(book.getTableOfContents())
-            .imageUrl(book.getImageUrl())
-            .build();
-    }
-
     public static BookResult fromDocument(BookDocument bookDocument) {
         return BookResult.builder()
             .title(bookDocument.getTitle())
@@ -42,6 +29,7 @@ public record SearchBooksResult(
             .publisher(bookDocument.getPublisher())
             .isbn(Long.parseLong(bookDocument.getId()))
             .tableOfContents(bookDocument.getTableOfContents())
+            .imageUrl(bookDocument.getImageUrl())
             .build();
     }
 }
