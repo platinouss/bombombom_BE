@@ -170,6 +170,7 @@ public class BookControllerTest {
             .pubdate("20190429")
             .isbn(9791162241776L)
             .description("자바 ...")
+            .image("https://shopping-phinf.pstatic.net/main_3243601/32436011847.20221228073547.jpg")
             .build();
         NaverBookApiResult naverBookApiResult = NaverBookApiResult.builder()
             .lastBuildDate(new Date())
@@ -184,6 +185,8 @@ public class BookControllerTest {
             .publisher("한빛미디어")
             .isbn(9791162241776L)
             .tableOfContents("")
+            .imageUrl(
+                "https://shopping-phinf.pstatic.net/main_3243601/32436011847.20221228073547.jpg")
             .build();
         SearchBooksResult searchBooksResult = SearchBooksResult.builder()
             .booksResult(List.of(bookResult))

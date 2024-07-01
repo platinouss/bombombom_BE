@@ -8,7 +8,8 @@ public record BookInfo(
     String author,
     String publisher,
     Long isbn,
-    String tableOfContents
+    String tableOfContents,
+    String imageUrl
 ) {
 
 }
