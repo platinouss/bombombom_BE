@@ -2,7 +2,7 @@ package com.bombombom.devs.study.controller.dto.request;
 
 import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
 import static com.bombombom.devs.study.Constants.MAX_PENALTY;
-import static com.bombombom.devs.study.Constants.MAX_RELIABLITY_LIMIT;
+import static com.bombombom.devs.study.Constants.MAX_RELIABILITY_LIMIT;
 import static com.bombombom.devs.study.Constants.MAX_WEEKS;
 
 import com.bombombom.devs.study.models.StudyStatus;
@@ -22,7 +22,7 @@ public record RegisterBookStudyRequest(
     @NotNull @Range(min = 1, max = MAX_CAPACITY) Integer capacity,
     @NotNull @Range(min = 1, max = MAX_WEEKS) Integer weeks,
     @NotNull LocalDate startDate,
-    @NotNull @Range(max = MAX_RELIABLITY_LIMIT) Integer reliabilityLimit,
+    @NotNull @Range(max = MAX_RELIABILITY_LIMIT) Integer reliabilityLimit,
     @NotNull @Range(max = MAX_PENALTY) Integer penalty,
     @NotNull Long isbn
 ) {

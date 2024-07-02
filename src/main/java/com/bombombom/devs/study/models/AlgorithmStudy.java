@@ -1,15 +1,16 @@
 package com.bombombom.devs.study.models;
 
-import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.algo.models.AlgoTag;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
+import org.springframework.data.util.Pair;
 
 @Entity
 @Getter
@@ -51,7 +52,25 @@ public class AlgorithmStudy extends Study {
 
     @Override
     public StudyType getStudyType() {
-
         return StudyType.ALGORITHM;
+    }
+
+    public Map<String, Pair<Integer, Integer>> getDifficultySpreadForEachTag() {
+        return Map.of(
+            AlgoTag.MATH.name(), getDifficultySpread(difficultyMath),
+            AlgoTag.DP.name(), getDifficultySpread(difficultyDp),
+            AlgoTag.GREEDY.name(), getDifficultySpread(difficultyGreedy),
+            AlgoTag.IMPLEMENTATION.name(), getDifficultySpread(difficultyImpl),
+            AlgoTag.GRAPHS.name(), getDifficultySpread(difficultyGraph),
+            AlgoTag.GEOMETRY.name(), getDifficultySpread(difficultyGeometry),
+            AlgoTag.DATA_STRUCTURES.name(), getDifficultySpread(difficultyDs),
+            AlgoTag.STRING.name(), getDifficultySpread(difficultyString)
+        );
+    }
+
+    private Pair<Integer, Integer> getDifficultySpread(Float difficulty) {
+        Integer spreadLeft = Math.round(difficulty);
+        Integer spreadRight = spreadLeft + difficultyGap;
+        return Pair.of(spreadLeft, spreadRight);
     }
 }

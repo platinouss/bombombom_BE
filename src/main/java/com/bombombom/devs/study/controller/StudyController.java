@@ -86,8 +86,10 @@ public class StudyController {
     }
 
     @PostMapping("/join")
-    public ResponseEntity<Void> joinStudy(@LoginUser AppUserDetails userDetails,
-        @Valid @RequestBody JoinStudyRequest joinStudyRequest) {
+    public ResponseEntity<Void> joinStudy(
+        @LoginUser AppUserDetails userDetails,
+        @Valid @RequestBody JoinStudyRequest joinStudyRequest
+    ) {
         studyService.joinStudy(userDetails.getId(), joinStudyRequest.toServiceDto());
         return ResponseEntity.ok().build();
     }

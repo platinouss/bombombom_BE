@@ -196,7 +196,6 @@ class StudyServiceTest {
                 .problemCount(5).build();
 
         AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
-
             .reliabilityLimit(37)
             .introduce("안녕하세요")
             .name("스터디1")

@@ -4,7 +4,7 @@ import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
 import static com.bombombom.devs.study.Constants.MAX_DIFFICULTY_LEVEL;
 import static com.bombombom.devs.study.Constants.MAX_PENALTY;
 import static com.bombombom.devs.study.Constants.MAX_PROBLEM_COUNT;
-import static com.bombombom.devs.study.Constants.MAX_RELIABLITY_LIMIT;
+import static com.bombombom.devs.study.Constants.MAX_RELIABILITY_LIMIT;
 import static com.bombombom.devs.study.Constants.MAX_WEEKS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -423,14 +423,14 @@ class StudyControllerTest {
         @Test
         @WithUserDetails(value = "testuser")
         @DisplayName(
-            "reliabilityLimit가 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 BookStudy를 생성할 수 없다")
+            "reliabilityLimit가 0이상 " + MAX_RELIABILITY_LIMIT + "이하가 아니라면 BookStudy를 생성할 수 없다")
         void register_book_study_fails_if_reliability_limit_not_in_range() throws Exception {
             /*
             Given
              */
             RegisterBookStudyRequest registerBookStudyRequest =
                 RegisterBookStudyRequest.builder()
-                    .reliabilityLimit(MAX_RELIABLITY_LIMIT + 1)
+                    .reliabilityLimit(MAX_RELIABILITY_LIMIT + 1)
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
@@ -1015,14 +1015,14 @@ class StudyControllerTest {
         @Test
         @WithUserDetails(value = "testuser")
         @DisplayName(
-            "reliablityLimit이 0이상 " + MAX_RELIABLITY_LIMIT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+            "reliablityLimit이 0이상 " + MAX_RELIABILITY_LIMIT + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_reliabilityLimit_not_in_range() throws Exception {
             /*
             Given
              */
             RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
                 RegisterAlgorithmStudyRequest.builder()
-                    .reliabilityLimit(MAX_RELIABLITY_LIMIT + 1)
+                    .reliabilityLimit(MAX_RELIABILITY_LIMIT + 1)
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(1)
