@@ -30,7 +30,7 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
 
     private static final String DEVELOPER_NAME = "송승훈";
     private static final String JOB_DESCRIPTION = "라운드 시작 작업";
-    private static final String SCHEDULE_EXPRESSION = "0/20 * * * * ?";
+    private static final String SCHEDULE_EXPRESSION = "0 0 0 * * ?";
     private static final String JOB_IDENTITY = "Dev";
     private static final String JOB_WORK = "Work";
 
