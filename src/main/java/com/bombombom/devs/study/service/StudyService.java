@@ -85,10 +85,8 @@ public class StudyService {
             .rounds(new ArrayList<>())
             .build();
         algorithmStudy.createRounds();
+        algorithmStudy.join(user);
         studyRepository.save(algorithmStudy);
-
-        UserStudy userStudy = algorithmStudy.join(user);
-        userStudyRepository.save(userStudy);
 
         return AlgorithmStudyResult.fromEntity(algorithmStudy);
     }
@@ -116,10 +114,8 @@ public class StudyService {
             .rounds(new ArrayList<>())
             .build();
         bookStudy.createRounds();
+        bookStudy.join(user);
         studyRepository.save(bookStudy);
-
-        UserStudy userStudy = bookStudy.join(user);
-        userStudyRepository.save(userStudy);
 
         return BookStudyResult.fromEntity(bookStudy);
     }

@@ -1,4 +1,4 @@
-package com.bombombom.devs.study.job;
+package com.bombombom.devs.job;
 
 import static org.quartz.JobBuilder.newJob;
 
@@ -7,7 +7,6 @@ import com.bombombom.devs.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.Round;
 import com.bombombom.devs.study.service.StudyService;
-import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import lombok.NonNull;
@@ -18,9 +17,6 @@ import org.quartz.InterruptableJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.UnableToInterruptJobException;
@@ -38,7 +34,6 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
     private static final String JOB_IDENTITY = "Dev";
     private static final String JOB_WORK = "Work";
 
-    private final Scheduler scheduler;
     private final StudyService studyService;
     private final AlgorithmProblemService algorithmProblemService;
     private boolean isInterrupted = false;
@@ -66,23 +61,6 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
         jobDataMap.put(JOB_IDENTITY, RoundStartJob.DEVELOPER_NAME);
         jobDataMap.put(JOB_WORK, RoundStartJob.JOB_DESCRIPTION);
         return jobDataMap;
-    }
-
-    @PostConstruct
-    public void scheduleJob() {
-        JobDetail jobDetail = RoundStartJob.buildJobDetail();
-        Trigger trigger = RoundStartJob.buildJobTrigger();
-        try {
-            JobKey jobKey = jobDetail.getKey();
-            if (!scheduler.checkExists(jobKey)) {
-                scheduler.scheduleJob(jobDetail, trigger);
-                log.info("Scheduled new job with key: {}", jobKey);
-            } else {
-                log.warn("Job already exists with key: {}", jobKey);
-            }
-        } catch (SchedulerException e) {
-            log.error(e.getMessage());
-        }
     }
 
     @Override
