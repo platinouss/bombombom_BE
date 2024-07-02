@@ -44,7 +44,7 @@ spring:
     hibernate:
       ddl-auto: update
   elasticsearch:
-    uris: ${ELASTICSEARCH_HOST}
+    uris: ${ELASTICSEARCH_URI}
 logging.level:
   tracer:
     TRACE
@@ -63,6 +63,14 @@ spring:
     hibernate:
       ddl-auto: create-drop
     defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
   sql:
     init:
       mode: always
+  elasticsearch:
+    uris: ${TEST_ELASTICSEARCH_URI}
+logging.level:
+  tracer:
+    TRACE

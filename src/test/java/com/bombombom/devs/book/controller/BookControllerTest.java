@@ -198,7 +198,7 @@ public class BookControllerTest {
         /*
         When
          */
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/books")
+        ResultActions resultActions = mockMvc.perform(post("/api/v1/books/index")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(bookIndexRequest))
         );
@@ -211,7 +211,7 @@ public class BookControllerTest {
             .andExpect(MockMvcResultMatchers.content().string(
                 objectMapper.writeValueAsString(BookListResponse.fromResult(searchBooksResult))));
         verify(bookService, times(1)).findBookUsingOpenApi(any(NaverBookApiQuery.class));
-        verify(bookService, times(1)).addBooks(naverBookApiResult.toServiceDto());
+        verify(bookService, times(1)).indexBooks(naverBookApiResult.toServiceDto());
     }
 
     @DisplayName("검색 키워드가 빈 경우 NAVER Open API를 호출에 실패한다.")
