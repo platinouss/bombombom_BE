@@ -53,7 +53,8 @@ public class BookService {
     public void addBook(AddBookCommand addBookCommand) {
         BookDocument bookDocument = bookElasticsearchRepository.findByIsbn(addBookCommand.isbn())
             .orElseThrow(BookNotFoundException::new);
-        Book book = bookRepository.save(Book.fromDocument(bookDocument));
+        Book book = bookRepository.findByIsbn(addBookCommand.isbn())
+            .orElseGet(() -> bookRepository.save(Book.fromDocument(bookDocument)));
         bookDocument.setBookId(book.getId());
         bookElasticsearchRepository.save(bookDocument);
     }
