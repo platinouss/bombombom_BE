@@ -81,7 +81,7 @@ public abstract class Study extends BaseEntity {
     protected List<UserStudy> userStudies;
 
     @OneToMany(mappedBy="study", cascade= CascadeType.PERSIST)
-    protected List<Episode> episodes;
+    protected List<Round> rounds;
 
     abstract public StudyType getStudyType();
 
@@ -97,8 +97,10 @@ public abstract class Study extends BaseEntity {
         }
         user.payMoney(penalty * weeks);
         headCount++;
+        UserStudy userStudy = UserStudy.of(user, this, penalty * weeks);
+        userStudies.add(userStudy);
 
-        return UserStudy.of(user, this, penalty * weeks);
+        return userStudy;
     }
 
     public List<String> getBaekjoonIds() {
@@ -107,4 +109,19 @@ public abstract class Study extends BaseEntity {
             .toList();
     }
 
+    public void createRounds() {
+        for (int i = 0; i < weeks; i++) {
+            createRound(i);
+        }
+    }
+
+    private void createRound(int idx) {
+        Round round = Round.builder()
+            .study(this)
+            .idx(idx)
+            .startDate(startDate.plusWeeks(idx))
+            .endDate(startDate.plusWeeks(idx + 1))
+            .build();
+        rounds.add(round);
+    }
 }

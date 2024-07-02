@@ -13,25 +13,4 @@ public record ProblemResponse(
 
 }
 
-record TagDisplayNames(
-    String language,
-    String name,
-    String shortName
-) {
 
-}
-
-record TagAlias(String alias) {
-
-}
-
-record ProblemTag(
-    String key,
-    boolean isMeta,
-    int bojTagId,
-    int problemCount,
-    List<TagDisplayNames> displayNames,
-    List<TagAlias> aliases
-) {
-
-}

@@ -3,18 +3,11 @@ package com.bombombom.devs.study.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
-import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
-import com.bombombom.devs.study.models.UserStudy;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.study.service.dto.command.JoinStudyCommand;
@@ -31,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,8 +33,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
 
 @ExtendWith(MockitoExtension.class)
 class StudyServiceTest {
@@ -183,7 +173,6 @@ class StudyServiceTest {
                 .problemCount(5).build();
 
         AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
-
             .reliabilityLimit(37)
             .introduce("안녕하세요")
             .name("스터디1")

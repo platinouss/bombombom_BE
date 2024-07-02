@@ -39,10 +39,10 @@ public class ProbabilityConfig {
         AlgoTag.MATH.setProbability(math);
         AlgoTag.DP.setProbability(dp);
         AlgoTag.GREEDY.setProbability(greedy);
-        AlgoTag.IMPL.setProbability(impl);
-        AlgoTag.GRAPH.setProbability(graph);
+        AlgoTag.IMPLEMENTATION.setProbability(impl);
+        AlgoTag.GRAPHS.setProbability(graph);
         AlgoTag.GEOMETRY.setProbability(geometry);
-        AlgoTag.DS.setProbability(ds);
+        AlgoTag.DATA_STRUCTURES.setProbability(ds);
         AlgoTag.STRING.setProbability(string);
 
         double choiceSpreadStart = 0;

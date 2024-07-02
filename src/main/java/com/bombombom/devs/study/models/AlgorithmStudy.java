@@ -60,16 +60,16 @@ public class AlgorithmStudy extends Study {
             AlgoTag.MATH.name(), getDifficultySpread(difficultyMath),
             AlgoTag.DP.name(), getDifficultySpread(difficultyDp),
             AlgoTag.GREEDY.name(), getDifficultySpread(difficultyGreedy),
-            AlgoTag.IMPL.name(), getDifficultySpread(difficultyImpl),
-            AlgoTag.GRAPH.name(), getDifficultySpread(difficultyGraph),
+            AlgoTag.IMPLEMENTATION.name(), getDifficultySpread(difficultyImpl),
+            AlgoTag.GRAPHS.name(), getDifficultySpread(difficultyGraph),
             AlgoTag.GEOMETRY.name(), getDifficultySpread(difficultyGeometry),
-            AlgoTag.DS.name(), getDifficultySpread(difficultyDs),
+            AlgoTag.DATA_STRUCTURES.name(), getDifficultySpread(difficultyDs),
             AlgoTag.STRING.name(), getDifficultySpread(difficultyString)
         );
     }
 
     private Pair<Integer, Integer> getDifficultySpread(Float difficulty) {
-        Integer spreadLeft = Math.round(difficulty) - difficultyGap / 2;
+        Integer spreadLeft = Math.round(difficulty);
         Integer spreadRight = spreadLeft + difficultyGap;
         return Pair.of(spreadLeft, spreadRight);
     }
