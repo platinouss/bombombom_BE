@@ -4,6 +4,7 @@ import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.exception.BookNotFoundException;
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.models.BookDocument;
+import com.bombombom.devs.book.repository.BookElasticsearchCustomRepository;
 import com.bombombom.devs.book.repository.BookElasticsearchRepository;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.book.service.dto.AddBookCommand;
@@ -26,6 +27,7 @@ public class BookService {
     private final NaverClient naverClient;
     private final BookRepository bookRepository;
     private final BookElasticsearchRepository bookElasticsearchRepository;
+    private final BookElasticsearchCustomRepository bookElasticsearchCustomRepository;
 
     public SearchBooksResult searchBook(SearchBookQuery searchBookQuery) {
         List<BookDocument> bookDocuments;
@@ -57,8 +59,6 @@ public class BookService {
     }
 
     public void indexBooks(List<IndexBookCommand> indexBookCommands) {
-        bookElasticsearchRepository.saveAll(
-            indexBookCommands.stream().map(IndexBookCommand::toDocument).collect(
-                Collectors.toList()));
+        bookElasticsearchCustomRepository.upsertAll(indexBookCommands);
     }
 }
