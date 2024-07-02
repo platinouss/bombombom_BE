@@ -1,15 +1,13 @@
 package com.bombombom.devs.study.controller.dto.response;
 
+import com.bombombom.devs.book.controller.dto.BookInfo;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
-import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.user.controller.dto.UserProfileResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.time.LocalDate;
 import lombok.Builder;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Builder
 public record BookStudyResponse(
@@ -24,8 +22,9 @@ public record BookStudyResponse(
     Integer reliabilityLimit,
     Integer penalty,
     StudyStatus state,
+    UserProfileResponse leader,
     StudyType studyType,
-    Long bookId)
+    BookInfo bookInfo)
     implements StudyResponse {
 
     public static BookStudyResponse fromResult(BookStudyResult res) {
@@ -37,12 +36,13 @@ public record BookStudyResponse(
             .capacity(res.capacity())
             .headCount(res.headCount())
             .weeks(res.weeks())
+            .leader(UserProfileResponse.fromResult(res.leader()))
             .startDate(res.startDate())
             .reliabilityLimit(res.reliabilityLimit())
             .penalty(res.penalty())
             .state(res.state())
             .studyType(res.studyType())
-            .bookId(res.bookId())
+            .bookInfo(BookInfo.fromResult(res.bookResult()))
             .build();
 
     }

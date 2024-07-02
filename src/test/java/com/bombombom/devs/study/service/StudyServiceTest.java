@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
@@ -16,6 +18,7 @@ import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
+import com.bombombom.devs.user.models.Role;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import java.time.LocalDate;
@@ -39,6 +42,8 @@ class StudyServiceTest {
 
     @Mock
     private StudyRepository studyRepository;
+    @Mock
+    private BookRepository bookRepository;
 
     @Mock
     private UserStudyRepository userStudyRepository;
@@ -57,6 +62,22 @@ class StudyServiceTest {
          */
         List<Study> repositoryResponses = new ArrayList<>();
 
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
+        User leader = User.builder()
+            .id(5L)
+            .username("leader")
+            .role(Role.USER)
+            .introduce("introduce")
+            .image("image")
+            .reliability(50)
+            .money(10000)
+            .build();
         Study study1 =
             AlgorithmStudy.builder()
                 .reliabilityLimit(37)
@@ -65,6 +86,7 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 14))
                 .penalty(5000)
                 .weeks(5)
+                .leader(leader)
                 .difficultyDp(12.4f)
                 .difficultyDs(12f)
                 .difficultyGraph(12.9f)
@@ -83,16 +105,17 @@ class StudyServiceTest {
                 .introduce("안녕하세요")
                 .startDate(LocalDate.of(2024, 06, 14))
                 .name("스터디1")
+                .leader(leader)
                 .penalty(5000)
                 .weeks(5)
-                .bookId(1024L)
+                .book(book)
                 .build();
 
         repositoryResponses.add(study1);
         repositoryResponses.add(study2);
 
         Page<Study> studies = new PageImpl<>(repositoryResponses);
-        when(studyRepository.findAll(any(Pageable.class))).thenReturn(studies);
+        when(studyRepository.findAllWithUserAndBook(any(Pageable.class))).thenReturn(studies);
 
         /*
         When
@@ -182,6 +205,7 @@ class StudyServiceTest {
             .penalty(5000)
             .weeks(5)
             .state(StudyStatus.READY)
+            .leader(testuser)
             .difficultyDp(10f)
             .difficultyDs(10f)
             .difficultyImpl(10f)
@@ -226,6 +250,13 @@ class StudyServiceTest {
             .money(100000)
             .reliability(40)
             .build();
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
 
         RegisterBookStudyCommand registerBookStudyCommand =
             RegisterBookStudyCommand.builder()
@@ -236,9 +267,10 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 19))
                 .penalty(5000)
                 .weeks(5)
+
                 .state(StudyStatus.READY)
                 .headCount(0)
-                .bookId(15L)
+                .isbn(123456789L)
                 .build();
 
         BookStudy bookStudy = BookStudy.builder()
@@ -249,12 +281,14 @@ class StudyServiceTest {
             .capacity(10)
             .startDate(LocalDate.of(2024, 06, 19))
             .penalty(5000)
+            .leader(testuser)
             .weeks(5)
-            .bookId(15L)
+            .book(book)
             .state(StudyStatus.READY)
             .build();
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(testuser));
+        when(bookRepository.findByIsbn(123456789L)).thenReturn(Optional.of(book));
 
         /*
         When

@@ -2,6 +2,7 @@ package com.bombombom.devs.book.service.dto;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Builder;
 
@@ -31,11 +32,13 @@ public record NaverBookApiResult(
 
     public List<AddBookCommand> toServiceDto() {
         return items().stream()
+            .filter(item -> Objects.nonNull(item.isbn))
             .map(item -> AddBookCommand.builder()
                 .title(item.title)
                 .author(item.author)
                 .publisher(item.publisher)
                 .isbn(item.isbn)
+                .imageUrl(item.image)
                 .build())
             .collect(Collectors.toList());
     }

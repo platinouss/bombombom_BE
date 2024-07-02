@@ -16,7 +16,8 @@ public record SearchBooksResult(
         String author,
         String publisher,
         Long isbn,
-        String tableOfContents
+        String tableOfContents,
+        String imageUrl
     ) {
 
     }
@@ -29,6 +30,7 @@ public record SearchBooksResult(
             .publisher(book.getPublisher())
             .isbn(book.getIsbn())
             .tableOfContents(book.getTableOfContents())
+            .imageUrl(book.getImageUrl())
             .build();
     }
 }

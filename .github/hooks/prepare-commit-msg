@@ -6,7 +6,7 @@ fi
 
 BRANCH_NAME=$(git symbolic-ref --short HEAD)
 BRANCH_NAME="${BRANCH_NAME##*/}"
-JIRA_ID=`echo $BRANCH_NAME | egrep -o 'bbb-[0-9]+'`
+JIRA_ID=`echo $BRANCH_NAME | egrep -o 'BBB-[0-9]+'`
 
 
 BRANCH_IN_COMMIT=$(head -n 2 $1 | grep -c "$JIRA_ID")

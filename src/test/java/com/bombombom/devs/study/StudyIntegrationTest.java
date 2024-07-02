@@ -1,12 +1,6 @@
 package com.bombombom.devs.study;
 
 
-import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,7 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.global.web.LoginUserArgumentResolver;
+import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.study.controller.StudyController;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -28,19 +24,17 @@ import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
 import com.bombombom.devs.study.repository.StudyRepository;
-import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
-import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
 import com.bombombom.devs.user.models.Role;
 import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import com.bombombom.devs.user.service.dto.UserProfileResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,19 +42,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
@@ -76,6 +66,8 @@ public class StudyIntegrationTest {
 
     @Autowired
     private StudyRepository studyRepository;
+    @Autowired
+    private BookRepository bookRepository;
 
     @Autowired
     private StudyController studyController;
@@ -92,11 +84,11 @@ public class StudyIntegrationTest {
     @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
     class TestWithAuthentication {
 
+        private User testuser;
 
         @BeforeEach
         public void init() {
-            User testuser = User.builder()
-                .id(1L)
+            testuser = User.builder()
                 .username("testuser")
                 .password(passwordEncoder.encode("password"))
                 .role(Role.USER)
@@ -118,6 +110,26 @@ public class StudyIntegrationTest {
         /*
          Given
          */
+            Book book = Book.builder()
+                .title("테스트용 책")
+                .author("세계최강민석")
+                .isbn(123456789L)
+                .publisher("메가스터디")
+                .tableOfContents("1. 2. 3. 4.")
+                .build();
+            bookRepository.save(book);
+
+            User leader = User.builder()
+                .username("leader")
+                .password(passwordEncoder.encode("password"))
+                .role(Role.USER)
+                .introduce("introduce")
+                .image("image")
+                .reliability(50)
+                .money(10000)
+                .build();
+            userRepository.save(leader);
+
             Study study =
                 BookStudy.builder()
                     .reliabilityLimit(37)
@@ -125,11 +137,12 @@ public class StudyIntegrationTest {
                     .introduce("안녕하세요")
                     .startDate(LocalDate.now())
                     .name("스터디")
+                    .leader(leader)
                     .penalty(1000)
                     .weeks(5)
                     .state(StudyStatus.READY)
                     .headCount(0)
-                    .bookId(1024L)
+                    .book(book)
                     .build();
             studyRepository.save(study);
             JoinStudyRequest request = JoinStudyRequest.builder()
@@ -174,6 +187,16 @@ public class StudyIntegrationTest {
                     .difficultyEnd(15)
                     .problemCount(5).build();
 
+            UserProfileResult profile = UserProfileResult.builder()
+                .id(testuser.getId())
+                .role(testuser.getRole())
+                .introduce(testuser.getIntroduce())
+                .money(testuser.getMoney() - 5000)
+                .reliability(testuser.getReliability())
+                .username(testuser.getUsername())
+                .image(testuser.getImage())
+                .build();
+
             AlgorithmStudyResult algorithmStudyResult = AlgorithmStudyResult.builder()
                 .id(1L)
                 .reliabilityLimit(37)
@@ -184,6 +207,7 @@ public class StudyIntegrationTest {
                 .startDate(LocalDate.now())
                 .penalty(1000)
                 .weeks(5)
+                .leader(profile)
                 .state(StudyStatus.READY)
                 .studyType(StudyType.ALGORITHM)
                 .difficultyDp(10f)
@@ -230,6 +254,36 @@ public class StudyIntegrationTest {
             /*
             Given
              */
+            User leader = User.builder()
+                .username("leader")
+                .password(passwordEncoder.encode("password"))
+                .role(Role.USER)
+                .introduce("introduce")
+                .image("image")
+                .reliability(50)
+                .money(10000)
+                .build();
+            userRepository.save(leader);
+
+            Book book = Book.builder()
+                .title("테스트용 책")
+                .author("세계최강민석")
+                .isbn(123456789L)
+                .publisher("메가스터디")
+                .tableOfContents("1. 2. 3. 4.")
+                .build();
+            bookRepository.save(book);
+            
+            UserProfileResult profile = UserProfileResult.builder()
+                .id(testuser.getId())
+                .role(testuser.getRole())
+                .introduce(testuser.getIntroduce())
+                .money(testuser.getMoney() - 5000)
+                .reliability(testuser.getReliability())
+                .username(testuser.getUsername())
+                .image(testuser.getImage())
+                .build();
+
             RegisterBookStudyRequest registerBookStudyRequest =
                 RegisterBookStudyRequest.builder()
                     .reliabilityLimit(37)
@@ -239,7 +293,7 @@ public class StudyIntegrationTest {
                     .startDate(LocalDate.now())
                     .penalty(1000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(123456789L)
                     .build();
 
             BookStudyResult bookStudyResult =
@@ -253,9 +307,10 @@ public class StudyIntegrationTest {
                     .startDate(LocalDate.now())
                     .penalty(1000)
                     .weeks(5)
+                    .leader(profile)
                     .state(StudyStatus.READY)
                     .studyType(StudyType.BOOK)
-                    .bookId(15L)
+                    .bookResult(SearchBooksResult.fromEntity(book))
                     .build();
 
 
@@ -282,6 +337,49 @@ public class StudyIntegrationTest {
                 .andExpect(content().json(expectedResponse));
         }
 
+
+        @Test
+        @DisplayName("책을 찾지 못한 경우 기술서적 스터디를 생성할 수 없다")
+        @WithUserDetails(value = "testuser",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        void register_book_study_fails_if_book_is_not_found() throws Exception {
+            /*
+            Given
+             */
+
+            RegisterBookStudyRequest registerBookStudyRequest =
+                RegisterBookStudyRequest.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .capacity(10)
+                    .startDate(LocalDate.now())
+                    .penalty(1000)
+                    .weeks(5)
+                    .isbn(123456789L)
+                    .build();
+
+
+            /*
+            When
+             */
+
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/book")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            );
+
+            /*
+            Then
+             */
+            resultActions.andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Book Not Found"));
+
+
+        }
     }
 
     @Test
@@ -291,6 +389,26 @@ public class StudyIntegrationTest {
         /*
         Given
          */
+
+        User leader = User.builder()
+            .username("leader")
+            .password(passwordEncoder.encode("password"))
+            .role(Role.USER)
+            .introduce("introduce")
+            .image("image")
+            .reliability(50)
+            .money(10000)
+            .build();
+        userRepository.save(leader);
+
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
+        bookRepository.save(book);
         Study study1 =
             AlgorithmStudy.builder()
                 .reliabilityLimit(37)
@@ -301,6 +419,7 @@ public class StudyIntegrationTest {
                 .weeks(5)
                 .state(StudyStatus.READY)
                 .headCount(0)
+                .leader(leader)
                 .difficultyDp(12.4f)
                 .difficultyDs(12f)
                 .difficultyGraph(12.9f)
@@ -321,7 +440,8 @@ public class StudyIntegrationTest {
                 .name("스터디1")
                 .penalty(5000)
                 .weeks(5)
-                .bookId(1024L)
+                .leader(leader)
+                .book(book)
                 .state(StudyStatus.READY)
                 .headCount(0)
                 .build();

@@ -1,9 +1,11 @@
 package com.bombombom.devs.study.service.dto.result;
 
+import com.bombombom.devs.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.study.models.BookStudy;
-import com.bombombom.devs.study.models.Study;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.models.StudyType;
+import com.bombombom.devs.user.service.dto.UserProfileResult;
 import java.time.LocalDate;
 import lombok.Builder;
 
@@ -19,11 +21,13 @@ public record BookStudyResult(
     Integer reliabilityLimit,
     Integer penalty,
     StudyStatus state,
+    UserProfileResult leader,
     StudyType studyType,
-    Long bookId
+    BookResult bookResult
 ) implements StudyResult {
 
     public static BookStudyResult fromEntity(BookStudy bookStudy) {
+
         return BookStudyResult.builder()
             .id(bookStudy.getId())
             .name(bookStudy.getName())
@@ -35,7 +39,8 @@ public record BookStudyResult(
             .reliabilityLimit(bookStudy.getReliabilityLimit())
             .penalty(bookStudy.getPenalty())
             .state(bookStudy.getState())
-            .bookId(bookStudy.getBookId())
+            .leader(UserProfileResult.fromEntity(bookStudy.getLeader()))
+            .bookResult(SearchBooksResult.fromEntity(bookStudy.getBook()))
             .studyType(bookStudy.getStudyType())
             .build();
     }

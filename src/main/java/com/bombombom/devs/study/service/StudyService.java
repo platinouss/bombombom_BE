@@ -3,9 +3,12 @@ package com.bombombom.devs.study.service;
 import com.bombombom.devs.algo.models.AlgorithmProblem;
 import com.bombombom.devs.algo.models.AlgorithmProblemConverter;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
+import com.bombombom.devs.book.models.Book;
+import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.client.solvedac.SolvedacClient;
 import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.global.util.Clock;
+import com.bombombom.devs.study.exception.NotFoundException;
 import com.bombombom.devs.study.models.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
@@ -40,6 +43,7 @@ public class StudyService {
     private final Clock clock;
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
+    private final BookRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
     private final SolvedacClient solvedacClient;
     private final RoundRepository roundRepository;
@@ -57,7 +61,7 @@ public class StudyService {
         float db = registerAlgorithmStudyCommand.difficultyBegin();
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalStateException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException("User Not Found"));
 
         AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
             .name(registerAlgorithmStudyCommand.name())
@@ -96,7 +100,10 @@ public class StudyService {
         Long userId, RegisterBookStudyCommand registerBookStudyCommand) {
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalStateException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException("User Not Found"));
+
+        Book book = bookRepository.findByIsbn(registerBookStudyCommand.isbn())
+            .orElseThrow(() -> new NotFoundException("Book Not Found"));
 
         BookStudy bookStudy = BookStudy.builder()
             .name(registerBookStudyCommand.name())
@@ -109,9 +116,10 @@ public class StudyService {
             .headCount(registerBookStudyCommand.headCount())
             .state(registerBookStudyCommand.state())
             .leader(user)
-            .bookId(registerBookStudyCommand.bookId())
+//            .bookId(registerBookStudyCommand.bookId())
             .userStudies(new ArrayList<>())
             .rounds(new ArrayList<>())
+            .book(book)
             .build();
         bookStudy.createRounds();
         bookStudy.join(user);
@@ -122,7 +130,7 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public Page<StudyResult> readStudy(Pageable pageable) {
-        Page<Study> studyPage = studyRepository.findAll(pageable);
+        Page<Study> studyPage = studyRepository.findAllWithUserAndBook(pageable);
 
         return studyPage.map(StudyResult::fromEntity);
 

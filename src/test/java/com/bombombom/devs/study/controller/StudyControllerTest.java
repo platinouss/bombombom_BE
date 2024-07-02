@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.global.security.JwtUtils;
 import com.bombombom.devs.global.util.SystemClock;
@@ -34,6 +35,8 @@ import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.study.service.dto.result.StudyResult;
+import com.bombombom.devs.user.models.Role;
+import com.bombombom.devs.user.service.dto.UserProfileResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -81,6 +84,23 @@ class StudyControllerTest {
             /*
             Given
              */
+
+            UserProfileResult leaderProfile = UserProfileResult.builder()
+                .username("leader")
+                .role(Role.USER)
+                .introduce("introduce")
+                .image("image")
+                .reliability(50)
+                .money(10000)
+                .build();
+            BookResult bookResult = BookResult.builder()
+                .title("누가 내머리에 똥쌌어")
+                .id(5L)
+                .isbn(12345689L)
+                .publisher("교보문고")
+                .author("세계최강민석")
+                .tableOfContents("").build();
+
             RegisterBookStudyRequest registerBookStudyRequest =
                 RegisterBookStudyRequest.builder()
                     .reliabilityLimit(37)
@@ -90,7 +110,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             BookStudyResult bookStudyResult =
@@ -103,9 +123,10 @@ class StudyControllerTest {
                     .capacity(10)
                     .startDate(LocalDate.now())
                     .penalty(5000)
+                    .leader(leaderProfile)
+                    .bookResult(bookResult)
                     .weeks(5)
                     .state(StudyStatus.READY)
-                    .bookId(15L)
                     .build();
 
             when(studyService.createBookStudy(any(Long.class),
@@ -151,7 +172,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -196,7 +217,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -241,7 +262,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -286,7 +307,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -331,7 +352,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(MAX_WEEKS + 1)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -376,7 +397,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(MAX_PENALTY + 1)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -422,7 +443,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -453,8 +474,8 @@ class StudyControllerTest {
 
         @Test
         @WithUserDetails(value = "testuser")
-        @DisplayName("bookId가 Null이라면 BookStudy를 생성할 수 없다")
-        void register_book_study_fails_if_book_id_is_null() throws Exception {
+        @DisplayName("isbn이 Null이라면 BookStudy를 생성할 수 없다")
+        void register_book_study_fails_if_isbn_is_null() throws Exception {
             /*
             Given
              */
@@ -489,7 +510,7 @@ class StudyControllerTest {
                 .andExpectAll(
                     status().isBadRequest(),
                     jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.bookId").hasJsonPath()
+                    jsonPath("$.errorDetails.isbn").hasJsonPath()
                 );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
@@ -513,7 +534,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now().minusMonths(1))
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -558,7 +579,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .bookId(15L)
+                    .isbn(15L)
                     .build();
 
             /*
@@ -599,6 +620,14 @@ class StudyControllerTest {
             Given
              */
 
+            UserProfileResult leaderProfile = UserProfileResult.builder()
+                .username("leader")
+                .role(Role.USER)
+                .introduce("introduce")
+                .image("image")
+                .reliability(50)
+                .money(10000)
+                .build();
             RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
                 RegisterAlgorithmStudyRequest.builder()
                     .reliabilityLimit(37)
@@ -622,6 +651,7 @@ class StudyControllerTest {
                 .startDate(LocalDate.now())
                 .penalty(5000)
                 .weeks(5)
+                .leader(leaderProfile)
                 .state(StudyStatus.READY)
                 .difficultyDp(10f)
                 .difficultyDs(10f)
@@ -1348,6 +1378,22 @@ class StudyControllerTest {
          */
         List<StudyResult> studyResults = new ArrayList<>();
 
+        UserProfileResult leaderProfile = UserProfileResult.builder()
+            .username("leader")
+            .role(Role.USER)
+            .introduce("introduce")
+            .image("image")
+            .reliability(50)
+            .money(10000)
+            .build();
+        BookResult bookResult = BookResult.builder()
+            .title("누가 내머리에 똥쌌어")
+            .id(5L)
+            .isbn(12345689L)
+            .publisher("교보문고")
+            .author("세계최강민석")
+            .tableOfContents("").build();
+
         StudyResult studyResult =
             AlgorithmStudyResult.builder()
                 .reliabilityLimit(37)
@@ -1361,6 +1407,7 @@ class StudyControllerTest {
                 .difficultyGraph(12.9f)
                 .difficultyGap(5)
                 .capacity(10)
+                .leader(leaderProfile)
                 .difficultyGeometry(11f)
                 .difficultyMath(11f)
                 .difficultyString(13.5f)
@@ -1372,11 +1419,12 @@ class StudyControllerTest {
                 .reliabilityLimit(37)
                 .capacity(10)
                 .introduce("안녕하세요")
+                .leader(leaderProfile)
                 .startDate(LocalDate.of(2024, 06, 14))
                 .name("스터디1")
                 .penalty(5000)
+                .bookResult(bookResult)
                 .weeks(5)
-                .bookId(1024L)
                 .build();
 
         studyResults.add(studyResult);

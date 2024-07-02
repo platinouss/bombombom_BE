@@ -1,8 +1,8 @@
-package com.bombombom.devs.book.naverapi;
+package com.bombombom.devs.client.naver;
 
-import com.bombombom.devs.book.naverapi.exception.ExternalApiException;
 import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
 import com.bombombom.devs.book.service.dto.NaverBookApiResult;
+import com.bombombom.devs.client.naver.exception.ExternalApiException;
 import com.bombombom.devs.global.util.converter.MultiValueMapConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
