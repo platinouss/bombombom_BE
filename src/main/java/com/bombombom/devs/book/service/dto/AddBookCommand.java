@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record AddBookCommand(
-    String isbn
+    Long isbn
 ) {
 
 }

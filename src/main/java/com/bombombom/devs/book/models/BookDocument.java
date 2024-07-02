@@ -19,6 +19,9 @@ public class BookDocument {
     @Id
     private String id;
 
+    @Field(type = FieldType.Long)
+    private Long bookId;
+
     @Field(type = FieldType.Text)
     private String title;
 
@@ -28,9 +31,16 @@ public class BookDocument {
     @Field(type = FieldType.Keyword, index = false)
     private String publisher;
 
+    @Field(type = FieldType.Long)
+    private Long isbn;
+
     @Field(type = FieldType.Text, index = false)
     private String imageUrl;
 
-    @Field(type = FieldType.Text, index = false)
+    @Field(type = FieldType.Text)
     private String tableOfContents;
+
+    public void setBookId(Long bookId) {
+        this.bookId = bookId;
+    }
 }

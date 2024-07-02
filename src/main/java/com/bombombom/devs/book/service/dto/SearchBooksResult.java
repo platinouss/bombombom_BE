@@ -27,7 +27,7 @@ public record SearchBooksResult(
             .title(bookDocument.getTitle())
             .author(bookDocument.getAuthor())
             .publisher(bookDocument.getPublisher())
-            .isbn(Long.parseLong(bookDocument.getId()))
+            .isbn(bookDocument.getIsbn())
             .tableOfContents(bookDocument.getTableOfContents())
             .imageUrl(bookDocument.getImageUrl())
             .build();

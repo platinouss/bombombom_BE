@@ -43,7 +43,7 @@ public class Book {
             .title(bookDocument.getTitle())
             .author(bookDocument.getAuthor())
             .publisher(bookDocument.getPublisher())
-            .isbn(Long.parseLong(bookDocument.getAuthor()))
+            .isbn(bookDocument.getIsbn())
             .tableOfContents(bookDocument.getTableOfContents())
             .imageUrl(bookDocument.getImageUrl())
             .build();
