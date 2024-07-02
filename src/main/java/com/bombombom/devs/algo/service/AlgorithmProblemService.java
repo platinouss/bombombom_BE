@@ -4,17 +4,17 @@ package com.bombombom.devs.algo.service;
 
 import com.bombombom.devs.algo.config.ProbabilityConfig;
 import com.bombombom.devs.algo.models.AlgoTag;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.stream.IntStream;
+import java.util.random.RandomGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
 public class AlgorithmProblemService {
+
+    private final RandomGenerator randomGenerator;
 
     /**
      * totalProblemCount 개의 문제를 각 태그별로 정해진 확률대로 추첨하여 분배합니다.
@@ -44,16 +44,22 @@ public class AlgorithmProblemService {
 
     public Map<String, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
         Map<String, Integer> problemCountByTag = new HashMap<>();
-        Random random = new Random();
-        IntStream.range(0, totalProblemCount).forEach(i -> {
-            double rand = random.nextDouble(ProbabilityConfig.totalProbability);
-            Arrays.stream(AlgoTag.values()).forEach(tag -> {
-                if (tag.isInRange(rand)) {
-                    problemCountByTag.merge(tag.name(), 1, Integer::sum);
-                }
-            });
-        });
+        while (totalProblemCount > 0) {
+            totalProblemCount--;
+            drawProblem(problemCountByTag);
+        }
         return problemCountByTag;
     }
+
+    private void drawProblem(Map<String, Integer> problemCountByTag) {
+        double rand = randomGenerator.nextDouble(ProbabilityConfig.totalProbability);
+        for (AlgoTag tag : AlgoTag.values()) {
+            if (tag.isInRange(rand)) {
+                problemCountByTag.merge(tag.name(), 1, Integer::sum);
+                break;
+            }
+        }
+    }
+
 
 }

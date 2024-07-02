@@ -2,7 +2,10 @@ package com.bombombom.devs.algo.config;
 
 import com.bombombom.devs.algo.models.AlgoTag;
 import jakarta.annotation.PostConstruct;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -52,6 +55,11 @@ public class ProbabilityConfig {
             choiceSpreadStart = tag.getChoiceSpreadEnd();
         }
         totalProbability = math + dp + greedy + impl + graph + geometry + ds + string;
+    }
+
+    @Bean
+    public RandomGenerator randomGenerator() {
+        return new Random();
     }
 
 }

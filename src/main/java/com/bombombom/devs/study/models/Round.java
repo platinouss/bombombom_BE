@@ -58,10 +58,6 @@ public class Round extends BaseEntity {
     }
 
     public AlgorithmProblemAssignment assignProblem(AlgorithmProblem problem) {
-        /*
-        TODO: solve_history 같이 저장되는지 확인
-         만약 같이 저장 안되면 CascadeType 변경하면 저장되는지 확인
-         */
         AlgorithmProblemAssignment assignment = AlgorithmProblemAssignment.builder()
             .round(this)
             .problem(problem)
