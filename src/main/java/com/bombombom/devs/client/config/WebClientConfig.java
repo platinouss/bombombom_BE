@@ -43,7 +43,8 @@ public class WebClientConfig {
                 }
             ))
             .defaultHeader("user-agent",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.3")
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) "
+                    + "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.3")
             .build();
     }
 }

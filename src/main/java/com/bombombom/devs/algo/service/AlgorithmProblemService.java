@@ -1,3 +1,5 @@
+// @formatter:off
+
 package com.bombombom.devs.algo.service;
 
 import com.bombombom.devs.algo.config.ProbabilityConfig;
@@ -31,13 +33,14 @@ public class AlgorithmProblemService {
      * 3. 랜덤 난수를 생성하여 각 태그의 당첨 스프레드와 비교하여 당첨 태그를 정한다.
      * 4. totalProblemCount 만큼 (1)~(3)을 반복하여 태그마다 문제 개수(problemCountByTag)를 카운트한다.
      * 5. problemCountByTag를 반환한다.
+     *
      * @param totalProblemCount 총 문제 개수
      * @return problemCountByTag 태그별 문제 개수
      * @author 송승훈
      *
-     * 함수 인자로 선택할 Tag, 혹은 제외할 Tag를 받는 것도 고려해봤지만
-     *     오버엔지니어링이 될 수 있으므로 최소 스펙으로 구현하였습니다.
      */
+    // 함수 인자로 선택할 Tag, 혹은 제외할 Tag를 받는 것도 고려해봤지만
+    // 오버엔지니어링이 될 수 있으므로 최소 스펙으로 구현하였습니다
 
     public Map<String, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
         Map<String, Integer> problemCountByTag = new HashMap<>();

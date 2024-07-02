@@ -67,7 +67,7 @@ public class Round extends BaseEntity {
             .problem(problem)
             .solveHistories(new ArrayList<>())
             .build();
-        for (UserStudy userStudy: study.userStudies) {
+        for (UserStudy userStudy : study.userStudies) {
             AlgorithmProblemAssignmentSolveHistory history
                 = assignment.createSolveHistory(userStudy.getUser());
             assignment.getSolveHistories().add(history);

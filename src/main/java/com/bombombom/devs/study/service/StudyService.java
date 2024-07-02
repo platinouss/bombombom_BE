@@ -116,7 +116,6 @@ public class StudyService {
             .headCount(registerBookStudyCommand.headCount())
             .state(registerBookStudyCommand.state())
             .leader(user)
-//            .bookId(registerBookStudyCommand.bookId())
             .userStudies(new ArrayList<>())
             .rounds(new ArrayList<>())
             .book(book)

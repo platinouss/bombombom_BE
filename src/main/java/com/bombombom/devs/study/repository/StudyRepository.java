@@ -14,6 +14,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
         + "join fetch us.user "
         + "where s.id = :id")
     Optional<Study> findStudyWithUsersById(Long id);
+    
     @Query(value = "SELECT s FROM Study s "
         + "LEFT JOIN FETCH s.leader "
         + "LEFT JOIN FETCH TREAT(s as BookStudy).book",
