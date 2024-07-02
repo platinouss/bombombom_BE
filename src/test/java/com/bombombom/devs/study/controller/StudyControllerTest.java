@@ -190,12 +190,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.name").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.name").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -235,12 +234,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.name").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.name").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -280,12 +278,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.introduce").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.introduce").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -325,12 +322,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.introduce").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.introduce").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -370,12 +366,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.weeks").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.weeks").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -415,12 +410,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.penalty").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.penalty").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -461,12 +455,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -488,7 +481,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-//                .bookId(15L)
+                    //.bookId(15L)
                     .build();
 
             /*
@@ -506,12 +499,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.isbn").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.isbn").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -552,12 +544,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.startDateAfterOrEqualToday").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.startDateAfterOrEqualToday").hasJsonPath()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -597,10 +588,9 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isUnauthorized()
-                );
+            resultActions.andExpectAll(
+                status().isUnauthorized()
+            );
 
             verify(studyService, never()).createBookStudy(any(Long.class),
                 any(RegisterBookStudyCommand.class));
@@ -727,12 +717,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.name").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.name").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -776,12 +765,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.name").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.name").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -825,12 +813,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.introduce").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.introduce").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -874,12 +861,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.introduce").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.introduce").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -922,12 +908,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.weeks").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.weeks").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -970,12 +955,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.penalty").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.penalty").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1018,12 +1002,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.capacity").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.capacity").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1066,12 +1049,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.reliabilityLimit").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1115,12 +1097,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.difficultyBegin").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.difficultyBegin").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1164,12 +1145,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.difficultyEnd").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.difficultyEnd").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1211,12 +1191,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.problemCount").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.problemCount").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1261,12 +1240,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.difficultyBeginLteDifficultyEnd").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.difficultyBeginLteDifficultyEnd").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1310,12 +1288,11 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isBadRequest(),
-                    jsonPath("$.errorDetails.*", hasSize(1)),
-                    jsonPath("$.errorDetails.startDateAfterOrEqualToday").hasJsonPath()
-                );
+            resultActions.andExpectAll(
+                status().isBadRequest(),
+                jsonPath("$.errorDetails.*", hasSize(1)),
+                jsonPath("$.errorDetails.startDateAfterOrEqualToday").hasJsonPath()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));
@@ -1359,10 +1336,9 @@ class StudyControllerTest {
             Then
              */
 
-            resultActions
-                .andExpectAll(
-                    status().isUnauthorized()
-                );
+            resultActions.andExpectAll(
+                status().isUnauthorized()
+            );
 
             verify(studyService, never()).createAlgorithmStudy(any(Long.class),
                 any(RegisterAlgorithmStudyCommand.class));

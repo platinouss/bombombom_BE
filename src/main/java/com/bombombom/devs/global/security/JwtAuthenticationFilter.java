@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,10 +17,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final static String AUTH_URL = "/api/v1/auth";
+    private static final String AUTH_URL = "/api/v1/auth";
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
 
@@ -44,16 +46,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             username = jwtUtils.extractUserId(jwt);
         } catch (JwtException ignored) {
+            log.debug("JwtException = {}", ignored);
         }
 
         if (username != null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken authentication =
                 UsernamePasswordAuthenticationToken.authenticated(
-                userDetails,
-                userDetails.getPassword(),
-                userDetails.getAuthorities()
-            );
+                    userDetails,
+                    userDetails.getPassword(),
+                    userDetails.getAuthorities()
+                );
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

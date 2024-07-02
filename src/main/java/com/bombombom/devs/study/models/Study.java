@@ -76,7 +76,7 @@ public abstract class Study extends BaseEntity {
     @Enumerated(EnumType.STRING)
     protected StudyStatus state;
 
-    abstract public StudyType getStudyType();
+    public abstract StudyType getStudyType();
 
     public UserStudy join(User user) {
         if (state.equals(StudyStatus.END)) {
