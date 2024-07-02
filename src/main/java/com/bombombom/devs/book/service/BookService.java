@@ -1,6 +1,7 @@
 package com.bombombom.devs.book.service;
 
 import com.bombombom.devs.book.enums.SearchOption;
+import com.bombombom.devs.book.exception.BookNotFoundException;
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.models.BookDocument;
 import com.bombombom.devs.book.repository.BookElasticsearchRepository;
@@ -13,7 +14,6 @@ import com.bombombom.devs.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.client.naver.NaverClient;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,7 @@ public class BookService {
     @Transactional
     public void addBook(AddBookCommand addBookCommand) {
         BookDocument bookDocument = bookElasticsearchRepository.findByIsbn(addBookCommand.isbn())
-            .orElseThrow(() -> new NoSuchElementException("해당 서적이 존재하지 않습니다."));
+            .orElseThrow(BookNotFoundException::new);
         Book book = bookRepository.save(Book.fromDocument(bookDocument));
         bookDocument.setBookId(book.getId());
         bookElasticsearchRepository.save(bookDocument);
