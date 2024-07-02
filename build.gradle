@@ -21,6 +21,11 @@ configurations {
     }
 }
 
+checkstyle {
+    maxWarnings = 0
+    toolVersion = "10.17.0"
+}
+
 repositories {
     mavenCentral()
 }
@@ -47,21 +52,10 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'com.squareup.okhttp3:mockwebserver'
+
+
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
-
-checkstyle {
-    maxWarnings = 0
-    configFile = file("checkstyle/naver-checkstyle-rules.xml")
-    configProperties = ["suppressionFile": "checkstyle/naver-checkstyle-suppressions.xml"]
 }
