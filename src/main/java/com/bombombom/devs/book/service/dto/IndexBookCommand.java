@@ -14,10 +14,10 @@ public record IndexBookCommand(
 
     public BookDocument toDocument() {
         return BookDocument.builder()
-            .id(String.valueOf(isbn))
             .title(title)
             .author(author)
             .publisher(publisher)
+            .isbn(isbn)
             .imageUrl(imageUrl)
             .tableOfContents("")
             .build();

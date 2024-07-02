@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verify;
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookBulkRepository;
-import com.bombombom.devs.book.repository.BookRepository;
-import com.bombombom.devs.book.service.dto.AddBookCommand;
+import com.bombombom.devs.book.repository.BookElasticsearchRepository;
+import com.bombombom.devs.book.service.dto.IndexBookCommand;
 import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
 import com.bombombom.devs.book.service.dto.NaverBookApiResult;
 import com.bombombom.devs.book.service.dto.NaverBookApiResult.SearchBookItem;
@@ -37,11 +37,14 @@ public class BookServiceTest {
     @Mock
     private NaverClient naverClient;
 
-    @Mock
-    private BookRepository bookRepository;
+//    @Mock
+//    private BookRepository bookRepository;
 
     @Mock
     private BookBulkRepository bookBulkRepository;
+
+    @Mock
+    private BookElasticsearchRepository bookElasticsearchRepository;
 
     @DisplayName("통합 검색을 통해 서적명 또는 저자와 매칭되는 기술 서적을 검색할 수 있다.")
     @Test
@@ -72,7 +75,7 @@ public class BookServiceTest {
             .booksResult(List.of(bookResult))
             .build();
 
-        doReturn(queryResult).when(bookRepository)
+        doReturn(queryResult).when(book)
             .findTop30BooksByTitleContainingOrAuthorContaining(searchBookQuery.keyword(),
                 searchBookQuery.keyword());
 
@@ -113,14 +116,14 @@ public class BookServiceTest {
             .booksResult(List.of(bookResult))
             .build();
 
-        doReturn(queryResult).when(bookRepository)
-            .findTop30BooksByTitleContaining(searchBookQuery.keyword());
+        doReturn(queryResult).when(bookElasticsearchRepository)
+            .findTop30ByTitle(searchBookQuery.keyword());
 
         /*
         When & Then
          */
         assertThat(bookService.searchBook(searchBookQuery)).isEqualTo(searchBooksResult);
-        verify(bookRepository, times(1)).findTop30BooksByTitleContaining(
+        verify(bookElasticsearchRepository, times(1)).findTop30ByTitle(
             searchBookQuery.keyword());
     }
 
@@ -206,19 +209,19 @@ public class BookServiceTest {
         /*
         Given
          */
-        AddBookCommand addBookCommand1 = AddBookCommand.builder()
+        IndexBookCommand addBookCommand1 = IndexBookCommand.builder()
             .title("Real MySQL 8.0 (1권) (개발자와 DBA를 위한 MySQL 실전 가이드)")
             .author("백은빈")
             .publisher("위키북스")
             .isbn(9791158392703L)
             .build();
-        AddBookCommand addBookCommand2 = AddBookCommand.builder()
+        IndexBookCommand addBookCommand2 = IndexBookCommand.builder()
             .title("Real MySQL 8.0 (2권) (개발자와 DBA를 위한 MySQL 실전 가이드)")
             .author("백은빈")
             .publisher("위키북스")
             .isbn(9791158392727L)
             .build();
-        List<AddBookCommand> addBookCommands = List.of(addBookCommand1, addBookCommand2);
+        List<IndexBookCommand> addBookCommands = List.of(addBookCommand1, addBookCommand2);
 
         doNothing().when(bookBulkRepository).saveAll(anyList());
 

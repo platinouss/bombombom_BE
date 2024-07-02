@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.book.controller.dto.BookAddRequest;
+import com.bombombom.devs.book.controller.dto.BookIndexRequest;
 import com.bombombom.devs.book.controller.dto.BookListResponse;
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.service.BookService;
@@ -157,7 +157,7 @@ public class BookControllerTest {
         /*
         Given
          */
-        BookAddRequest bookAddRequest = BookAddRequest.builder()
+        BookIndexRequest bookIndexRequest = BookIndexRequest.builder()
             .keyword("자바 최적화(Optimizing Java)")
             .build();
         SearchBookItem searchBookItem = SearchBookItem.builder()
@@ -200,7 +200,7 @@ public class BookControllerTest {
          */
         ResultActions resultActions = mockMvc.perform(post("/api/v1/books")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(bookAddRequest))
+            .content(objectMapper.writeValueAsString(bookIndexRequest))
         );
 
         /*
@@ -220,7 +220,7 @@ public class BookControllerTest {
         /*
         Given
          */
-        BookAddRequest bookAddRequest = BookAddRequest.builder()
+        BookIndexRequest bookIndexRequest = BookIndexRequest.builder()
             .keyword(" ")
             .build();
 
@@ -230,7 +230,7 @@ public class BookControllerTest {
         ResultActions resultActions = mockMvc.perform(
             post("/api/v1/books")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(bookAddRequest))
+                .content(objectMapper.writeValueAsString(bookIndexRequest))
         );
 
         /*

@@ -13,10 +13,11 @@ import com.bombombom.devs.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.client.naver.NaverClient;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +30,12 @@ public class BookService {
     public SearchBooksResult searchBook(SearchBookQuery searchBookQuery) {
         List<BookDocument> bookDocuments;
         if (searchBookQuery.searchOption() == SearchOption.TITLE) {
-            bookDocuments = bookElasticsearchRepository.findByTitle(searchBookQuery.keyword());
+            bookDocuments = bookElasticsearchRepository.findTop30ByTitle(searchBookQuery.keyword());
         } else if (searchBookQuery.searchOption() == SearchOption.AUTHOR) {
-            bookDocuments = bookElasticsearchRepository.findByAuthor(searchBookQuery.keyword());
+            bookDocuments = bookElasticsearchRepository.findTop30ByAuthor(
+                searchBookQuery.keyword());
         } else {
-            bookDocuments = bookElasticsearchRepository.findByTitleOrAuthor(
+            bookDocuments = bookElasticsearchRepository.findTop30ByTitleOrAuthor(
                 searchBookQuery.keyword(), searchBookQuery.keyword());
         }
         return SearchBooksResult.builder().booksResult(
@@ -45,16 +47,16 @@ public class BookService {
         return naverClient.searchBooks(naverBookApiQuery);
     }
 
+    @Transactional
     public void addBook(AddBookCommand addBookCommand) {
-        Optional<BookDocument> bookDocument = bookElasticsearchRepository.findById(
-            addBookCommand.isbn());
-        bookDocument.ifPresent(document -> bookRepository.save(Book.fromDocument(document)));
+        BookDocument bookDocument = bookElasticsearchRepository.findByIsbn(addBookCommand.isbn())
+            .orElseThrow(() -> new NoSuchElementException("해당 서적이 존재하지 않습니다."));
+        Book book = bookRepository.save(Book.fromDocument(bookDocument));
+        bookDocument.setBookId(book.getId());
+        bookElasticsearchRepository.save(bookDocument);
     }
 
     public void indexBooks(List<IndexBookCommand> indexBookCommands) {
-        for (IndexBookCommand indexBookCommand : indexBookCommands) {
-            System.out.println(indexBookCommand.imageUrl());
-        }
         bookElasticsearchRepository.saveAll(
             indexBookCommands.stream().map(IndexBookCommand::toDocument).collect(
                 Collectors.toList()));
