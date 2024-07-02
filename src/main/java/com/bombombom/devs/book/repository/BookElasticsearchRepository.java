@@ -4,9 +4,7 @@ import com.bombombom.devs.book.models.BookDocument;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.repository.ListCrudRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface BookElasticsearchRepository extends ListCrudRepository<BookDocument, String> {
 
     List<BookDocument> findTop30ByTitle(String title);
