@@ -1,8 +1,9 @@
 package com.bombombom.devs.study.models;
 
+import com.bombombom.devs.algo.models.AlgorithmProblem;
 import com.bombombom.devs.global.audit.BaseEntity;
 import com.bombombom.devs.user.models.User;
-import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,7 +13,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,31 +25,31 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "user_study")
-public class UserStudy extends BaseEntity {
+@Table(name = "algorithm_problem_assignment")
+public class AlgorithmProblemAssignment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false,
+    @JoinColumn(name = "round_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private User user;
+    private Round round;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_id", nullable = false,
+    @JoinColumn(name = "problem_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private Study study;
+    private AlgorithmProblem problem;
 
-    @Column(name = "security_deposit")
-    private Integer securityDeposit;
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.PERSIST)
+    private List<AlgorithmProblemAssignmentSolveHistory> solveHistories;
 
-    public static UserStudy of(User user, Study study, Integer securityDeposit) {
-        return UserStudy.builder()
+    public AlgorithmProblemAssignmentSolveHistory createSolveHistory(User user) {
+        return AlgorithmProblemAssignmentSolveHistory.builder()
+            .assignment(this)
             .user(user)
-            .study(study)
-            .securityDeposit(securityDeposit)
+            .tryCount(0)
             .build();
     }
 }
