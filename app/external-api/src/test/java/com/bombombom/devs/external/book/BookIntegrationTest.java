@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.ExternalAPIApplication;
+import com.bombombom.devs.ExternalApiApplication;
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.models.BookDocument;
 import com.bombombom.devs.book.repository.BookElasticsearchRepository;
@@ -36,7 +36,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@SpringBootTest(classes = ExternalAPIApplication.class)
+@SpringBootTest(classes = ExternalApiApplication.class)
 @Import(ElasticsearchTestConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class BookIntegrationTest {

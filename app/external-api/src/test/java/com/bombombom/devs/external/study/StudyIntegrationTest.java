@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.ExternalAPIApplication;
+import com.bombombom.devs.ExternalApiApplication;
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
@@ -57,7 +57,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@SpringBootTest(classes = ExternalAPIApplication.class)
+@SpringBootTest(classes = ExternalApiApplication.class)
 @Import(ElasticsearchTestConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class StudyIntegrationTest {

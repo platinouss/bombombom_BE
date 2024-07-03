@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ExternalAPIApplication {
+public class ExternalApiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ExternalAPIApplication.class, args);
+        SpringApplication.run(ExternalApiApplication.class, args);
     }
 
 }
