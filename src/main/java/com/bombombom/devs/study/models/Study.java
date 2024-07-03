@@ -78,13 +78,13 @@ public abstract class Study extends BaseEntity {
     @Enumerated(EnumType.STRING)
     protected StudyStatus state;
 
-    @OneToMany(mappedBy="study", cascade= CascadeType.PERSIST)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.PERSIST)
     protected List<UserStudy> userStudies;
 
-    @OneToMany(mappedBy="study", cascade= CascadeType.PERSIST)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.PERSIST)
     protected List<Round> rounds;
 
-    abstract public StudyType getStudyType();
+    public abstract StudyType getStudyType();
 
     public UserStudy join(User user) {
         if (state.equals(StudyStatus.END)) {

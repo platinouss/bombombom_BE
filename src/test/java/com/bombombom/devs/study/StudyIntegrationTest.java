@@ -107,9 +107,9 @@ public class StudyIntegrationTest {
         @WithUserDetails(value = "testuser",
             setupBefore = TestExecutionEvent.TEST_EXECUTION)
         void can_join_study_if_user_meets_the_conditions() throws Exception {
-        /*
-         Given
-         */
+            /*
+             Given
+             */
             Book book = Book.builder()
                 .title("테스트용 책")
                 .author("세계최강민석")
@@ -149,18 +149,18 @@ public class StudyIntegrationTest {
                 .studyId(study.getId()).build();
 
             System.out.println("study.getId() = " + study.getId());
-        /*
-         When
-         */
+            /*
+             When
+             */
             ResultActions resultActions = mockMvc.perform(
                 post("/api/v1/studies/join")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             );
 
-        /*
-        Then
-         */
+            /*
+            Then
+             */
             resultActions.andDo(print())
                 .andExpect(status().isOk());
         }
@@ -273,7 +273,7 @@ public class StudyIntegrationTest {
                 .tableOfContents("1. 2. 3. 4.")
                 .build();
             bookRepository.save(book);
-            
+
             UserProfileResult profile = UserProfileResult.builder()
                 .id(testuser.getId())
                 .role(testuser.getRole())

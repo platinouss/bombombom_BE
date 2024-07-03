@@ -1,9 +1,9 @@
 package com.bombombom.devs.user.controller;
 
+import com.bombombom.devs.global.security.AppUserDetails;
 import com.bombombom.devs.global.web.LoginUser;
 import com.bombombom.devs.user.controller.dto.SignupRequest;
 import com.bombombom.devs.user.controller.dto.UserProfileResponse;
-import com.bombombom.devs.global.security.AppUserDetails;
 import com.bombombom.devs.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

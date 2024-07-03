@@ -50,12 +50,11 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
             .build();
     }
 
-   /*
-   RoundJob 은 해당 날짜에 시작하는 라운드들을 조회하여 문제를 선정 및 배정한다.
+    /*
+    RoundJob 은 해당 날짜에 시작하는 라운드들을 조회하여 문제를 선정 및 배정한다.
       1. 시작해야 하는 라운드들을 조회한다. (Study 와 Fetch Join)
       2. round 에 연결된 Study 의 종류에 따라 해야할 일을 수행한다.
-   */
-
+    */
     private static JobDataMap newJobDataMap() {
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put(JOB_IDENTITY, RoundStartJob.DEVELOPER_NAME);

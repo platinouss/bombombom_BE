@@ -50,6 +50,7 @@ public class User extends BaseEntity {
             .money(0)
             .build();
     }
+    
     public void payMoney(Integer money) {
         if (money < 0) {
             throw new IllegalStateException("Money must be positive");

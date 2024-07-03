@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.0'
     id 'io.spring.dependency-management' version '1.1.5'
+    id 'checkstyle'
 }
 
 group = 'com.bombombom'
@@ -18,6 +19,11 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+}
+
+checkstyle {
+    maxWarnings = 0
+    toolVersion = "10.17.0"
 }
 
 repositories {
@@ -47,6 +53,8 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'com.squareup.okhttp3:mockwebserver'
+
+
 }
 
 tasks.named('test') {
