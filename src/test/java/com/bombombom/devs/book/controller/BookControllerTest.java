@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.book.controller.dto.BookAddRequest;
+import com.bombombom.devs.book.controller.dto.BookIndexRequest;
 import com.bombombom.devs.book.controller.dto.BookListResponse;
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.service.BookService;
@@ -157,7 +157,7 @@ public class BookControllerTest {
         /*
         Given
          */
-        BookAddRequest bookAddRequest = BookAddRequest.builder()
+        BookIndexRequest bookIndexRequest = BookIndexRequest.builder()
             .keyword("자바 최적화(Optimizing Java)")
             .build();
         SearchBookItem searchBookItem = SearchBookItem.builder()
@@ -198,9 +198,9 @@ public class BookControllerTest {
         /*
         When
          */
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/books")
+        ResultActions resultActions = mockMvc.perform(post("/api/v1/books/index")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(bookAddRequest))
+            .content(objectMapper.writeValueAsString(bookIndexRequest))
         );
 
         /*
@@ -211,7 +211,7 @@ public class BookControllerTest {
             .andExpect(MockMvcResultMatchers.content().string(
                 objectMapper.writeValueAsString(BookListResponse.fromResult(searchBooksResult))));
         verify(bookService, times(1)).findBookUsingOpenApi(any(NaverBookApiQuery.class));
-        verify(bookService, times(1)).addBooks(naverBookApiResult.toServiceDto());
+        verify(bookService, times(1)).indexBooks(naverBookApiResult.toServiceDto());
     }
 
     @DisplayName("검색 키워드가 빈 경우 NAVER Open API를 호출에 실패한다.")
@@ -220,7 +220,7 @@ public class BookControllerTest {
         /*
         Given
          */
-        BookAddRequest bookAddRequest = BookAddRequest.builder()
+        BookIndexRequest bookIndexRequest = BookIndexRequest.builder()
             .keyword(" ")
             .build();
 
@@ -230,7 +230,7 @@ public class BookControllerTest {
         ResultActions resultActions = mockMvc.perform(
             post("/api/v1/books")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(bookAddRequest))
+                .content(objectMapper.writeValueAsString(bookIndexRequest))
         );
 
         /*

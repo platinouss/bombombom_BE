@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.config.ElasticsearchTestConfig;
 import com.bombombom.devs.study.controller.StudyController;
 import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.TestExecutionEvent;
@@ -55,6 +57,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest
+@Import(ElasticsearchTestConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class StudyIntegrationTest {
 

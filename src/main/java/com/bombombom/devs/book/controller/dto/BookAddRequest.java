@@ -1,15 +1,17 @@
 package com.bombombom.devs.book.controller.dto;
 
-import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
-import jakarta.validation.constraints.NotBlank;
+import com.bombombom.devs.book.service.dto.AddBookCommand;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
 public record BookAddRequest(
-    @NotBlank(message = "공백일 수 없습니다.") String keyword
+    @NotNull(message = "공백일 수 없습니다.") Long isbn
 ) {
 
-    public NaverBookApiQuery toServiceDto() {
-        return new NaverBookApiQuery(keyword);
+    public AddBookCommand toServiceDto() {
+        return AddBookCommand.builder()
+            .isbn(isbn)
+            .build();
     }
 }

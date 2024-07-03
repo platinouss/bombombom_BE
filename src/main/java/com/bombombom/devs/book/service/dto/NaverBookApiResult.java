@@ -30,10 +30,10 @@ public record NaverBookApiResult(
 
     }
 
-    public List<AddBookCommand> toServiceDto() {
+    public List<IndexBookCommand> toServiceDto() {
         return items().stream()
             .filter(item -> Objects.nonNull(item.isbn))
-            .map(item -> AddBookCommand.builder()
+            .map(item -> IndexBookCommand.builder()
                 .title(item.title)
                 .author(item.author)
                 .publisher(item.publisher)

@@ -1,6 +1,7 @@
 package com.bombombom.devs.book.controller;
 
 import com.bombombom.devs.book.controller.dto.BookAddRequest;
+import com.bombombom.devs.book.controller.dto.BookIndexRequest;
 import com.bombombom.devs.book.controller.dto.BookListRequest;
 import com.bombombom.devs.book.controller.dto.BookListResponse;
 import com.bombombom.devs.book.service.BookService;
@@ -30,11 +31,18 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookListResponse> addBook(
+    public ResponseEntity<Void> addBook(
         @Valid @RequestBody BookAddRequest bookAddRequest) {
+        bookService.addBook(bookAddRequest.toServiceDto());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/index")
+    public ResponseEntity<BookListResponse> indexBooks(
+        @Valid @RequestBody BookIndexRequest bookIndexRequest) {
         NaverBookApiResult naverBookApiResult = bookService.findBookUsingOpenApi(
-            bookAddRequest.toServiceDto());
-        bookService.addBooks(naverBookApiResult.toServiceDto());
+            bookIndexRequest.toServiceDto());
+        bookService.indexBooks(naverBookApiResult.toServiceDto());
         return ResponseEntity.ok().body(BookListResponse.fromResult(naverBookApiResult));
     }
 }

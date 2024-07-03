@@ -43,7 +43,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URI}
 logging.level:
+  tracer:
+    TRACE
   com.bombombom: ${LOG_LEVEL}
   org.springframework.security: TRACE
 
@@ -59,6 +63,14 @@ spring:
     hibernate:
       ddl-auto: create-drop
     defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
   sql:
     init:
       mode: always
+  elasticsearch:
+    uris: ${TEST_ELASTICSEARCH_URI}
+logging.level:
+  tracer:
+    TRACE
