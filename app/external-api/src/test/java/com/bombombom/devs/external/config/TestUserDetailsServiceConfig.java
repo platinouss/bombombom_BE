@@ -1,6 +1,6 @@
-package com.bombombom.devs.config;
+package com.bombombom.devs.external.config;
 
-import com.bombombom.devs.global.security.AppUserDetails;
+import com.bombombom.devs.external.global.security.AppUserDetails;
 import com.bombombom.devs.user.models.Role;
 import java.util.ArrayList;
 import java.util.List;

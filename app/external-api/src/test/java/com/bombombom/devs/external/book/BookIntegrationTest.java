@@ -1,20 +1,21 @@
-package com.bombombom.devs.book;
+package com.bombombom.devs.external.book;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.book.controller.BookController;
-import com.bombombom.devs.book.controller.dto.BookAddRequest;
-import com.bombombom.devs.book.controller.dto.BookIndexRequest;
-import com.bombombom.devs.book.controller.dto.BookListResponse;
+import com.bombombom.devs.ExternalAPIApplication;
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.models.BookDocument;
 import com.bombombom.devs.book.repository.BookElasticsearchRepository;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
-import com.bombombom.devs.config.ElasticsearchTestConfig;
+import com.bombombom.devs.external.book.controller.BookController;
+import com.bombombom.devs.external.book.controller.dto.BookAddRequest;
+import com.bombombom.devs.external.book.controller.dto.BookIndexRequest;
+import com.bombombom.devs.external.book.controller.dto.BookListResponse;
+import com.bombombom.devs.external.config.ElasticsearchTestConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@SpringBootTest
+@SpringBootTest(classes = ExternalAPIApplication.class)
 @Import(ElasticsearchTestConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class BookIntegrationTest {

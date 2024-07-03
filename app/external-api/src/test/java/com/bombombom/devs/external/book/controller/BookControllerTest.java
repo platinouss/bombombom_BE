@@ -1,4 +1,4 @@
-package com.bombombom.devs.book.controller;
+package com.bombombom.devs.external.book.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -8,8 +8,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.book.controller.dto.BookIndexRequest;
-import com.bombombom.devs.book.controller.dto.BookListResponse;
 import com.bombombom.devs.book.enums.SearchOption;
 import com.bombombom.devs.book.service.BookService;
 import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
@@ -18,7 +16,9 @@ import com.bombombom.devs.book.service.dto.NaverBookApiResult.SearchBookItem;
 import com.bombombom.devs.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
-import com.bombombom.devs.global.security.JwtUtils;
+import com.bombombom.devs.external.book.controller.dto.BookIndexRequest;
+import com.bombombom.devs.external.book.controller.dto.BookListResponse;
+import com.bombombom.devs.external.global.security.JwtUtils;
 import com.bombombom.devs.global.util.SystemClock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Date;

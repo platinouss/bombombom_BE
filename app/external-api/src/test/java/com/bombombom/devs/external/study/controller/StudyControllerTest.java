@@ -1,4 +1,4 @@
-package com.bombombom.devs.study.controller;
+package com.bombombom.devs.external.study.controller;
 
 import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
 import static com.bombombom.devs.study.Constants.MAX_DIFFICULTY_LEVEL;
@@ -20,14 +20,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
-import com.bombombom.devs.config.TestUserDetailsServiceConfig;
-import com.bombombom.devs.global.security.JwtUtils;
+import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
+import com.bombombom.devs.external.global.security.JwtUtils;
+import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
+import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.global.util.SystemClock;
-import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
-import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
-import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
-import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
-import com.bombombom.devs.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.StudyStatus;
 import com.bombombom.devs.study.service.StudyService;
 import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
@@ -60,7 +60,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @AutoConfigureMockMvc
-@WebMvcTest(StudyController.class)
+@WebMvcTest(controllers = StudyController.class)
 @Import({TestUserDetailsServiceConfig.class, JwtUtils.class, SystemClock.class})
 class StudyControllerTest {
 

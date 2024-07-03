@@ -1,4 +1,4 @@
-package com.bombombom.devs.study;
+package com.bombombom.devs.external.study;
 
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -9,16 +9,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bombombom.devs.ExternalAPIApplication;
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
-import com.bombombom.devs.config.ElasticsearchTestConfig;
-import com.bombombom.devs.study.controller.StudyController;
-import com.bombombom.devs.study.controller.dto.request.JoinStudyRequest;
-import com.bombombom.devs.study.controller.dto.request.RegisterAlgorithmStudyRequest;
-import com.bombombom.devs.study.controller.dto.request.RegisterBookStudyRequest;
-import com.bombombom.devs.study.controller.dto.response.StudyPageResponse;
-import com.bombombom.devs.study.controller.dto.response.StudyResponse;
+import com.bombombom.devs.external.config.ElasticsearchTestConfig;
+import com.bombombom.devs.external.study.controller.StudyController;
+import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
+import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
@@ -56,7 +57,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@SpringBootTest
+@SpringBootTest(classes = ExternalAPIApplication.class)
 @Import(ElasticsearchTestConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class StudyIntegrationTest {
