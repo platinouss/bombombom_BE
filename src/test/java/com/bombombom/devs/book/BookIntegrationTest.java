@@ -147,7 +147,7 @@ public class BookIntegrationTest {
         Given
          */
         BookAddRequest bookAddRequest = BookAddRequest.builder()
-            .isbn("1")
+            .isbn(1L)
             .build();
 
         /*
