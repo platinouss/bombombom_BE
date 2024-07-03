@@ -31,7 +31,7 @@ class AlgorithmProblemServiceTest {
         /*
          * Given
          */
-        int totalProblemCount = 1;
+        final int totalProblemCount = 1;
         ProbabilityConfig.totalProbability = 1.0;
         ProbabilityConfig config = new ProbabilityConfig();
         ReflectionTestUtils.setField(config, "math", 1.0);
