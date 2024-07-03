@@ -4,6 +4,7 @@ package com.bombombom.devs.algo.service;
 
 import com.bombombom.devs.algo.config.ProbabilityConfig;
 import com.bombombom.devs.algo.models.AlgoTag;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.random.RandomGenerator;
@@ -44,21 +45,19 @@ public class AlgorithmProblemService {
 
     public Map<String, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
         Map<String, Integer> problemCountByTag = new HashMap<>();
-        while (totalProblemCount > 0) {
-            totalProblemCount--;
-            drawProblem(problemCountByTag);
+        while (totalProblemCount-- > 0) {
+            AlgoTag tag = drawProblem();
+            problemCountByTag.merge(tag.name(), 1, Integer::sum);
         }
         return problemCountByTag;
     }
 
-    private void drawProblem(Map<String, Integer> problemCountByTag) {
+    private AlgoTag drawProblem() {
         double rand = randomGenerator.nextDouble(ProbabilityConfig.totalProbability);
-        for (AlgoTag tag : AlgoTag.values()) {
-            if (tag.isInRange(rand)) {
-                problemCountByTag.merge(tag.name(), 1, Integer::sum);
-                break;
-            }
-        }
+        return Arrays.stream(AlgoTag.values())
+            .filter(algoTag -> algoTag.isInRange(rand))
+            .findFirst()
+            .orElse(null);
     }
 
 
