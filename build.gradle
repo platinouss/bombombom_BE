@@ -5,58 +5,86 @@ plugins {
     id 'checkstyle'
 }
 
-group = 'com.bombombom'
-version = '0.0.1-SNAPSHOT'
+subprojects {
+    group = 'com.bombombom'
+    version = '0.0.1-SNAPSHOT'
+    java {
+        sourceCompatibility = '21'
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 
-java {
-    sourceCompatibility = '21'
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+    }
+
+    checkstyle {
+        maxWarnings = 0
+        toolVersion = "10.17.0"
+    }
+
+    tasks.named('bootJar') {
+        enabled = false
+    }
+
+    tasks.named('jar') {
+        enabled = true
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
 
-checkstyle {
-    maxWarnings = 0
-    toolVersion = "10.17.0"
-}
 
-repositories {
-    mavenCentral()
-}
+//configurations {
+//    compileOnly {
+//        extendsFrom annotationProcessor
+//    }
+//}
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.springframework.boot:spring-boot-starter-quartz'
-    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch:3.3.1'
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+//repositories {
+//    mavenCentral()
+//}
 
-    // TEST
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.assertj:assertj-core:3.11.1'
-    testImplementation 'com.squareup.okhttp3:mockwebserver'
-    testImplementation 'org.testcontainers:junit-jupiter'
-}
+//dependencies {
+//    implementation 'org.springframework.boot:spring-boot-starter-web'
+//    implementation 'org.springframework.boot:spring-boot-starter-validation'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
+//    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+//    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch:3.3.1'
+//
+//    compileOnly 'org.projectlombok:lombok'
+//    annotationProcessor 'org.projectlombok:lombok'
+//    runtimeOnly 'com.mysql:mysql-connector-j'
+//
+//    // JWT
+//    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+//
+//    // TEST
+//    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+//    testImplementation 'org.springframework.security:spring-security-test'
+//    testImplementation 'org.assertj:assertj-core:3.11.1'
+//    testImplementation 'com.squareup.okhttp3:mockwebserver'
+//    testImplementation 'org.testcontainers:junit-jupiter'
+//}
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
+

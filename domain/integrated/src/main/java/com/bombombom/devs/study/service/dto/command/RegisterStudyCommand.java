@@ -1,8 +1,6 @@
 package com.bombombom.devs.study.service.dto.command;
 
 import com.bombombom.devs.study.models.StudyStatus;
-import com.bombombom.devs.study.service.StudyService;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public interface RegisterStudyCommand {

@@ -1,9 +1,7 @@
 package com.bombombom.devs.study.service.dto.command;
 
 
-import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.StudyStatus;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.Builder;
 

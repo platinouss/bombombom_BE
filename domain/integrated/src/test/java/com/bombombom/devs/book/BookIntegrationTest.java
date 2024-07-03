@@ -75,7 +75,7 @@ public class BookIntegrationTest {
          */
         String keyword = "SWM 봄봄봄 테스트 책";
         String searchOption = SearchOption.TOTAL.name();
-        SearchBooksResult.BookResult bookResult = SearchBooksResult.BookResult.builder()
+        BookResult bookResult = BookResult.builder()
             .title("SWM 봄봄봄 테스트 책")
             .author("저자")
             .publisher("출판사")
