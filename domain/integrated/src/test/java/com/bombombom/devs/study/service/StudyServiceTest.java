@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookTempRepository;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
