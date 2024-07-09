@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.book.controller.dto;
 
-import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
+import com.bombombom.devs.dto.NaverBookApiQuery;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+// TODO: study 도메인 모듈 전환 후 제거 필요
 @SuperBuilder
 @Entity
 @Getter

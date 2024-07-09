@@ -1,0 +1,3 @@
+rootProject.name = 'devs'
+
+include ':support:common', ':support:naver-client'

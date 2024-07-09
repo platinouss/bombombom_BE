@@ -9,6 +9,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+// TODO: study 도메인 모듈 전환 후 제거 필요
 @Getter
 @Builder
 @AllArgsConstructor

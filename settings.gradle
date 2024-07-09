@@ -1,5 +1,20 @@
 rootProject.name = 'devs'
 
-include 'domain:integrated'
 include 'app:external-api'
 
+include 'domain'
+include 'domain:integrated'
+
+include 'infra'
+include 'infra:common'
+findProject(':infra:common')?.name = 'common'
+include 'infra:mysql'
+findProject(':infra:mysql')?.name = 'mysql'
+include 'infra:elasticsearch'
+findProject(':infra:elasticsearch')?.name = 'elasticsearch'
+
+include 'support'
+include 'support:common'
+findProject(':support:common')?.name = 'common'
+include 'support:naver-client'
+findProject(':support:naver-client')?.name = 'naver-client'

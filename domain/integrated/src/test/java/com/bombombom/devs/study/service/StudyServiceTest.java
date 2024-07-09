@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.bombombom.devs.book.models.Book;
-import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.book.repository.BookTempRepository;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.BookStudy;
 import com.bombombom.devs.study.models.Study;
@@ -43,7 +42,7 @@ class StudyServiceTest {
     @Mock
     private StudyRepository studyRepository;
     @Mock
-    private BookRepository bookRepository;
+    private BookTempRepository bookRepository;
 
     @Mock
     private UserStudyRepository userStudyRepository;

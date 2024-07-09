@@ -1,7 +1,6 @@
 package com.bombombom.devs.external.config;
 
-import com.bombombom.devs.book.repository.BookElasticsearchCustomRepository;
-import com.bombombom.devs.book.repository.BookElasticsearchRepository;
+import com.bombombom.devs.book.repository.BookRepositoryImpl;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
@@ -11,8 +10,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 @TestConfiguration
 @EnableElasticsearchRepositories(basePackageClasses = {
-    BookElasticsearchRepository.class,
-    BookElasticsearchCustomRepository.class
+    BookRepositoryImpl.class
 })
 public class ElasticsearchTestConfig extends ElasticsearchConfiguration {
 

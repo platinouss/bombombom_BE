@@ -1,7 +1,6 @@
 package com.bombombom.devs.external.book.controller.dto;
 
-import com.bombombom.devs.book.service.dto.NaverBookApiResult;
-import com.bombombom.devs.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -14,16 +13,7 @@ public record BookListResponse(
 
     public static BookListResponse fromResult(SearchBooksResult searchBooksResult) {
         return BookListResponse.builder()
-            .booksInfo(searchBooksResult.booksResult().stream()
-                .filter(bookResult -> Objects.nonNull(bookResult.isbn()))
-                .map(BookInfo::fromResult)
-                .collect(Collectors.toList()))
-            .build();
-    }
-
-    public static BookListResponse fromResult(NaverBookApiResult naverBookApiResult) {
-        return BookListResponse.builder()
-            .booksInfo(naverBookApiResult.items().stream()
+            .booksInfo(searchBooksResult.bookResults().stream()
                 .filter(bookResult -> Objects.nonNull(bookResult.isbn()))
                 .map(BookInfo::fromResult)
                 .collect(Collectors.toList()))

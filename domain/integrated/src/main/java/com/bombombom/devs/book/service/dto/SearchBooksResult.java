@@ -5,6 +5,7 @@ import com.bombombom.devs.book.models.BookDocument;
 import java.util.List;
 import lombok.Builder;
 
+// TODO: study 도메인 모듈 전환 후 제거 필요
 @Builder
 public record SearchBooksResult(
     List<BookResult> booksResult

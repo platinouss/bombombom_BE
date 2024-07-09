@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.book.controller.dto;
 
-import com.bombombom.devs.book.service.dto.AddBookCommand;
+import com.bombombom.devs.external.book.service.dto.AddBookCommand;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
