@@ -21,7 +21,6 @@ import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,24 +32,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class BookServiceTest {
 
+    @InjectMocks
     private BookService bookService;
-
-    @InjectMocks
-    private BookReader bookReader;
-
-    @InjectMocks
-    private BookWriter bookWriter;
 
     @Mock
     private NaverClient naverClient;
 
     @Mock
     private BookRepository bookRepository;
-
-    @BeforeEach
-    void setUp() {
-        bookService = new BookService(bookReader, bookWriter, naverClient);
-    }
 
     @DisplayName("통합 검색을 통해 서적명 또는 저자와 매칭되는 기술 서적을 검색할 수 있다.")
     @Test
@@ -212,7 +201,7 @@ public class BookServiceTest {
         /*
         When & Then
          */
-        assertThat(bookService.findBookUsingOpenApi(naverBookApiQuery)).isEqualTo(
+        assertThat(bookService.findIndexedBook(naverBookApiQuery)).isEqualTo(
             SearchBooksResult.fromNaverBookApiResult(naverBookApiResult));
     }
 

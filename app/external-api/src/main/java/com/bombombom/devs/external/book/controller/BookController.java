@@ -39,7 +39,7 @@ public class BookController {
     @PostMapping("/index")
     public ResponseEntity<BookListResponse> indexBooks(
         @Valid @RequestBody BookIndexRequest bookIndexRequest) {
-        SearchBooksResult searchBooksResult = bookService.findBookUsingOpenApi(
+        SearchBooksResult searchBooksResult = bookService.findIndexedBook(
             bookIndexRequest.toServiceDto());
         bookService.indexBooks(searchBooksResult.toServiceDto());
         return ResponseEntity.ok().body(BookListResponse.fromResult(searchBooksResult));

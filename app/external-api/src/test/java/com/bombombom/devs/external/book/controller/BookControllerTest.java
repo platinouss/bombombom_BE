@@ -195,7 +195,7 @@ public class BookControllerTest {
             .build();
 
         doReturn(searchBooksResult).when(bookService)
-            .findBookUsingOpenApi(any(NaverBookApiQuery.class));
+            .findIndexedBook(any(NaverBookApiQuery.class));
 
         /*
         When
@@ -212,7 +212,7 @@ public class BookControllerTest {
             .andExpect(status().isOk())
             .andExpect(MockMvcResultMatchers.content()
                 .string(objectMapper.writeValueAsString(bookListResponse)));
-        verify(bookService, times(1)).findBookUsingOpenApi(any(NaverBookApiQuery.class));
+        verify(bookService, times(1)).findIndexedBook(any(NaverBookApiQuery.class));
         verify(bookService, times(1)).indexBooks(searchBooksResult.toServiceDto());
     }
 
