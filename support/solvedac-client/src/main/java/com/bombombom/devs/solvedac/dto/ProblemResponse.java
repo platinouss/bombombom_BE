@@ -1,4 +1,4 @@
-package com.bombombom.devs.client.solvedac.dto;
+package com.bombombom.devs.solvedac.dto;
 
 import java.util.List;
 

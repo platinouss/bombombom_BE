@@ -1,6 +1,6 @@
-package com.bombombom.devs.client.solvedac;
+package com.bombombom.devs.solvedac;
 
-import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
+import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

@@ -1,12 +1,9 @@
 package com.bombombom.devs.study.service;
 
 import com.bombombom.devs.algo.models.AlgorithmProblem;
-import com.bombombom.devs.algo.models.AlgorithmProblemConverter;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.models.Book;
 import com.bombombom.devs.book.repository.BookTempRepository;
-import com.bombombom.devs.client.solvedac.SolvedacClient;
-import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.global.util.Clock;
 import com.bombombom.devs.study.exception.NotFoundException;
 import com.bombombom.devs.study.models.AlgorithmProblemAssignment;
@@ -29,7 +26,6 @@ import com.bombombom.devs.user.models.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,11 +41,9 @@ public class StudyService {
     private final UserRepository userRepository;
     private final BookTempRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
-    private final SolvedacClient solvedacClient;
     private final RoundRepository roundRepository;
     private final AlgorithmProblemRepository algoProblemRepository;
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
-    private final AlgorithmProblemConverter algorithmProblemConverter;
 
     @Transactional
     public AlgorithmStudyResult createAlgorithmStudy(
@@ -147,17 +141,6 @@ public class StudyService {
                 () -> new IllegalStateException("Study Not Found"));
         UserStudy userStudy = study.join(user);
         userStudyRepository.save(userStudy);
-    }
-
-    @Transactional
-    public List<AlgorithmProblem> getUnSolvedProblemListAndSave(
-        AlgorithmStudy study,
-        Map<String, Integer> problemCountForEachTag
-    ) {
-        ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
-            study.getBaekjoonIds(), problemCountForEachTag, study.getDifficultySpreadForEachTag());
-        List<AlgorithmProblem> problems = algorithmProblemConverter.convert(problemListResponse);
-        return algoProblemRepository.saveAll(problems);
     }
 
     @Transactional

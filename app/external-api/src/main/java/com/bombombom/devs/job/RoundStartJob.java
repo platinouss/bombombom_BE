@@ -4,6 +4,8 @@ import static org.quartz.JobBuilder.newJob;
 
 import com.bombombom.devs.algo.models.AlgorithmProblem;
 import com.bombombom.devs.algo.service.AlgorithmProblemService;
+import com.bombombom.devs.solvedac.SolvedacClient;
+import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.study.models.AlgorithmStudy;
 import com.bombombom.devs.study.models.Round;
 import com.bombombom.devs.study.service.StudyService;
@@ -36,6 +38,8 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
 
     private final StudyService studyService;
     private final AlgorithmProblemService algorithmProblemService;
+    private final SolvedacClient solvedacClient;
+    private final AlgorithmProblemConverter algorithmProblemConverter;
     private boolean isInterrupted = false;
 
     public static Trigger buildJobTrigger() {
@@ -80,11 +84,7 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
                 return;
             }
             if (round.getStudy() instanceof AlgorithmStudy study) {
-                Map<String, Integer> problemCountForEachTag =
-                    algorithmProblemService.getProblemCountForEachTag(study.getProblemCount());
-                List<AlgorithmProblem> unsolvedProblems =
-                    studyService.getUnSolvedProblemListAndSave(study, problemCountForEachTag);
-                studyService.assignProblemToRound(round, unsolvedProblems);
+                startRoundOfAlgoStudy(study, round);
             }
         });
 
@@ -92,5 +92,15 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
         long executionTime = endTime - startTime;
 
         log.debug("RoundJob 수행 시간: " + executionTime + "ms");
+    }
+
+    private void startRoundOfAlgoStudy(AlgorithmStudy study, Round round) {
+        Map<String, Integer> problemCountForEachTag =
+            algorithmProblemService.getProblemCountForEachTag(study.getProblemCount());
+        ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
+            study.getBaekjoonIds(), problemCountForEachTag, study.getDifficultySpreadForEachTag());
+        List<AlgorithmProblem> problems = algorithmProblemConverter.convert(problemListResponse);
+        List<AlgorithmProblem> unsolvedProblems = algorithmProblemService.saveProblems(problems);
+        studyService.assignProblemToRound(round, unsolvedProblems);
     }
 }
