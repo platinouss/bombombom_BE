@@ -1,0 +1,10 @@
+subprojects {
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+        testImplementation platform('org.junit:junit-bom:5.9.1')
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.assertj:assertj-core:3.11.1'
+        testImplementation 'com.squareup.okhttp3:mockwebserver'
+    }
+}

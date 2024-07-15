@@ -8,16 +8,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.book.enums.SearchOption;
-import com.bombombom.devs.book.service.BookService;
-import com.bombombom.devs.book.service.dto.NaverBookApiQuery;
-import com.bombombom.devs.book.service.dto.NaverBookApiResult;
-import com.bombombom.devs.book.service.dto.NaverBookApiResult.SearchBookItem;
-import com.bombombom.devs.book.service.dto.SearchBookQuery;
-import com.bombombom.devs.book.service.dto.SearchBooksResult;
-import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
+import com.bombombom.devs.dto.NaverBookApiQuery;
+import com.bombombom.devs.dto.NaverBookApiResult;
+import com.bombombom.devs.dto.NaverBookApiResult.SearchBookItem;
 import com.bombombom.devs.external.book.controller.dto.BookIndexRequest;
+import com.bombombom.devs.external.book.controller.dto.BookInfo;
 import com.bombombom.devs.external.book.controller.dto.BookListResponse;
+import com.bombombom.devs.external.book.enums.SearchOption;
+import com.bombombom.devs.external.book.service.BookService;
+import com.bombombom.devs.external.book.service.dto.SearchBookQuery;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.global.security.JwtUtils;
 import com.bombombom.devs.global.util.SystemClock;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,7 +82,7 @@ public class BookControllerTest {
             .isbn(9788966264254L)
             .build();
         SearchBooksResult searchBooksResult = SearchBooksResult.builder()
-            .booksResult(List.of(bookResult1, bookResult2))
+            .bookResults(List.of(bookResult1, bookResult2))
             .build();
 
         doReturn(searchBooksResult).when(bookService).searchBook(any(SearchBookQuery.class));
@@ -179,21 +180,22 @@ public class BookControllerTest {
             .display(1)
             .items(List.of(searchBookItem))
             .build();
-        BookResult bookResult = BookResult.builder()
+        SearchBooksResult searchBooksResult = SearchBooksResult.fromNaverBookApiResult(
+            naverBookApiResult);
+        BookInfo bookInfo = BookInfo.builder()
             .title("자바 최적화(Optimizing Java) (가장 빠른 성능을 구현하는 검증된 10가지 기법)")
             .author("벤저민 J. 에번스^제임스 고프^크리스 뉴랜드")
             .publisher("한빛미디어")
             .isbn(9791162241776L)
-            .tableOfContents("")
             .imageUrl(
                 "https://shopping-phinf.pstatic.net/main_3243601/32436011847.20221228073547.jpg")
             .build();
-        SearchBooksResult searchBooksResult = SearchBooksResult.builder()
-            .booksResult(List.of(bookResult))
+        BookListResponse bookListResponse = BookListResponse.builder()
+            .booksInfo(List.of(bookInfo))
             .build();
 
-        doReturn(naverBookApiResult).when(bookService)
-            .findBookUsingOpenApi(any(NaverBookApiQuery.class));
+        doReturn(searchBooksResult).when(bookService)
+            .findIndexedBook(any(NaverBookApiQuery.class));
 
         /*
         When
@@ -208,10 +210,10 @@ public class BookControllerTest {
          */
         resultActions
             .andExpect(status().isOk())
-            .andExpect(MockMvcResultMatchers.content().string(
-                objectMapper.writeValueAsString(BookListResponse.fromResult(searchBooksResult))));
-        verify(bookService, times(1)).findBookUsingOpenApi(any(NaverBookApiQuery.class));
-        verify(bookService, times(1)).indexBooks(naverBookApiResult.toServiceDto());
+            .andExpect(MockMvcResultMatchers.content()
+                .string(objectMapper.writeValueAsString(bookListResponse)));
+        verify(bookService, times(1)).findIndexedBook(any(NaverBookApiQuery.class));
+        verify(bookService, times(1)).indexBooks(searchBooksResult.toServiceDto());
     }
 
     @DisplayName("검색 키워드가 빈 경우 NAVER Open API를 호출에 실패한다.")

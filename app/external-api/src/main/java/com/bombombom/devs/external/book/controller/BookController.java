@@ -1,12 +1,11 @@
 package com.bombombom.devs.external.book.controller;
 
-import com.bombombom.devs.book.service.BookService;
-import com.bombombom.devs.book.service.dto.NaverBookApiResult;
-import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.book.controller.dto.BookAddRequest;
 import com.bombombom.devs.external.book.controller.dto.BookIndexRequest;
 import com.bombombom.devs.external.book.controller.dto.BookListRequest;
 import com.bombombom.devs.external.book.controller.dto.BookListResponse;
+import com.bombombom.devs.external.book.service.BookService;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -40,9 +39,9 @@ public class BookController {
     @PostMapping("/index")
     public ResponseEntity<BookListResponse> indexBooks(
         @Valid @RequestBody BookIndexRequest bookIndexRequest) {
-        NaverBookApiResult naverBookApiResult = bookService.findBookUsingOpenApi(
+        SearchBooksResult searchBooksResult = bookService.findIndexedBook(
             bookIndexRequest.toServiceDto());
-        bookService.indexBooks(naverBookApiResult.toServiceDto());
-        return ResponseEntity.ok().body(BookListResponse.fromResult(naverBookApiResult));
+        bookService.indexBooks(searchBooksResult.toServiceDto());
+        return ResponseEntity.ok().body(BookListResponse.fromResult(searchBooksResult));
     }
 }

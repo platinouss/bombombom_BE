@@ -1,7 +1,7 @@
 package com.bombombom.devs.external.book.controller.dto;
 
-import com.bombombom.devs.book.enums.SearchOption;
-import com.bombombom.devs.book.service.dto.SearchBookQuery;
+import com.bombombom.devs.external.book.enums.SearchOption;
+import com.bombombom.devs.external.book.service.dto.SearchBookQuery;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 

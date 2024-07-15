@@ -6,15 +6,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.ExternalApiApplication;
-import com.bombombom.devs.book.enums.SearchOption;
-import com.bombombom.devs.book.models.BookDocument;
-import com.bombombom.devs.book.repository.BookElasticsearchRepository;
-import com.bombombom.devs.book.service.dto.SearchBooksResult;
-import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
+import com.bombombom.devs.book.model.Book;
+import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.external.book.controller.BookController;
 import com.bombombom.devs.external.book.controller.dto.BookAddRequest;
 import com.bombombom.devs.external.book.controller.dto.BookIndexRequest;
 import com.bombombom.devs.external.book.controller.dto.BookListResponse;
+import com.bombombom.devs.external.book.enums.SearchOption;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -51,21 +51,22 @@ public class BookIntegrationTest {
     private BookController bookController;
 
     @Autowired
-    private BookElasticsearchRepository bookElasticsearchRepository;
+    private BookRepository bookRepository;
 
     @BeforeEach
     void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(bookController)
             .addFilter(new CharacterEncodingFilter("UTF-8", true))
             .build();
-        BookDocument bookDocument = BookDocument.builder()
-            .id("1")
+        bookRepository.deleteBookIndex();
+        Book book = Book.builder()
+            .bookId(1L)
             .title("SWM 봄봄봄 테스트 책")
             .author("저자")
             .publisher("출판사")
             .isbn(1L)
             .build();
-        bookElasticsearchRepository.save(bookDocument);
+        bookRepository.update(book);
     }
 
     @DisplayName("Elasticsearch에 존재하는 서적을 검색할 수 있다.")
@@ -83,7 +84,7 @@ public class BookIntegrationTest {
             .isbn(1L)
             .build();
         SearchBooksResult searchBooksResult = SearchBooksResult.builder()
-            .booksResult(List.of(bookResult))
+            .bookResults(List.of(bookResult))
             .build();
 
         /*
@@ -116,12 +117,11 @@ public class BookIntegrationTest {
             .author("벤저민 J. 에번스^제임스 고프^크리스 뉴랜드")
             .publisher("한빛미디어")
             .isbn(9791162241776L)
-            .tableOfContents("")
             .imageUrl(
                 "https://shopping-phinf.pstatic.net/main_3243601/32436011847.20221228073547.jpg")
             .build();
         SearchBooksResult searchBooksResult = SearchBooksResult.builder()
-            .booksResult(List.of(bookResult))
+            .bookResults(List.of(bookResult))
             .build();
 
         /*

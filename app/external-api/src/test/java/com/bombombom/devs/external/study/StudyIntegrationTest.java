@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.ExternalApiApplication;
 import com.bombombom.devs.book.models.Book;
-import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.book.repository.BookTempRepository;
 import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
 import com.bombombom.devs.external.study.controller.StudyController;
@@ -71,7 +71,7 @@ public class StudyIntegrationTest {
     @Autowired
     private StudyRepository studyRepository;
     @Autowired
-    private BookRepository bookRepository;
+    private BookTempRepository bookRepository;
 
     @Autowired
     private StudyController studyController;

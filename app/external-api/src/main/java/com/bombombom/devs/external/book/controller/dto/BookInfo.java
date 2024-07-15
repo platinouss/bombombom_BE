@@ -1,7 +1,7 @@
 package com.bombombom.devs.external.book.controller.dto;
 
-import com.bombombom.devs.book.service.dto.NaverBookApiResult.SearchBookItem;
-import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
+import com.bombombom.devs.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import lombok.Builder;
 
 @Builder
@@ -25,15 +25,14 @@ public record BookInfo(
             .build();
     }
 
-    public static BookInfo fromResult(SearchBookItem item) {
+    public static BookInfo fromResult(SearchBooksResult.BookResult bookResult) {
         return BookInfo.builder()
-            .title(item.title())
-            .author(item.author())
-            .publisher(item.publisher())
-            .isbn(item.isbn())
-            .tableOfContents("")
-            .imageUrl(item.image())
+            .title(bookResult.title())
+            .author(bookResult.author())
+            .publisher(bookResult.publisher())
+            .isbn(bookResult.isbn())
+            .tableOfContents(bookResult.tableOfContents())
+            .imageUrl(bookResult.imageUrl())
             .build();
     }
-
 }

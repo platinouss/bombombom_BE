@@ -4,7 +4,7 @@ import com.bombombom.devs.algo.models.AlgorithmProblem;
 import com.bombombom.devs.algo.models.AlgorithmProblemConverter;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.models.Book;
-import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.book.repository.BookTempRepository;
 import com.bombombom.devs.client.solvedac.SolvedacClient;
 import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.global.util.Clock;
@@ -43,7 +43,7 @@ public class StudyService {
     private final Clock clock;
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
-    private final BookRepository bookRepository;
+    private final BookTempRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
     private final SolvedacClient solvedacClient;
     private final RoundRepository roundRepository;
