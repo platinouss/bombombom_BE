@@ -1,13 +1,13 @@
 package com.bombombom.devs.external.book.service;
 
 import com.bombombom.devs.NaverClient;
-import com.bombombom.devs.book.dto.IndexBookCommand;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.dto.NaverBookApiQuery;
 import com.bombombom.devs.external.book.enums.SearchOption;
 import com.bombombom.devs.external.book.exception.BookNotFoundException;
 import com.bombombom.devs.external.book.service.dto.AddBookCommand;
+import com.bombombom.devs.external.book.service.dto.IndexBookCommand;
 import com.bombombom.devs.external.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import java.util.List;
@@ -55,6 +55,6 @@ public class BookService {
         if (indexBookCommands.isEmpty()) {
             return;
         }
-        bookRepository.upsertAll(indexBookCommands);
+        bookRepository.upsertAll(indexBookCommands.stream().map(IndexBookCommand::toBook).toList());
     }
 }

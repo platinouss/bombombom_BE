@@ -1,6 +1,5 @@
 package com.bombombom.devs.book.repository;
 
-import com.bombombom.devs.book.dto.IndexBookCommand;
 import com.bombombom.devs.book.model.Book;
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +10,7 @@ public interface BookRepository {
 
     void update(Book book);
 
-    void upsertAll(List<IndexBookCommand> indexBookCommands);
+    void upsertAll(List<Book> books);
 
     void deleteBookIndex();
 

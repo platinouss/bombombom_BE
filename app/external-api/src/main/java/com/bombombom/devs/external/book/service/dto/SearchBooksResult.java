@@ -1,6 +1,5 @@
 package com.bombombom.devs.external.book.service.dto;
 
-import com.bombombom.devs.book.dto.IndexBookCommand;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.dto.NaverBookApiResult;
 import java.util.List;

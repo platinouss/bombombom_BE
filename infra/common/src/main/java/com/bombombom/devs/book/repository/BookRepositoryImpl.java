@@ -1,7 +1,7 @@
 package com.bombombom.devs.book.repository;
 
-import com.bombombom.devs.book.dto.IndexBookCommand;
 import com.bombombom.devs.book.model.Book;
+import com.bombombom.devs.book.model.vo.BookInfo;
 import com.bombombom.devs.model.BookDocument;
 import com.bombombom.devs.model.BookEntity;
 import com.bombombom.devs.repository.BookElasticsearchRepository;
@@ -60,15 +60,16 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
-    public void upsertAll(List<IndexBookCommand> indexBookCommands) {
-        List<UpdateQuery> updateQueries = indexBookCommands.stream().map(indexBookCommand -> {
+    public void upsertAll(List<Book> books) {
+        List<UpdateQuery> updateQueries = books.stream().map(book -> {
+            BookInfo bookInfo = BookInfo.fromBook(book);
             Document document;
             try {
-                document = Document.parse(objectMapper.writeValueAsString(indexBookCommand));
+                document = Document.parse(objectMapper.writeValueAsString(bookInfo));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("JSON 변환에 실패했습니다.");
             }
-            return UpdateQuery.builder(String.valueOf(indexBookCommand.isbn()))
+            return UpdateQuery.builder(String.valueOf(bookInfo.isbn()))
                 .withDocument(document)
                 .withDocAsUpsert(true)
                 .build();
