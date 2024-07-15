@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Getter
 @Entity
+@Table(name = "book")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BookEntity {
 
@@ -52,6 +54,7 @@ public class BookEntity {
 
     public static Book toBook(BookEntity bookEntity) {
         return Book.builder()
+            .bookId(bookEntity.id)
             .title(bookEntity.title)
             .author(bookEntity.author)
             .publisher(bookEntity.publisher)

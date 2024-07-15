@@ -43,7 +43,8 @@ public class BookDocument {
 
     public static BookDocument fromBook(Book book) {
         return BookDocument.builder()
-            .id(String.valueOf(book.getBookId()))
+            .id(String.valueOf(book.getIsbn()))
+            .bookId(book.getBookId())
             .title(book.getTitle())
             .author(book.getAuthor())
             .publisher(book.getPublisher())

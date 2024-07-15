@@ -51,7 +51,9 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public Book save(Book book) {
-        return BookEntity.toBook(bookJpaRepository.save(BookEntity.fromBook(book)));
+        BookEntity bookEntity = bookJpaRepository.findByIsbn(book.getIsbn())
+            .orElseGet(() -> bookJpaRepository.save(BookEntity.fromBook(book)));
+        return BookEntity.toBook(bookEntity);
     }
 
     @Override

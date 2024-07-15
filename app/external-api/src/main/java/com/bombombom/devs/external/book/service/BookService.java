@@ -46,9 +46,8 @@ public class BookService {
         if (Objects.nonNull(indexedBook.getBookId())) {
             return;
         }
-        Book book = bookRepository.save(indexedBook);
-        indexedBook.setBookId(book.getBookId());
-        bookRepository.update(book);
+        indexedBook.setBookId(bookRepository.save(indexedBook).getBookId());
+        bookRepository.update(indexedBook);
     }
 
     public void indexBooks(List<IndexBookCommand> indexBookCommands) {
