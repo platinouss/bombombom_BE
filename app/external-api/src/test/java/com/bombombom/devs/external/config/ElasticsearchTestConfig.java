@@ -29,7 +29,8 @@ public class ElasticsearchTestConfig extends ElasticsearchConfiguration {
             .withEnv("xpack.security.http.ssl.verification_mode", "certificate")
             .withEnv("xpack.security.transport.ssl.enabled", "false")
             .withEnv("xpack.security.transport.ssl.verification_mode", "certificate")
-            .withEnv("xpack.license.self_generated.type", "basic");
+            .withEnv("xpack.license.self_generated.type", "basic")
+            .withEnv("ES_JAVA_OPTS", "-Xms512m -Xmx512m");
         container.start();
     }
 
