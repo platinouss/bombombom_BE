@@ -6,8 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.ExternalApiApplication;
-import com.bombombom.devs.book.model.Book;
-import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.book.model.BookDocument;
+import com.bombombom.devs.book.repository.BookElasticsearchCustomRepository;
+import com.bombombom.devs.book.repository.BookElasticsearchRepository;
 import com.bombombom.devs.external.book.controller.BookController;
 import com.bombombom.devs.external.book.controller.dto.BookAddRequest;
 import com.bombombom.devs.external.book.controller.dto.BookIndexRequest;
@@ -51,22 +52,25 @@ public class BookIntegrationTest {
     private BookController bookController;
 
     @Autowired
-    private BookRepository bookRepository;
+    private BookElasticsearchRepository bookElasticsearchRepository;
+
+    @Autowired
+    private BookElasticsearchCustomRepository bookElasticsearchCustomRepository;
 
     @BeforeEach
     void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(bookController)
             .addFilter(new CharacterEncodingFilter("UTF-8", true))
             .build();
-        bookRepository.deleteBookIndex();
-        Book book = Book.builder()
+        bookElasticsearchCustomRepository.deleteIndex();
+        BookDocument book = BookDocument.builder()
             .bookId(1L)
             .title("SWM 봄봄봄 테스트 책")
             .author("저자")
             .publisher("출판사")
             .isbn(1L)
             .build();
-        bookRepository.update(book);
+        bookElasticsearchRepository.save(book);
     }
 
     @DisplayName("Elasticsearch에 존재하는 서적을 검색할 수 있다.")
