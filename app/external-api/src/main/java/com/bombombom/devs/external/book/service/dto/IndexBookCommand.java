@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.book.service.dto;
 
-import com.bombombom.devs.book.model.Book;
+import com.bombombom.devs.book.model.vo.BookInfo;
 import lombok.Builder;
 
 @Builder
@@ -12,8 +12,8 @@ public record IndexBookCommand(
     String imageUrl
 ) {
 
-    public static Book toBook(IndexBookCommand indexBookCommand) {
-        return Book.builder()
+    public static BookInfo toBookInfo(IndexBookCommand indexBookCommand) {
+        return BookInfo.builder()
             .title(indexBookCommand.title)
             .author(indexBookCommand.author)
             .publisher(indexBookCommand.publisher)

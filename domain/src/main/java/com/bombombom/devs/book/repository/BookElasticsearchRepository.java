@@ -1,6 +1,6 @@
-package com.bombombom.devs.repository;
+package com.bombombom.devs.book.repository;
 
-import com.bombombom.devs.model.BookDocument;
+import com.bombombom.devs.book.model.BookDocument;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.repository.ListCrudRepository;
