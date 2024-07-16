@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class BookService {
     private final BookElasticsearchRepository bookElasticsearchRepository;
     private final BookElasticsearchCustomRepository bookElasticsearchCustomRepository;
 
+    @Transactional(readOnly = true)
     public SearchBooksResult searchBook(SearchBookQuery searchBookQuery) {
         List<BookDocument> books;
         if (searchBookQuery.searchOption() == SearchOption.TITLE) {
@@ -47,6 +49,7 @@ public class BookService {
         return SearchBooksResult.fromNaverBookApiResult(naverClient.searchBooks(naverBookApiQuery));
     }
 
+    @Transactional
     public void addBook(AddBookCommand addBookCommand) {
         BookDocument indexedBook = bookElasticsearchRepository.findByIsbn(addBookCommand.isbn())
             .orElseThrow(BookNotFoundException::new);
