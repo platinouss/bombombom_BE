@@ -10,9 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.ExternalApiApplication;
-import com.bombombom.devs.book.models.Book;
-import com.bombombom.devs.book.repository.BookTempRepository;
-import com.bombombom.devs.book.service.dto.SearchBooksResult;
+import com.bombombom.devs.book.model.Book;
+import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
 import com.bombombom.devs.external.study.controller.StudyController;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
@@ -20,19 +20,19 @@ import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorith
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
-import com.bombombom.devs.study.models.AlgorithmStudy;
-import com.bombombom.devs.study.models.BookStudy;
-import com.bombombom.devs.study.models.Study;
-import com.bombombom.devs.study.models.StudyStatus;
-import com.bombombom.devs.study.models.StudyType;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyResult;
+import com.bombombom.devs.external.user.service.dto.UserProfileResult;
+import com.bombombom.devs.study.model.AlgorithmStudy;
+import com.bombombom.devs.study.model.BookStudy;
+import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.StudyStatus;
+import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.StudyRepository;
-import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
-import com.bombombom.devs.study.service.dto.result.BookStudyResult;
-import com.bombombom.devs.study.service.dto.result.StudyResult;
-import com.bombombom.devs.user.models.Role;
-import com.bombombom.devs.user.models.User;
+import com.bombombom.devs.user.model.Role;
+import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
-import com.bombombom.devs.user.service.dto.UserProfileResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class StudyIntegrationTest {
     @Autowired
     private StudyRepository studyRepository;
     @Autowired
-    private BookTempRepository bookRepository;
+    private BookRepository bookRepository;
 
     @Autowired
     private StudyController studyController;
@@ -247,6 +247,10 @@ public class StudyIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expectedResponse));
 
+            resultActions = mockMvc.perform(
+                get("/api/v1/users/me")
+            );
+            resultActions.andDo(print());
         }
 
 
@@ -314,7 +318,7 @@ public class StudyIntegrationTest {
                     .leader(profile)
                     .state(StudyStatus.READY)
                     .studyType(StudyType.BOOK)
-                    .bookResult(SearchBooksResult.fromEntity(book))
+                    .bookResult(SearchBooksResult.fromBook(book))
                     .build();
 
 
@@ -339,6 +343,7 @@ public class StudyIntegrationTest {
             resultActions.andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expectedResponse));
+
         }
 
 

@@ -4,11 +4,12 @@ import static org.quartz.JobBuilder.newJob;
 
 import com.bombombom.devs.algo.models.AlgorithmProblem;
 import com.bombombom.devs.algo.service.AlgorithmProblemService;
+import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.solvedac.SolvedacClient;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
-import com.bombombom.devs.study.models.AlgorithmStudy;
-import com.bombombom.devs.study.models.Round;
-import com.bombombom.devs.study.service.StudyService;
+import com.bombombom.devs.study.model.AlgorithmStudy;
+import com.bombombom.devs.study.model.Round;
+import com.bombombom.devs.study.repository.RoundRepository;
 import java.util.List;
 import java.util.Map;
 import lombok.NonNull;
@@ -39,6 +40,7 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
     private final StudyService studyService;
     private final AlgorithmProblemService algorithmProblemService;
     private final SolvedacClient solvedacClient;
+    private final RoundRepository roundRepository;
     private final AlgorithmProblemConverter algorithmProblemConverter;
     private boolean isInterrupted = false;
 
@@ -95,12 +97,17 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
     }
 
     private void startRoundOfAlgoStudy(AlgorithmStudy study, Round round) {
+
         Map<String, Integer> problemCountForEachTag =
             algorithmProblemService.getProblemCountForEachTag(study.getProblemCount());
+
         ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
             study.getBaekjoonIds(), problemCountForEachTag, study.getDifficultySpreadForEachTag());
+
         List<AlgorithmProblem> problems = algorithmProblemConverter.convert(problemListResponse);
-        List<AlgorithmProblem> unsolvedProblems = algorithmProblemService.saveProblems(problems);
-        studyService.assignProblemToRound(round, unsolvedProblems);
+
+        algorithmProblemService.saveProblems(problems);
+
+        studyService.assignProblemToRound(round, problems);
     }
 }

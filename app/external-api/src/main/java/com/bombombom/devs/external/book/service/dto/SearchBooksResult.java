@@ -1,5 +1,6 @@
 package com.bombombom.devs.external.book.service.dto;
 
+import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.model.BookDocument;
 import com.bombombom.devs.dto.NaverBookApiResult;
 import java.util.List;
@@ -33,6 +34,18 @@ public record SearchBooksResult(
             .isbn(bookDocument.getIsbn())
             .tableOfContents(bookDocument.getTableOfContents())
             .imageUrl(bookDocument.getImageUrl())
+            .build();
+    }
+
+    public static BookResult fromBook(Book book) {
+        return BookResult.builder()
+            .id(book.getId())
+            .title(book.getTitle())
+            .author(book.getAuthor())
+            .publisher(book.getPublisher())
+            .isbn(book.getIsbn())
+            .tableOfContents(book.getTableOfContents())
+            .imageUrl(book.getImageUrl())
             .build();
     }
 
