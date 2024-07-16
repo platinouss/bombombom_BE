@@ -1,24 +1,10 @@
 package com.bombombom.devs.book.repository;
 
 import com.bombombom.devs.book.model.Book;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BookRepository {
+public interface BookRepository extends JpaRepository<Book, Long> {
 
-    Book save(Book book);
-
-    void update(Book book);
-
-    void upsertAll(List<Book> books);
-
-    void deleteBookIndex();
-
-    Optional<Book> findIndexedBookByIsbn(Long isbn);
-
-    List<Book> findTop30ByTitle(String title);
-
-    List<Book> findTop30ByAuthor(String author);
-
-    List<Book> findTop30ByTitleOrAuthor(String keyword);
+    Optional<Book> findByIsbn(Long isbn);
 }

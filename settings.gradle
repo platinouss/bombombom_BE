@@ -6,12 +6,6 @@ include 'domain'
 include 'domain:integrated'
 
 include 'infra'
-include 'infra:common'
-findProject(':infra:common')?.name = 'common'
-include 'infra:mysql'
-findProject(':infra:mysql')?.name = 'mysql'
-include 'infra:elasticsearch'
-findProject(':infra:elasticsearch')?.name = 'elasticsearch'
 
 include 'support'
 include 'support:common'
