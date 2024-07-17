@@ -1,6 +1,10 @@
 package com.bombombom.devs.study.model;
 
-import com.bombombom.devs.algo.model.AlgoTag;
+import static com.bombombom.devs.algo.model.AlgorithmProblemFeedback.FeedbackDifficultyMedian;
+
+import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
+import com.bombombom.devs.core.Pair;
+import com.bombombom.devs.core.enums.AlgoTag;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -10,7 +14,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.util.Pair;
 
 @Entity
 @Getter
@@ -55,16 +58,16 @@ public class AlgorithmStudy extends Study {
         return StudyType.ALGORITHM;
     }
 
-    public Map<String, Pair<Integer, Integer>> getDifficultySpreadForEachTag() {
+    public Map<AlgoTag, Pair<Integer, Integer>> getDifficultySpreadForEachTag() {
         return Map.of(
-            AlgoTag.MATH.name(), getDifficultySpread(difficultyMath),
-            AlgoTag.DP.name(), getDifficultySpread(difficultyDp),
-            AlgoTag.GREEDY.name(), getDifficultySpread(difficultyGreedy),
-            AlgoTag.IMPLEMENTATION.name(), getDifficultySpread(difficultyImpl),
-            AlgoTag.GRAPHS.name(), getDifficultySpread(difficultyGraph),
-            AlgoTag.GEOMETRY.name(), getDifficultySpread(difficultyGeometry),
-            AlgoTag.DATA_STRUCTURES.name(), getDifficultySpread(difficultyDs),
-            AlgoTag.STRING.name(), getDifficultySpread(difficultyString)
+            AlgoTag.MATH, getDifficultySpread(difficultyMath),
+            AlgoTag.DP, getDifficultySpread(difficultyDp),
+            AlgoTag.GREEDY, getDifficultySpread(difficultyGreedy),
+            AlgoTag.IMPLEMENTATION, getDifficultySpread(difficultyImpl),
+            AlgoTag.GRAPHS, getDifficultySpread(difficultyGraph),
+            AlgoTag.GEOMETRY, getDifficultySpread(difficultyGeometry),
+            AlgoTag.DATA_STRUCTURES, getDifficultySpread(difficultyDs),
+            AlgoTag.STRING, getDifficultySpread(difficultyString)
         );
     }
 
@@ -73,4 +76,61 @@ public class AlgorithmStudy extends Study {
         Integer spreadRight = spreadLeft + difficultyGap;
         return Pair.of(spreadLeft, spreadRight);
     }
+
+    private void adjustDifficulty(AlgoTag tag, Float variance) {
+        switch (tag) {
+            case AlgoTag.DP -> {
+                this.difficultyDp += variance;
+            }
+            case AlgoTag.GEOMETRY -> {
+                this.difficultyGeometry += variance;
+            }
+            case AlgoTag.DATA_STRUCTURES -> {
+                this.difficultyDs += variance;
+            }
+            case AlgoTag.GRAPHS -> {
+                this.difficultyGraph += variance;
+            }
+            case AlgoTag.GREEDY -> {
+                this.difficultyGreedy += variance;
+            }
+            case AlgoTag.IMPLEMENTATION -> {
+                this.difficultyImpl += variance;
+            }
+            case AlgoTag.MATH -> {
+                this.difficultyMath += variance;
+            }
+            case AlgoTag.STRING -> {
+                this.difficultyString += variance;
+            }
+            default -> throw new IllegalStateException("Incorrect use of AlgoTag");
+        }
+    }
+
+    private Float getDifficultyVariance(AlgorithmProblemFeedback feedback) {
+        return (FeedbackDifficultyMedian - feedback.getDifficulty())
+            / headCount.floatValue();
+    }
+
+    /***
+     *
+     * @param
+     * @return
+     *
+     * feedback 정보에는 DifficultyMedian을 중앙값으로 가지는 개인의 주관적인 난이도 평가값인 diffculty가 있습니다.
+     * 난이도는 스터디 멤버들이 제출한 feedback의 (DifficultyMedian - difficulty)의 평균값만큼 변동됩니다.
+     */
+    public void applyFeedback(AlgorithmProblemFeedback feedback) {
+
+        adjustDifficulty(feedback.getProblem().getTag(),
+            getDifficultyVariance(feedback));
+    }
+
+    public void changeFeedback(AlgorithmProblemFeedback preFeedback,
+        AlgorithmProblemFeedback newFeedback) {
+
+        adjustDifficulty(preFeedback.getProblem().getTag(),
+            getDifficultyVariance(newFeedback) - getDifficultyVariance(preFeedback));
+    }
+
 }

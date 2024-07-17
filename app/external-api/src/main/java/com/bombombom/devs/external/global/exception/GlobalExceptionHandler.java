@@ -1,7 +1,7 @@
 package com.bombombom.devs.external.global.exception;
 
 import com.bombombom.devs.exception.ExternalApiException;
-import com.bombombom.devs.external.study.exception.NotFoundException;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.external.user.exception.ExistUsernameException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.NotAcceptableStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -38,6 +39,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(NotAcceptableStatusException.class)
+    protected ResponseEntity<ErrorResponse> handleNotFound(NotAcceptableStatusException e) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.NOT_ACCEPTABLE.value(),
+            e.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_ACCEPTABLE);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<DetailedErrorResponse> handleInvalidDtoField(

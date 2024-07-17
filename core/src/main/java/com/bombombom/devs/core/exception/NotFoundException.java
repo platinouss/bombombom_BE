@@ -1,4 +1,4 @@
-package com.bombombom.devs.external.study.exception;
+package com.bombombom.devs.core.exception;
 
 public class NotFoundException extends RuntimeException {
 

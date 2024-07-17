@@ -4,7 +4,7 @@ import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
-import com.bombombom.devs.external.study.exception.NotFoundException;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
@@ -26,7 +26,6 @@ import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -82,8 +81,6 @@ public class StudyService {
             .difficultyGreedy(db)
             .difficultyGap(difficultyGap)
             .problemCount(registerAlgorithmStudyCommand.problemCount())
-            .userStudies(new ArrayList<>())
-            .rounds(new ArrayList<>())
             .build();
 
         algorithmStudy.createRounds();
@@ -117,8 +114,6 @@ public class StudyService {
             .headCount(registerBookStudyCommand.headCount())
             .state(registerBookStudyCommand.state())
             .leader(user)
-            .userStudies(new ArrayList<>())
-            .rounds(new ArrayList<>())
             .book(book)
             .build();
 

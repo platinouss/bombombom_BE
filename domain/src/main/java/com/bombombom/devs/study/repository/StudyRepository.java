@@ -1,10 +1,12 @@
 package com.bombombom.devs.study.repository;
 
 import com.bombombom.devs.study.model.Study;
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
@@ -14,6 +16,12 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
         + "join fetch us.user "
         + "where s.id = :id")
     Optional<Study> findStudyWithUsersById(Long id);
+
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from Study s "
+        + "where s.id = :id")
+    Optional<Study> findStudyByIdForUpdate(Long id);
 
     @Query(value = "SELECT s FROM Study s "
         + "LEFT JOIN FETCH s.leader "

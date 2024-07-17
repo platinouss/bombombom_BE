@@ -2,10 +2,26 @@
 
 package com.bombombom.devs.external.algo.service;
 
-import com.bombombom.devs.algo.model.AlgoTag;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
+import com.bombombom.devs.algo.repository.AlgorithmProblemFeedbackRepository;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
+import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.exception.NotAcceptableException;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.external.algo.config.ProbabilityConfig;
+import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.global.util.Clock;
+import com.bombombom.devs.study.model.AlgorithmStudy;
+import com.bombombom.devs.study.model.Round;
+import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
+import com.bombombom.devs.study.repository.RoundRepository;
+import com.bombombom.devs.study.repository.StudyRepository;
+import com.bombombom.devs.study.repository.UserStudyRepository;
+import com.bombombom.devs.user.model.User;
+import com.bombombom.devs.user.repository.UserRepository;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -13,13 +29,22 @@ import java.util.Map;
 import java.util.random.RandomGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
 public class AlgorithmProblemService {
 
+    private final Clock clock;
     private final RandomGenerator randomGenerator;
     private final AlgorithmProblemRepository algorithmProblemRepository;
+    private final RoundRepository roundRepository;
+    private final StudyRepository studyRepository;
+    private final UserRepository userRepository;
+    private final UserStudyRepository userStudyRepository;
+    private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
+    private final AlgorithmProblemFeedbackRepository algorithmProblemFeedbackRepository;
+
 
     public List<AlgorithmProblem> saveProblems(List<AlgorithmProblem> problems) {
         return algorithmProblemRepository.saveAll(problems);
@@ -51,11 +76,11 @@ public class AlgorithmProblemService {
     // 함수 인자로 선택할 Tag, 혹은 제외할 Tag를 받는 것도 고려해봤지만
     // 오버엔지니어링이 될 수 있으므로 최소 스펙으로 구현하였습니다
 
-    public Map<String, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
-        Map<String, Integer> problemCountByTag = new HashMap<>();
+    public Map<AlgoTag, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
+        Map<AlgoTag, Integer> problemCountByTag = new HashMap<>();
         while (totalProblemCount-- > 0) {
             AlgoTag tag = drawProblem();
-            problemCountByTag.merge(tag.name(), 1, Integer::sum);
+            problemCountByTag.merge(tag, 1, Integer::sum);
         }
         return problemCountByTag;
     }
@@ -66,6 +91,69 @@ public class AlgorithmProblemService {
             .filter(algoTag -> algoTag.isInRange(rand))
             .findFirst()
             .orElse(null);
+    }
+
+    @Transactional
+    public void feedback(Long userId,
+        FeedbackAlgorithmProblemCommand feedbackAlgorithmProblemCommand) {
+
+        AlgorithmProblem problem = algorithmProblemRepository.findById(
+                feedbackAlgorithmProblemCommand.problemId())
+            .orElseThrow(() -> new NotFoundException("Problem Not Found"));
+
+        Study study = studyRepository.findStudyByIdForUpdate(
+                feedbackAlgorithmProblemCommand.studyId())
+            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+
+        if (study.getStudyType() != StudyType.ALGORITHM) {
+            throw new NotAcceptableException("Feedback can only be given to Algorithm Study");
+        }
+
+        AlgorithmStudy algorithmStudy = (AlgorithmStudy) study;
+
+        Round round = roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
+                algorithmStudy.getId(), clock.today())
+            .orElseThrow(() -> new NotFoundException("Ongoing Round Not Found"));
+
+        if(!algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(round.getId(),
+                problem.getId())){
+            throw new NotAcceptableException("Problem is not ongoing assignment");
+
+        }
+
+        if (!userStudyRepository.existsByUserIdAndStudyId(userId,
+            algorithmStudy.getId())) {
+            throw new NotAcceptableException("User is not a member");
+        }
+
+        //TODO user가 problem에 해결했는지 solvehistory로 검증
+
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException("User Not Found"));
+
+            AlgorithmProblemFeedback preFeedback =
+                algorithmProblemFeedbackRepository.findByUserIdAndProblemId(userId, problem.getId())
+                    .orElse(null);
+
+
+            AlgorithmProblemFeedback newFeedback = AlgorithmProblemFeedback.builder()
+                .problem(problem)
+                .user(user)
+                .again(feedbackAlgorithmProblemCommand.again())
+                .difficulty(feedbackAlgorithmProblemCommand.difficulty())
+                .build();
+
+            if(preFeedback != null){
+                algorithmStudy.changeFeedback(preFeedback, newFeedback);
+                preFeedback.update(newFeedback);
+
+            } else{
+                algorithmStudy.applyFeedback(newFeedback);
+                problem.addFeedback(newFeedback);
+                algorithmProblemRepository.save(problem);
+            }
+
     }
 
 
