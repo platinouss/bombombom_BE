@@ -4,8 +4,11 @@ package com.bombombom.devs.algo.service;
 
 import com.bombombom.devs.algo.config.ProbabilityConfig;
 import com.bombombom.devs.algo.models.AlgoTag;
+import com.bombombom.devs.algo.models.AlgorithmProblem;
+import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.random.RandomGenerator;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,11 @@ import org.springframework.stereotype.Service;
 public class AlgorithmProblemService {
 
     private final RandomGenerator randomGenerator;
+    private final AlgorithmProblemRepository algorithmProblemRepository;
+
+    public List<AlgorithmProblem> saveProblems(List<AlgorithmProblem> problems) {
+        return algorithmProblemRepository.saveAll(problems);
+    }
 
     /**
      * totalProblemCount 개의 문제를 각 태그별로 정해진 확률대로 추첨하여 분배합니다.

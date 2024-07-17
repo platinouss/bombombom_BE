@@ -1,4 +1,4 @@
-package com.bombombom.devs.client.solvedac.dto;
+package com.bombombom.devs.solvedac.dto;
 
 public record ProblemTag(
     String key

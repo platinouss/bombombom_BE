@@ -1,8 +1,10 @@
-package com.bombombom.devs.algo.models;
+package com.bombombom.devs.job;
 
-import com.bombombom.devs.client.solvedac.dto.ProblemListResponse;
-import com.bombombom.devs.client.solvedac.dto.ProblemResponse;
-import com.bombombom.devs.client.solvedac.dto.ProblemTag;
+import com.bombombom.devs.algo.models.AlgoTag;
+import com.bombombom.devs.algo.models.AlgorithmProblem;
+import com.bombombom.devs.solvedac.dto.ProblemListResponse;
+import com.bombombom.devs.solvedac.dto.ProblemResponse;
+import com.bombombom.devs.solvedac.dto.ProblemTag;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
