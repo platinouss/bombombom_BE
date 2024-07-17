@@ -2,6 +2,9 @@ package com.bombombom.devs.external.book.service;
 
 import com.bombombom.devs.NaverClient;
 import com.bombombom.devs.book.model.Book;
+import com.bombombom.devs.book.model.BookDocument;
+import com.bombombom.devs.book.repository.BookElasticsearchCustomRepository;
+import com.bombombom.devs.book.repository.BookElasticsearchRepository;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.dto.NaverBookApiQuery;
 import com.bombombom.devs.external.book.enums.SearchOption;
@@ -15,6 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,38 +26,47 @@ public class BookService {
 
     private final NaverClient naverClient;
     private final BookRepository bookRepository;
+    private final BookElasticsearchRepository bookElasticsearchRepository;
+    private final BookElasticsearchCustomRepository bookElasticsearchCustomRepository;
 
+    @Transactional(readOnly = true)
     public SearchBooksResult searchBook(SearchBookQuery searchBookQuery) {
-        List<Book> books;
+        List<BookDocument> books;
         if (searchBookQuery.searchOption() == SearchOption.TITLE) {
-            books = bookRepository.findTop30ByTitle(searchBookQuery.keyword());
+            books = bookElasticsearchRepository.findTop30ByTitle(searchBookQuery.keyword());
         } else if (searchBookQuery.searchOption() == SearchOption.AUTHOR) {
-            books = bookRepository.findTop30ByAuthor(searchBookQuery.keyword());
+            books = bookElasticsearchRepository.findTop30ByAuthor(searchBookQuery.keyword());
         } else {
-            books = bookRepository.findTop30ByTitleOrAuthor(searchBookQuery.keyword());
+            books = bookElasticsearchRepository.findTop30ByTitleOrAuthor(searchBookQuery.keyword(),
+                searchBookQuery.keyword());
         }
         return SearchBooksResult.builder().bookResults(
-            books.stream().map(SearchBooksResult::fromBook).collect(Collectors.toList())).build();
+                books.stream().map(SearchBooksResult::fromBookDocument).collect(Collectors.toList()))
+            .build();
     }
 
     public SearchBooksResult findIndexedBook(NaverBookApiQuery naverBookApiQuery) {
         return SearchBooksResult.fromNaverBookApiResult(naverClient.searchBooks(naverBookApiQuery));
     }
 
+    @Transactional
     public void addBook(AddBookCommand addBookCommand) {
-        Book indexedBook = bookRepository.findIndexedBookByIsbn(addBookCommand.isbn()).orElseThrow(
-            BookNotFoundException::new);
+        BookDocument indexedBook = bookElasticsearchRepository.findByIsbn(addBookCommand.isbn())
+            .orElseThrow(BookNotFoundException::new);
         if (Objects.nonNull(indexedBook.getBookId())) {
             return;
         }
-        indexedBook.setBookId(bookRepository.save(indexedBook).getBookId());
-        bookRepository.update(indexedBook);
+        Book book = bookRepository.findByIsbn(indexedBook.getIsbn())
+            .orElseGet(() -> bookRepository.save(Book.fromBookDocument(indexedBook)));
+        indexedBook.setBookId(book.getId());
+        bookElasticsearchRepository.save(indexedBook);
     }
 
     public void indexBooks(List<IndexBookCommand> indexBookCommands) {
         if (indexBookCommands.isEmpty()) {
             return;
         }
-        bookRepository.upsertAll(indexBookCommands.stream().map(IndexBookCommand::toBook).toList());
+        bookElasticsearchCustomRepository.upsertAll(
+            indexBookCommands.stream().map(IndexBookCommand::toBookInfo).toList());
     }
 }

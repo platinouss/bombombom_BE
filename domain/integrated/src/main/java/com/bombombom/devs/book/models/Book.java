@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 
 // TODO: study 도메인 모듈 전환 후 제거 필요
 @SuperBuilder
-@Entity
+@Entity(name = "test")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Book {
