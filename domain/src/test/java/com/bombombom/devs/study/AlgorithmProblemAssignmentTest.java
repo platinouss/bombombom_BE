@@ -45,7 +45,6 @@ class AlgorithmProblemAssignmentTest {
         assertThat(assignment.getRound()).isEqualTo(round);
         assertThat(assignment.getProblem()).isEqualTo(problem);
         assertThat(history).isNotNull();
-        assertThat(history.getAssignment()).isEqualTo(assignment);
         assertThat(history.getUser()).isEqualTo(user);
     }
 }

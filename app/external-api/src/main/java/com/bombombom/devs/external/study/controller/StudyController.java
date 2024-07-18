@@ -5,23 +5,28 @@ import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
+import com.bombombom.devs.external.study.controller.dto.response.StudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
+import com.bombombom.devs.study.model.StudyType;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,7 +75,7 @@ public class StudyController {
 
     @GetMapping
     public ResponseEntity<StudyPageResponse> studyList(
-        @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable) {
 
         Page<StudyResponse> studyPage = studyService.readStudy(pageable)
             .map(StudyResponse::fromResult);
@@ -94,4 +99,13 @@ public class StudyController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/progress/{id}")
+    public ResponseEntity<StudyProgressResponse> progressStudy(@PathVariable("id") Long studyId) {
+        StudyProgressResult<?> studyProgressResult = studyService.getStudyProgress(studyId);
+        if (studyProgressResult.getStudyType() == StudyType.ALGORITHM) {
+            return ResponseEntity.ok()
+                .body(AlgorithmStudyProgressResponse.fromResult(studyProgressResult));
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

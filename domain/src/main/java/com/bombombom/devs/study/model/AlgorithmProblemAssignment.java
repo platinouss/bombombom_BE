@@ -47,7 +47,7 @@ public class AlgorithmProblemAssignment extends BaseEntity {
 
     public AlgorithmProblemAssignmentSolveHistory createSolveHistory(User user) {
         return AlgorithmProblemAssignmentSolveHistory.builder()
-            .assignment(this)
+            .problem(problem)
             .user(user)
             .tryCount(0)
             .build();

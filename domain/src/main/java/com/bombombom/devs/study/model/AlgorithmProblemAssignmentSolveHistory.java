@@ -1,5 +1,6 @@
 package com.bombombom.devs.study.model;
 
+import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.user.model.User;
 import jakarta.persistence.Column;
@@ -39,6 +40,11 @@ public class AlgorithmProblemAssignmentSolveHistory extends BaseEntity {
     @JoinColumn(name = "assignment_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private AlgorithmProblemAssignment assignment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "problem_id",
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private AlgorithmProblem problem;
 
     @Column(name = "solved_at")
     private LocalDateTime solvedAt;

@@ -1,6 +1,7 @@
 package com.bombombom.devs.external.study.service;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.external.study.exception.NotFoundException;
@@ -9,12 +10,21 @@ import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmSt
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
+import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.global.util.Clock;
+import com.bombombom.devs.job.AlgorithmProblemConverter;
+import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
+import com.bombombom.devs.study.model.AlgorithmProblemAssignmentSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.model.UserStudy;
+import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentSolveHistoryRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -38,6 +48,10 @@ public class StudyService {
     private final BookRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
     private final RoundRepository roundRepository;
+    private final AlgorithmProblemRepository algoProblemRepository;
+    private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
+    private final AlgorithmProblemConverter algorithmProblemConverter;
+    private final AlgorithmProblemAssignmentSolveHistoryRepository algorithmProblemSolveHistoryRepository;
 
     @Transactional
     public AlgorithmStudyResult createAlgorithmStudy(
@@ -161,4 +175,26 @@ public class StudyService {
         return roundRepository.findRoundsWithStudyByStartDate(clock.today());
     }
 
+    @Transactional(readOnly = true)
+    public StudyProgressResult<?> getStudyProgress(Long studyId) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+        List<User> studyMembers = userStudyRepository.findByStudyId(studyId).stream()
+            .map(UserStudy::getUser).toList();
+        if (study.getStudyType() == StudyType.ALGORITHM) {
+            return getAlgorithmStudyProgress(studyId, studyMembers);
+        }
+        return null;
+    }
+
+    public StudyProgressResult<?> getAlgorithmStudyProgress(Long studyId,
+        List<User> studyMembers) {
+        List<AlgorithmProblem> algorithmProblems = algorithmProblemAssignmentRepository.findProblemWithStudyByRound(
+            studyId, clock.today()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
+        List<AlgorithmProblemAssignmentSolveHistory> histories = algorithmProblemSolveHistoryRepository
+            .findWithUserAndProblem(studyMembers.stream().map(User::getId).toList(),
+                algorithmProblems.stream().map(AlgorithmProblem::getId).toList());
+        return StudyProgressResult.fromEntity(StudyType.ALGORITHM, studyMembers,
+            AlgorithmStudyProgress.fromEntity(algorithmProblems, histories));
+    }
 }
