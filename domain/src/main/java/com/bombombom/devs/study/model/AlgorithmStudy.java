@@ -1,6 +1,6 @@
 package com.bombombom.devs.study.model;
 
-import com.bombombom.devs.algo.models.AlgoTag;
+import com.bombombom.devs.algo.model.AlgoTag;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;

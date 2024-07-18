@@ -1,7 +1,7 @@
 package com.bombombom.devs.study.model;
 
-import com.bombombom.devs.algo.models.AlgorithmProblem;
-import com.bombombom.devs.global.audit.BaseEntity;
+import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.common.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;

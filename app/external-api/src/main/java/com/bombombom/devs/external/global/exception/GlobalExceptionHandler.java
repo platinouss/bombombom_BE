@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.global.exception;
 
-import com.bombombom.devs.client.naver.exception.ExternalApiException;
+import com.bombombom.devs.exception.ExternalApiException;
 import com.bombombom.devs.external.study.exception.NotFoundException;
 import com.bombombom.devs.external.user.exception.ExistUsernameException;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -1,11 +1,11 @@
 // @formatter:off
 
-package com.bombombom.devs.algo.service;
+package com.bombombom.devs.external.algo.service;
 
-import com.bombombom.devs.algo.config.ProbabilityConfig;
-import com.bombombom.devs.algo.models.AlgoTag;
-import com.bombombom.devs.algo.models.AlgorithmProblem;
+import com.bombombom.devs.algo.model.AlgoTag;
+import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
+import com.bombombom.devs.external.algo.config.ProbabilityConfig;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;

@@ -1,6 +1,6 @@
-package com.bombombom.devs.algo.config;
+package com.bombombom.devs.external.algo.config;
 
-import com.bombombom.devs.algo.models.AlgoTag;
+import com.bombombom.devs.algo.model.AlgoTag;
 import jakarta.annotation.PostConstruct;
 import java.util.Random;
 import java.util.random.RandomGenerator;

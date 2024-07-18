@@ -2,8 +2,8 @@ package com.bombombom.devs.job;
 
 import static org.quartz.JobBuilder.newJob;
 
-import com.bombombom.devs.algo.models.AlgorithmProblem;
-import com.bombombom.devs.algo.service.AlgorithmProblemService;
+import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.solvedac.SolvedacClient;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;

@@ -1,4 +1,4 @@
-package com.bombombom.devs.algo.models;
+package com.bombombom.devs.algo.model;
 
 import java.util.List;
 import lombok.Getter;
@@ -28,6 +28,7 @@ public enum AlgoTag {
 
     public static List<String> getTagNames() {
         return List.of(
-            "MATH", "DP", "GREEDY", "IMPLEMENTATION", "GRAPHS", "GEOMETRY", "DATA_STRUCTURES", "STRING");
+            "MATH", "DP", "GREEDY", "IMPLEMENTATION", "GRAPHS", "GEOMETRY", "DATA_STRUCTURES",
+            "STRING");
     }
 }

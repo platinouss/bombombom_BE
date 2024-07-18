@@ -1,7 +1,7 @@
 package com.bombombom.devs.job;
 
-import com.bombombom.devs.algo.models.AlgoTag;
-import com.bombombom.devs.algo.models.AlgorithmProblem;
+import com.bombombom.devs.algo.model.AlgoTag;
+import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.solvedac.dto.ProblemResponse;
 import com.bombombom.devs.solvedac.dto.ProblemTag;

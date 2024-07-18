@@ -1,11 +1,11 @@
-package com.bombombom.devs.algo.service;
+package com.bombombom.devs.external.algo.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.when;
 
-import com.bombombom.devs.algo.config.ProbabilityConfig;
-import com.bombombom.devs.algo.models.AlgoTag;
+import com.bombombom.devs.algo.model.AlgoTag;
+import com.bombombom.devs.external.algo.config.ProbabilityConfig;
 import java.util.Map;
 import java.util.random.RandomGenerator;
 import org.junit.jupiter.api.DisplayName;
