@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.global.security;
 
-import com.bombombom.devs.user.models.User;
+import com.bombombom.devs.user.model.User;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @ToString(exclude = "password")
 public class AppUserDetails implements UserDetails {
+
     private final Long id;
     private final String username;
     private final String password;

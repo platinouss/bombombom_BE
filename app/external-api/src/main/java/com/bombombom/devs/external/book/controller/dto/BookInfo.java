@@ -1,6 +1,5 @@
 package com.bombombom.devs.external.book.controller.dto;
 
-import com.bombombom.devs.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import lombok.Builder;
 
@@ -24,15 +23,5 @@ public record BookInfo(
             .imageUrl(bookResult.imageUrl())
             .build();
     }
-
-    public static BookInfo fromResult(SearchBooksResult.BookResult bookResult) {
-        return BookInfo.builder()
-            .title(bookResult.title())
-            .author(bookResult.author())
-            .publisher(bookResult.publisher())
-            .isbn(bookResult.isbn())
-            .tableOfContents(bookResult.tableOfContents())
-            .imageUrl(bookResult.imageUrl())
-            .build();
-    }
+    
 }

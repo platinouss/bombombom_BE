@@ -1,15 +1,15 @@
 package com.bombombom.devs.external.study.controller.dto.request;
 
 
-import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
-import static com.bombombom.devs.study.Constants.MAX_DIFFICULTY_LEVEL;
-import static com.bombombom.devs.study.Constants.MAX_PENALTY;
-import static com.bombombom.devs.study.Constants.MAX_PROBLEM_COUNT;
-import static com.bombombom.devs.study.Constants.MAX_RELIABILITY_LIMIT;
-import static com.bombombom.devs.study.Constants.MAX_WEEKS;
+import static com.bombombom.devs.study.model.Study.MAX_CAPACITY;
+import static com.bombombom.devs.study.model.Study.MAX_DIFFICULTY_LEVEL;
+import static com.bombombom.devs.study.model.Study.MAX_PENALTY;
+import static com.bombombom.devs.study.model.Study.MAX_PROBLEM_COUNT;
+import static com.bombombom.devs.study.model.Study.MAX_RELIABILITY_LIMIT;
+import static com.bombombom.devs.study.model.Study.MAX_WEEKS;
 
-import com.bombombom.devs.study.models.StudyStatus;
-import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
+import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
+import com.bombombom.devs.study.model.StudyStatus;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

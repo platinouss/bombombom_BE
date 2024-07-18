@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.user.controller.dto;
 
-import com.bombombom.devs.user.service.dto.SignupCommand;
+import com.bombombom.devs.external.user.service.dto.SignupCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;

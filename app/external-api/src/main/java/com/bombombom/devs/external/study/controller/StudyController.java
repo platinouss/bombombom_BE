@@ -9,9 +9,9 @@ import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyR
 import com.bombombom.devs.external.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
-import com.bombombom.devs.study.service.StudyService;
-import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
-import com.bombombom.devs.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.StudyService;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;

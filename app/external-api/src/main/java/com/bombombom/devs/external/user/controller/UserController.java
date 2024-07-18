@@ -4,7 +4,7 @@ import com.bombombom.devs.external.global.security.AppUserDetails;
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.user.controller.dto.SignupRequest;
 import com.bombombom.devs.external.user.controller.dto.UserProfileResponse;
-import com.bombombom.devs.user.service.UserService;
+import com.bombombom.devs.external.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

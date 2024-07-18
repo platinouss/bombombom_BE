@@ -1,11 +1,11 @@
 package com.bombombom.devs.external.study.controller;
 
-import static com.bombombom.devs.study.Constants.MAX_CAPACITY;
-import static com.bombombom.devs.study.Constants.MAX_DIFFICULTY_LEVEL;
-import static com.bombombom.devs.study.Constants.MAX_PENALTY;
-import static com.bombombom.devs.study.Constants.MAX_PROBLEM_COUNT;
-import static com.bombombom.devs.study.Constants.MAX_RELIABILITY_LIMIT;
-import static com.bombombom.devs.study.Constants.MAX_WEEKS;
+import static com.bombombom.devs.study.model.Study.MAX_CAPACITY;
+import static com.bombombom.devs.study.model.Study.MAX_DIFFICULTY_LEVEL;
+import static com.bombombom.devs.study.model.Study.MAX_PENALTY;
+import static com.bombombom.devs.study.model.Study.MAX_PROBLEM_COUNT;
+import static com.bombombom.devs.study.model.Study.MAX_RELIABILITY_LIMIT;
+import static com.bombombom.devs.study.model.Study.MAX_WEEKS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bombombom.devs.book.service.dto.SearchBooksResult.BookResult;
+import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
@@ -27,16 +27,16 @@ import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorith
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
+import com.bombombom.devs.external.study.service.StudyService;
+import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
+import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyResult;
+import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.global.util.SystemClock;
-import com.bombombom.devs.study.models.StudyStatus;
-import com.bombombom.devs.study.service.StudyService;
-import com.bombombom.devs.study.service.dto.command.RegisterAlgorithmStudyCommand;
-import com.bombombom.devs.study.service.dto.command.RegisterBookStudyCommand;
-import com.bombombom.devs.study.service.dto.result.AlgorithmStudyResult;
-import com.bombombom.devs.study.service.dto.result.BookStudyResult;
-import com.bombombom.devs.study.service.dto.result.StudyResult;
-import com.bombombom.devs.user.models.Role;
-import com.bombombom.devs.user.service.dto.UserProfileResult;
+import com.bombombom.devs.study.model.StudyStatus;
+import com.bombombom.devs.user.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.ArrayList;
