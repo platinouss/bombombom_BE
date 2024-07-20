@@ -4,7 +4,7 @@ import com.bombombom.devs.algo.model.AlgoTag;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
-import com.bombombom.devs.study.model.StudyType;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,7 +12,9 @@ import lombok.Builder;
 
 @Builder
 public record AlgorithmStudyProgressResponse(
-    StudyType studyType,
+    Integer idx,
+    LocalDate startDate,
+    LocalDate endDate,
     Map<Long, AlgorithmProblemInfo> problems,
     Map<Long, StudyMemberInfo> users
 ) implements StudyProgressResponse {
@@ -46,23 +48,24 @@ public record AlgorithmStudyProgressResponse(
     }
 
     public static AlgorithmStudyProgressResponse fromResult(StudyProgressResult<?> studyProgress) {
-        AlgorithmStudyProgress algorithmStudyProgress = (AlgorithmStudyProgress) studyProgress.getStudyProgress();
+        AlgorithmStudyProgress algorithmStudyProgress = (AlgorithmStudyProgress) studyProgress.studyProgress();
         Map<Long, AlgorithmProblemInfo> algorithmProblemInfo = algorithmStudyProgress
-            .algorithmProblems().stream()
-            .collect(Collectors.toMap(AlgorithmProblem::getId, AlgorithmProblemInfo::fromResult));
+            .algorithmProblems().stream().collect(
+                Collectors.toMap(AlgorithmProblem::getId, AlgorithmProblemInfo::fromResult));
         Map<Long, Boolean> studyTask = algorithmStudyProgress.algorithmProblems()
             .stream().collect(Collectors.toMap(AlgorithmProblem::getId, (study) -> false));
         Map<Long, StudyMemberInfo> users = new HashMap<>();
-        studyProgress.getStudyMembers().forEach(member -> {
+        studyProgress.studyMembers().forEach(member -> {
             Map<Long, Boolean> tasks = new HashMap<>(studyTask);
             users.put(member.getId(),
                 StudyMemberInfo.builder().username(member.getUsername()).tasks(tasks).build());
         });
-        algorithmStudyProgress.histories().forEach(
-            history -> users.get(history.getUser().getId()).tasks.put(history.getProblem().getId(),
-                true));
+        algorithmStudyProgress.histories().forEach(history -> users.get(history.getUser().getId())
+            .tasks.put(history.getProblem().getId(), true));
         return AlgorithmStudyProgressResponse.builder()
-            .studyType(studyProgress.getStudyType())
+            .idx(algorithmStudyProgress.round().getIdx())
+            .startDate(algorithmStudyProgress.round().getStartDate())
+            .endDate(algorithmStudyProgress.round().getEndDate())
             .problems(algorithmProblemInfo)
             .users(users)
             .build();
