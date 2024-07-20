@@ -8,8 +8,13 @@ import com.bombombom.devs.external.study.exception.NotFoundException;
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.external.study.service.dto.query.GetAlgorithmStudyProgressQuery;
+import com.bombombom.devs.external.study.service.dto.query.GetStudyProgressQuery;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyAndRoundResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
@@ -176,25 +181,42 @@ public class StudyService {
     }
 
     @Transactional(readOnly = true)
-    public StudyProgressResult<?> getStudyProgress(Long studyId) {
+    public StudyAndRoundResult findStudyAndRound(Long studyId, Integer roundIdx) {
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new IllegalStateException("Study Not Found"));
-        List<User> studyMembers = userStudyRepository.findByStudyId(studyId).stream()
-            .map(UserStudy::getUser).toList();
-        if (study.getStudyType() == StudyType.ALGORITHM) {
-            return getAlgorithmStudyProgress(studyId, studyMembers);
+        Round round = roundRepository.findRoundByStudyAndIdx(studyId, roundIdx)
+            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
+        return StudyAndRoundResult.fromEntity(study, round);
+    }
+
+    @Transactional(readOnly = true)
+    public StudyDetailsResult<?> findStudyDetails(Long studyId) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+        Round currentRound = roundRepository.findRoundByStudyIdAndEndDate(studyId,
+                study.getWeeks() - 1, clock.today())
+            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
+        return StudyDetailsResult.fromResult(study,
+            findStudyProgress(GetStudyProgressQuery.fromEntity(study, currentRound)));
+    }
+
+    @Transactional(readOnly = true)
+    public StudyProgressResult<?> findStudyProgress(GetStudyProgressQuery query) {
+        List<User> studyMembers = userStudyRepository.findByStudyId(query.study().getId())
+            .stream().map(UserStudy::getUser).toList();
+        if (query.study().getStudyType() == StudyType.ALGORITHM) {
+            return AlgorithmStudyProgressResult.fromEntity(StudyType.ALGORITHM, studyMembers,
+                findAlgorithmStudyProgress(query.toAlgorithmProgressQuery(studyMembers)));
         }
         return null;
     }
 
-    public StudyProgressResult<?> getAlgorithmStudyProgress(Long studyId,
-        List<User> studyMembers) {
-        List<AlgorithmProblem> algorithmProblems = algorithmProblemAssignmentRepository.findProblemWithStudyByRound(
-            studyId, clock.today()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
+    AlgorithmStudyProgress findAlgorithmStudyProgress(GetAlgorithmStudyProgressQuery query) {
+        List<AlgorithmProblem> problems = algorithmProblemAssignmentRepository.findProblemWithStudyByRound(
+            query.round().getId()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
+        List<Long> problemsId = problems.stream().map(AlgorithmProblem::getId).toList();
         List<AlgorithmProblemAssignmentSolveHistory> histories = algorithmProblemSolveHistoryRepository
-            .findWithUserAndProblem(studyMembers.stream().map(User::getId).toList(),
-                algorithmProblems.stream().map(AlgorithmProblem::getId).toList());
-        return StudyProgressResult.fromEntity(StudyType.ALGORITHM, studyMembers,
-            AlgorithmStudyProgress.fromEntity(algorithmProblems, histories));
+            .findSolvedHistoryWithUserAndProblem(query.studyMembersId(), problemsId);
+        return AlgorithmStudyProgress.fromEntity(query.round(), problems, histories);
     }
 }

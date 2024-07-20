@@ -16,10 +16,17 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
         + "where r.startDate = :startDate")
     List<Round> findRoundsWithStudyByStartDate(LocalDate startDate);
 
-    @Query("SELECT r.id FROM Round r"
-        + " WHERE r.study.id = :studyId AND r.endDate > :currentDate "
-        + "ORDER BY r.endDate ASC "
-        + "LIMIT 1")
-    Optional<Long> findRoundByStudyIdAndEndDate(Long studyId, LocalDate currentDate);
+    @Query("SELECT r FROM Round r "
+        + "WHERE r.id = ( "
+        + "  SELECT r.id FROM Round r "
+        + "  WHERE r.study.id = :studyId AND "
+        + "   ((r.startDate <= :currentDate AND r.endDate >= :currentDate) OR r.idx = :lastIdx) "
+        + ")")
+    Optional<Round> findRoundByStudyIdAndEndDate(Long studyId, Integer lastIdx,
+        LocalDate currentDate);
+
+    @Query("SELECT r FROM Round r "
+        + "WHERE r.study.id = :studyId AND r.idx = :idx")
+    Optional<Round> findRoundByStudyAndIdx(Long studyId, Integer idx);
 }
 
