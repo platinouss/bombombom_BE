@@ -169,8 +169,7 @@ public class StudyService {
     }
 
     @Transactional
-    public void assignProblemToRound(
-        Round round, List<AlgorithmProblem> problems) {
+    public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
         round.assignProblems(problems);
         roundRepository.save(round);
     }
@@ -205,7 +204,7 @@ public class StudyService {
         List<User> studyMembers = userStudyRepository.findByStudyId(query.study().getId())
             .stream().map(UserStudy::getUser).toList();
         if (query.study().getStudyType() == StudyType.ALGORITHM) {
-            return AlgorithmStudyProgressResult.fromEntity(StudyType.ALGORITHM, studyMembers,
+            return AlgorithmStudyProgressResult.fromEntity(studyMembers,
                 findAlgorithmStudyProgress(query.toAlgorithmProgressQuery(studyMembers)));
         }
         return null;

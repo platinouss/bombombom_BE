@@ -14,12 +14,11 @@ public record AlgorithmStudyProgressResult(
 ) implements StudyProgressResult<AlgorithmStudyProgress> {
 
     public static AlgorithmStudyProgressResult fromEntity(
-        StudyType studyType,
         List<User> studyMembers,
         AlgorithmStudyProgress studyProgress
     ) {
         return AlgorithmStudyProgressResult.builder()
-            .studyType(studyType)
+            .studyType(StudyType.ALGORITHM)
             .studyMembers(studyMembers)
             .studyProgress(studyProgress)
             .build();

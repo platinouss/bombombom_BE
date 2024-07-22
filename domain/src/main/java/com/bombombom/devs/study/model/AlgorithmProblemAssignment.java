@@ -3,7 +3,6 @@ package com.bombombom.devs.study.model;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.user.model.User;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,9 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,9 +38,6 @@ public class AlgorithmProblemAssignment extends BaseEntity {
     @JoinColumn(name = "problem_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private AlgorithmProblem problem;
-
-    @OneToMany(mappedBy = "assignment", cascade = CascadeType.PERSIST)
-    private List<AlgorithmProblemAssignmentSolveHistory> solveHistories;
 
     public AlgorithmProblemAssignmentSolveHistory createSolveHistory(User user) {
         return AlgorithmProblemAssignmentSolveHistory.builder()

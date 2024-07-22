@@ -37,11 +37,6 @@ public class AlgorithmProblemAssignmentSolveHistory extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment_id",
-        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private AlgorithmProblemAssignment assignment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private AlgorithmProblem problem;
