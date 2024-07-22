@@ -58,16 +58,9 @@ public class Round extends BaseEntity {
     }
 
     public AlgorithmProblemAssignment assignProblem(AlgorithmProblem problem) {
-        AlgorithmProblemAssignment assignment = AlgorithmProblemAssignment.builder()
+        return AlgorithmProblemAssignment.builder()
             .round(this)
             .problem(problem)
-            .solveHistories(new ArrayList<>())
             .build();
-        for (UserStudy userStudy : study.userStudies) {
-            AlgorithmProblemAssignmentSolveHistory history
-                = assignment.createSolveHistory(userStudy.getUser());
-            assignment.getSolveHistories().add(history);
-        }
-        return assignment;
     }
 }

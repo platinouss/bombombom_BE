@@ -3,9 +3,7 @@ package com.bombombom.devs.study;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
-import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignmentSolveHistory;
-import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.user.model.User;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
@@ -19,9 +17,6 @@ class AlgorithmProblemAssignmentSolveHistoryTest {
         /*
          * Given
          */
-        Round round = Round.builder()
-            .idx(1)
-            .build();
         AlgorithmProblem problem = AlgorithmProblem.builder()
             .refId(1)
             .build();
@@ -29,17 +24,13 @@ class AlgorithmProblemAssignmentSolveHistoryTest {
             .id(1L)
             .username("testuser")
             .build();
-        AlgorithmProblemAssignment assignment = AlgorithmProblemAssignment.builder()
-            .round(round)
-            .problem(problem)
-            .build();
 
         /*
          * When
          */
         AlgorithmProblemAssignmentSolveHistory history = AlgorithmProblemAssignmentSolveHistory.builder()
-            .assignment(assignment)
             .user(user)
+            .problem(problem)
             .solvedAt(LocalDateTime.now())
             .tryCount(1)
             .build();
@@ -48,7 +39,7 @@ class AlgorithmProblemAssignmentSolveHistoryTest {
          * Then
          */
         assertThat(history).isNotNull();
-        assertThat(history.getAssignment()).isEqualTo(assignment);
+        assertThat(history.getProblem()).isEqualTo(problem);
         assertThat(history.getUser()).isEqualTo(user);
         assertThat(history.getSolvedAt()).isNotNull();
         assertThat(history.getTryCount()).isEqualTo(1);

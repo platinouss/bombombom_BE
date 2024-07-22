@@ -169,8 +169,7 @@ public class StudyService {
     }
 
     @Transactional
-    public void assignProblemToRound(
-        Round round, List<AlgorithmProblem> problems) {
+    public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
         round.assignProblems(problems);
         roundRepository.save(round);
     }
