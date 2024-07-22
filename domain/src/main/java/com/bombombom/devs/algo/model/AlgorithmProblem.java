@@ -1,6 +1,6 @@
-package com.bombombom.devs.algo.models;
+package com.bombombom.devs.algo.model;
 
-import com.bombombom.devs.global.audit.BaseEntity;
+import com.bombombom.devs.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package com.bombombom.devs.global.audit;
+package com.bombombom.devs.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

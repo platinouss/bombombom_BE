@@ -1,6 +1,6 @@
 package com.bombombom.devs.study.model;
 
-import com.bombombom.devs.global.audit.BaseEntity;
+import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.user.model.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

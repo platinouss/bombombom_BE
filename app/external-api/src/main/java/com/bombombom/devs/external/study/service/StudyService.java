@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.study.service;
 
-import com.bombombom.devs.algo.models.AlgorithmProblem;
+import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.external.study.exception.NotFoundException;

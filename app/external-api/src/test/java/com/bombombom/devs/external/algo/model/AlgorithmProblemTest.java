@@ -1,7 +1,9 @@
-package com.bombombom.devs.algo.models;
+package com.bombombom.devs.external.algo.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import com.bombombom.devs.algo.model.AlgoTag;
+import com.bombombom.devs.algo.model.AlgorithmProblem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
