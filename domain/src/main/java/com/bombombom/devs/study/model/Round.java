@@ -46,7 +46,7 @@ public class Round extends BaseEntity {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "round", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "round", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @Builder.Default
     private List<AlgorithmProblemAssignment> assignments = new ArrayList<>();
 

@@ -46,8 +46,8 @@ public class AlgorithmProblemService {
     private final AlgorithmProblemFeedbackRepository algorithmProblemFeedbackRepository;
 
 
-    public List<AlgorithmProblem> saveProblems(List<AlgorithmProblem> problems) {
-        return algorithmProblemRepository.saveAll(problems);
+    public void saveProblems(List<AlgorithmProblem> problems) {
+        algorithmProblemRepository.saveAll(problems);
     }
 
     /**
