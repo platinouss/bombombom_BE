@@ -1,11 +1,9 @@
-package com.bombombom.devs.global.util;
+package com.bombombom.devs.core.util;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
-import org.springframework.stereotype.Component;
 
-@Component
 public class SystemClock implements Clock {
 
     @Override

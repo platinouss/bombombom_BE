@@ -3,7 +3,6 @@ rootProject.name = 'devs'
 include 'app:external-api'
 
 include 'domain'
-include 'domain:integrated'
 include 'core'
 include 'infra'
 

@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
@@ -34,7 +35,6 @@ import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
-import com.bombombom.devs.global.util.SystemClock;
 import com.bombombom.devs.study.model.StudyStatus;
 import com.bombombom.devs.user.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
