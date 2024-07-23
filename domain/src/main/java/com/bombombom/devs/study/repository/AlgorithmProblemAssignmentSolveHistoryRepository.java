@@ -9,8 +9,8 @@ public interface AlgorithmProblemAssignmentSolveHistoryRepository extends
     JpaRepository<AlgorithmProblemAssignmentSolveHistory, Long> {
 
     @Query("SELECT h FROM AlgorithmProblemAssignmentSolveHistory h "
-        + "WHERE h.user.id IN :studyMemberIds AND h.problem.id IN :algorithmProblemIds"
+        + "WHERE h.user.id IN :membersId AND h.problem.id IN :algorithmProblemIds"
         + " AND h.solvedAt IS NOT NULL")
     List<AlgorithmProblemAssignmentSolveHistory> findSolvedHistoryWithUserAndProblem(
-        List<Long> studyMemberIds, List<Long> algorithmProblemIds);
+        List<Long> membersId, List<Long> algorithmProblemIds);
 }

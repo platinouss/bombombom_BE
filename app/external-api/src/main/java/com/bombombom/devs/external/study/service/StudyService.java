@@ -8,28 +8,19 @@ import com.bombombom.devs.external.study.exception.NotFoundException;
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
-import com.bombombom.devs.external.study.service.dto.query.GetAlgorithmStudyProgressQuery;
-import com.bombombom.devs.external.study.service.dto.query.GetStudyProgressQuery;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
-import com.bombombom.devs.external.study.service.dto.result.StudyAndRoundResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
-import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
+import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
 import com.bombombom.devs.global.util.Clock;
 import com.bombombom.devs.job.AlgorithmProblemConverter;
-import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
-import com.bombombom.devs.study.model.AlgorithmProblemAssignmentSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.model.UserStudy;
-import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
-import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentSolveHistoryRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -53,10 +44,9 @@ public class StudyService {
     private final BookRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
     private final RoundRepository roundRepository;
+    private final StudyServiceFactory studyServiceFactory;
     private final AlgorithmProblemRepository algoProblemRepository;
-    private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
     private final AlgorithmProblemConverter algorithmProblemConverter;
-    private final AlgorithmProblemAssignmentSolveHistoryRepository algorithmProblemSolveHistoryRepository;
 
     @Transactional
     public AlgorithmStudyResult createAlgorithmStudy(
@@ -180,42 +170,29 @@ public class StudyService {
     }
 
     @Transactional(readOnly = true)
-    public StudyAndRoundResult findStudyAndRound(Long studyId, Integer roundIdx) {
-        Study study = studyRepository.findById(studyId)
-            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
-        Round round = roundRepository.findRoundByStudyAndIdx(studyId, roundIdx)
-            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
-        return StudyAndRoundResult.fromEntity(study, round);
-    }
-
-    @Transactional(readOnly = true)
-    public StudyDetailsResult<?> findStudyDetails(Long studyId) {
+    public StudyDetailsResult findStudyDetails(Long studyId) {
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new IllegalStateException("Study Not Found"));
         Round currentRound = roundRepository.findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(
                 studyId, study.getWeeks() - 1, clock.today())
             .orElseThrow(() -> new IllegalStateException("Round Not Found"));
-        return StudyDetailsResult.fromResult(study,
-            findStudyProgress(GetStudyProgressQuery.fromEntity(study, currentRound)));
+        return StudyDetailsResult.fromResult(study, findStudyProgress(study, currentRound));
     }
 
     @Transactional(readOnly = true)
-    public StudyProgressResult<?> findStudyProgress(GetStudyProgressQuery query) {
-        List<User> studyMembers = userStudyRepository.findByStudyId(query.study().getId())
-            .stream().map(UserStudy::getUser).toList();
-        if (query.study().getStudyType() == StudyType.ALGORITHM) {
-            return AlgorithmStudyProgressResult.fromEntity(studyMembers,
-                findAlgorithmStudyProgress(query.toAlgorithmProgressQuery(studyMembers)));
-        }
-        return null;
+    public StudyProgressResult findStudyProgress(Long studyId, Integer roundIdx) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+        Round round = roundRepository.findRoundByStudyAndIdx(studyId, roundIdx)
+            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
+        return findStudyProgress(study, round);
     }
 
-    AlgorithmStudyProgress findAlgorithmStudyProgress(GetAlgorithmStudyProgressQuery query) {
-        List<AlgorithmProblem> problems = algorithmProblemAssignmentRepository.findProblemWithStudyByRound(
-            query.round().getId()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
-        List<Long> problemsId = problems.stream().map(AlgorithmProblem::getId).toList();
-        List<AlgorithmProblemAssignmentSolveHistory> histories = algorithmProblemSolveHistoryRepository
-            .findSolvedHistoryWithUserAndProblem(query.studyMembersId(), problemsId);
-        return AlgorithmStudyProgress.fromEntity(query.round(), problems, histories);
+    @Transactional(readOnly = true)
+    public StudyProgressResult findStudyProgress(Study study, Round round) {
+        List<User> members = userStudyRepository.findByStudyId(study.getId()).stream()
+            .map(UserStudy::getUser).toList();
+        return StudyProgressResult.fromEntity(study.getStudyType(), members,
+            studyServiceFactory.getService(study.getStudyType()).findStudyProgress(round, members));
     }
 }

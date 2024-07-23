@@ -43,15 +43,10 @@ public record StudyDetailsResponse(
         }
     }
 
-    public static StudyDetailsResponse fromResult(StudyDetailsResult<?> studyDetailsResult) {
-        if (studyDetailsResult.study().getStudyType() == StudyType.ALGORITHM) {
-            return StudyDetailsResponse.builder()
-                .details(StudyDetails.fromResult(studyDetailsResult.study()))
-                .round(AlgorithmStudyProgressResponse.fromResult(
-                    studyDetailsResult.currentStudyProgress()))
-                .build();
-        }
-        return null;
+    public static StudyDetailsResponse fromResult(StudyDetailsResult studyDetailsResult) {
+        return StudyDetailsResponse.builder()
+            .details(StudyDetails.fromResult(studyDetailsResult.study()))
+            .round(StudyProgressResponse.fromResult(studyDetailsResult.currentStudyProgress()))
+            .build();
     }
-
 }

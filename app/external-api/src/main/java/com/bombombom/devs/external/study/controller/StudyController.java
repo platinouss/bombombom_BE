@@ -14,7 +14,6 @@ import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
-import com.bombombom.devs.external.study.service.dto.result.StudyAndRoundResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import jakarta.validation.Valid;
@@ -103,16 +102,14 @@ public class StudyController {
 
     @GetMapping("/{id}")
     public ResponseEntity<StudyDetailsResponse> getStudyDetails(@PathVariable("id") Long studyId) {
-        StudyDetailsResult<?> studyDetailsResult = studyService.findStudyDetails(studyId);
+        StudyDetailsResult studyDetailsResult = studyService.findStudyDetails(studyId);
         return ResponseEntity.ok().body(StudyDetailsResponse.fromResult(studyDetailsResult));
     }
 
     @GetMapping("/progress/{id}")
     public ResponseEntity<StudyProgressResponse> progressStudy(@PathVariable("id") Long studyId,
         @RequestParam Integer idx) {
-        StudyAndRoundResult studyAndRoundResult = studyService.findStudyAndRound(studyId, idx);
-        StudyProgressResult<?> studyProgressResult = studyService.findStudyProgress(
-            studyAndRoundResult.toServiceDto());
+        StudyProgressResult studyProgressResult = studyService.findStudyProgress(studyId, idx);
         return ResponseEntity.ok().body(StudyProgressResponse.fromResult(studyProgressResult));
     }
 }
