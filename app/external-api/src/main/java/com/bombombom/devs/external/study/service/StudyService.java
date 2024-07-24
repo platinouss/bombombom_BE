@@ -12,11 +12,15 @@ import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCo
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
+import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
+import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;

@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.study.controller.dto.response;
 
-import com.bombombom.devs.algo.model.AlgoTag;
+import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;

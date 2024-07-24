@@ -77,60 +77,18 @@ public class AlgorithmStudy extends Study {
         return Pair.of(spreadLeft, spreadRight);
     }
 
-    private void adjustDifficulty(AlgoTag tag, Float variance) {
-        switch (tag) {
-            case AlgoTag.DP -> {
-                this.difficultyDp += variance;
-            }
-            case AlgoTag.GEOMETRY -> {
-                this.difficultyGeometry += variance;
-            }
-            case AlgoTag.DATA_STRUCTURES -> {
-                this.difficultyDs += variance;
-            }
-            case AlgoTag.GRAPHS -> {
-                this.difficultyGraph += variance;
-            }
-            case AlgoTag.GREEDY -> {
-                this.difficultyGreedy += variance;
-            }
-            case AlgoTag.IMPLEMENTATION -> {
-                this.difficultyImpl += variance;
-            }
-            case AlgoTag.MATH -> {
-                this.difficultyMath += variance;
-            }
-            case AlgoTag.STRING -> {
-                this.difficultyString += variance;
-            }
-            default -> throw new IllegalStateException("Incorrect use of AlgoTag");
-        }
-    }
 
-    private Float getDifficultyVariance(AlgorithmProblemFeedback feedback) {
+    /**
+     * feedback 정보로 줄 수 있는 Difficulty의 평균값을 DifficultyAverage라고 할 때 난이도는 스터디 멤버들이 제출한 feedback의
+     * (DifficultyAverage - difficulty)의 평균값만큼 변동됩니다.
+     *
+     * @param feedback
+     * @return Float
+     */
+    public Float getDifficultyVariance(AlgorithmProblemFeedback feedback) {
         return (FeedbackDifficultyAverage - feedback.getDifficulty())
             / headCount.floatValue();
     }
 
-    /***
-     *
-     * @param
-     * @return
-     *
-     * feedback 정보에는 DifficultyMedian을 중앙값으로 가지는 개인의 주관적인 난이도 평가값인 diffculty가 있습니다.
-     * 난이도는 스터디 멤버들이 제출한 feedback의 (DifficultyMedian - difficulty)의 평균값만큼 변동됩니다.
-     */
-    public void applyFeedback(AlgorithmProblemFeedback feedback) {
-
-        adjustDifficulty(feedback.getProblem().getTag(),
-            getDifficultyVariance(feedback));
-    }
-
-    public void changeFeedback(AlgorithmProblemFeedback preFeedback,
-        AlgorithmProblemFeedback newFeedback) {
-
-        adjustDifficulty(preFeedback.getProblem().getTag(),
-            getDifficultyVariance(newFeedback) - getDifficultyVariance(preFeedback));
-    }
 
 }

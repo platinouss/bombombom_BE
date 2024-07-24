@@ -97,11 +97,8 @@ public class AlgorithmProblemService {
     public void feedback(Long userId,
         FeedbackAlgorithmProblemCommand feedbackAlgorithmProblemCommand) {
 
-        AlgorithmProblem problem = algorithmProblemRepository.findById(
-                feedbackAlgorithmProblemCommand.problemId())
-            .orElseThrow(() -> new NotFoundException("Problem Not Found"));
 
-        Study study = studyRepository.findStudyByIdForUpdate(
+        Study study = studyRepository.findById(
                 feedbackAlgorithmProblemCommand.studyId())
             .orElseThrow(() -> new NotFoundException("Study Not Found"));
 
@@ -114,6 +111,10 @@ public class AlgorithmProblemService {
         Round round = roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
                 algorithmStudy.getId(), clock.today())
             .orElseThrow(() -> new NotFoundException("Ongoing Round Not Found"));
+
+        AlgorithmProblem problem = algorithmProblemRepository.findById(
+                feedbackAlgorithmProblemCommand.problemId())
+            .orElseThrow(() -> new NotFoundException("Problem Not Found"));
 
         if(!algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(round.getId(),
                 problem.getId())){
@@ -145,16 +146,58 @@ public class AlgorithmProblemService {
                 .build();
 
             if(preFeedback != null){
-                algorithmStudy.changeFeedback(preFeedback, newFeedback);
+                changeFeedback(algorithmStudy, preFeedback, newFeedback);
                 preFeedback.update(newFeedback);
 
             } else{
-                algorithmStudy.applyFeedback(newFeedback);
+                applyFeedback(algorithmStudy, newFeedback);
                 problem.addFeedback(newFeedback);
                 algorithmProblemRepository.save(problem);
             }
 
     }
 
+    private void applyFeedback(AlgorithmStudy study, AlgorithmProblemFeedback feedback) {
+        adjustDifficulty(study.getId(), feedback.getProblem().getTag(),
+            study.getDifficultyVariance(feedback));
+    }
+
+    private void changeFeedback(AlgorithmStudy study, AlgorithmProblemFeedback preFeedback,
+        AlgorithmProblemFeedback newFeedback) {
+        adjustDifficulty(study.getId(), preFeedback.getProblem().getTag(),
+            study.getDifficultyVariance(newFeedback) - study.getDifficultyVariance(preFeedback));
+    }
+
+    private void adjustDifficulty(Long studyId, AlgoTag tag, Float variance){
+
+        switch (tag) {
+            case AlgoTag.DP -> {
+                studyRepository.increaseDifficultyDpById(studyId,variance);
+            }
+            case AlgoTag.GEOMETRY -> {
+                studyRepository.increaseDifficultyGeometryById(studyId,variance);
+            }
+            case AlgoTag.DATA_STRUCTURES -> {
+                studyRepository.increaseDifficultyDataStructureById(studyId,variance);
+            }
+            case AlgoTag.GRAPHS -> {
+                studyRepository.increaseDifficultyGraphById(studyId,variance);
+            }
+            case AlgoTag.GREEDY -> {
+                studyRepository.increaseDifficultyGreedyById(studyId, variance);
+            }
+            case AlgoTag.IMPLEMENTATION -> {
+                studyRepository.increaseDifficultyImplementationById(studyId,variance);
+            }
+            case AlgoTag.MATH -> {
+                studyRepository.increaseDifficultyMathById(studyId,variance);
+            }
+            case AlgoTag.STRING -> {
+                studyRepository.increaseDifficultyStringById(studyId,variance);
+            }
+            default -> throw new IllegalStateException("Incorrect use of AlgoTag");
+        }
+
+    }
 
 }

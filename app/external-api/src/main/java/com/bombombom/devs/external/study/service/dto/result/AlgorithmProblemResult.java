@@ -1,7 +1,7 @@
 package com.bombombom.devs.external.study.service.dto.result;
 
-import com.bombombom.devs.algo.model.AlgoTag;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.core.enums.AlgoTag;
 import lombok.Builder;
 
 @Builder

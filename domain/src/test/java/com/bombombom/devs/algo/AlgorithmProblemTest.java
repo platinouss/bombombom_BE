@@ -1,5 +1,4 @@
-
-package com.bombombom.devs.external.algo.model;
+package com.bombombom.devs.algo;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 

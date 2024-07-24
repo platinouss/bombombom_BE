@@ -20,7 +20,7 @@ import com.bombombom.devs.user.model.Role;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -106,7 +106,6 @@ public class AlgoIntegrationTest {
                     .reliabilityLimit(37)
                     .introduce("안녕하세요")
                     .name("스터디1")
-                    .startDate(LocalDate.of(2024, 06, 14))
                     .penalty(5000)
                     .weeks(5)
                     .state(StudyStatus.READY)
@@ -125,7 +124,7 @@ public class AlgoIntegrationTest {
                     .build();
             study.admit(leader);
             study.createRounds();
-            study.getRounds().getFirst().assignProblem(problem);
+            study.getRounds().getFirst().assignProblems(List.of(problem));
             studyRepository.save(study);
 
         }

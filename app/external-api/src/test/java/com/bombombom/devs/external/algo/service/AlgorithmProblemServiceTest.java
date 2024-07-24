@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
@@ -20,6 +21,7 @@ import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.StudyStatus;
+import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
@@ -204,8 +206,19 @@ class AlgorithmProblemServiceTest {
             .difficulty(2)
             .again(true)
             .build();
+
+        Study study = mock(AlgorithmStudy.class);
+
+        when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(
+            study));
+        when(study.getStudyType()).thenReturn(StudyType.ALGORITHM);
+        when(study.getId()).thenReturn(feedback.studyId());
+        when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(study.getId(),
+            clock.today())).thenReturn(Optional.of(mock(Round.class)));
+
         when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
             Optional.empty());
+
         /*
          * When & Then
          */
@@ -245,9 +258,7 @@ class AlgorithmProblemServiceTest {
             .difficulty(2)
             .again(true)
             .build();
-        when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
-            Optional.of(algorithmProblem));
-        when(studyRepository.findStudyByIdForUpdate(feedback.studyId())).thenReturn(
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
             Optional.empty());
 
 
@@ -291,9 +302,7 @@ class AlgorithmProblemServiceTest {
             .difficulty(2)
             .again(true)
             .build();
-        when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
-            Optional.of(algorithmProblem));
-        when(studyRepository.findStudyByIdForUpdate(feedback.studyId())).thenReturn(
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
             Optional.of(study));
 
 
@@ -338,14 +347,12 @@ class AlgorithmProblemServiceTest {
             .difficulty(2)
             .again(true)
             .build();
-        when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
-            Optional.of(algorithmProblem));
-        when(studyRepository.findStudyByIdForUpdate(feedback.studyId())).thenReturn(
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
             Optional.of(study));
         when(clock.today()).thenReturn(LocalDate.now());
         when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
-            eq(study.getId()),
-            any(LocalDate.class))).thenReturn(Optional.empty());
+            study.getId(),
+            clock.today())).thenReturn(Optional.empty());
 
 
         /*
@@ -395,7 +402,7 @@ class AlgorithmProblemServiceTest {
             .build();
         when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
             Optional.of(algorithmProblem));
-        when(studyRepository.findStudyByIdForUpdate(feedback.studyId())).thenReturn(
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
             Optional.of(study));
         when(clock.today()).thenReturn(LocalDate.now());
         when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
@@ -458,7 +465,7 @@ class AlgorithmProblemServiceTest {
             .build();
         when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
             Optional.of(algorithmProblem));
-        when(studyRepository.findStudyByIdForUpdate(feedback.studyId())).thenReturn(
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
             Optional.of(study));
         when(clock.today()).thenReturn(LocalDate.now());
         when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
@@ -521,7 +528,7 @@ class AlgorithmProblemServiceTest {
             .build();
         when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
             Optional.of(algorithmProblem));
-        when(studyRepository.findStudyByIdForUpdate(feedback.studyId())).thenReturn(
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
             Optional.of(study));
         when(clock.today()).thenReturn(LocalDate.now());
         when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
