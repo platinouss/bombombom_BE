@@ -1,7 +1,6 @@
 package com.bombombom.devs.external.study.service;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
-import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.external.study.exception.NotFoundException;
@@ -19,7 +18,6 @@ import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.global.util.Clock;
-import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignmentSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
@@ -38,11 +36,13 @@ import com.bombombom.devs.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudyService {
@@ -53,9 +53,7 @@ public class StudyService {
     private final BookRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
     private final RoundRepository roundRepository;
-    private final AlgorithmProblemRepository algoProblemRepository;
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
-    private final AlgorithmProblemConverter algorithmProblemConverter;
     private final AlgorithmProblemAssignmentSolveHistoryRepository algorithmProblemSolveHistoryRepository;
 
     @Transactional
@@ -170,8 +168,9 @@ public class StudyService {
 
     @Transactional
     public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
-        round.assignProblems(problems);
-        roundRepository.save(round);
+        algorithmProblemAssignmentRepository.deleteByRound(round);
+        List<AlgorithmProblemAssignment> newAssignments = round.assignProblems(problems);
+        algorithmProblemAssignmentRepository.saveAll(newAssignments);
     }
 
     @Transactional
