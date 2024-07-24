@@ -11,7 +11,7 @@ public record AlgorithmStudyProgressResult(
     StudyType studyType,
     List<User> studyMembers,
     AlgorithmStudyProgress studyProgress
-) implements StudyProgressResult<AlgorithmStudyProgress> {
+) {
 
     public static AlgorithmStudyProgressResult fromEntity(
         StudyType studyType,

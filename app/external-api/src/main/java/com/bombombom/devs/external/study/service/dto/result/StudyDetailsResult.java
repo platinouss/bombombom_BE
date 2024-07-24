@@ -4,14 +4,14 @@ import com.bombombom.devs.study.model.Study;
 import lombok.Builder;
 
 @Builder
-public record StudyDetailsResult<T>(
+public record StudyDetailsResult(
     Study study,
-    StudyProgressResult<T> currentStudyProgress
+    StudyProgressResult currentStudyProgress
 ) {
 
-    public static <T> StudyDetailsResult<T> fromResult(Study study,
-        StudyProgressResult<T> currentStudyProgress) {
-        return StudyDetailsResult.<T>builder()
+    public static StudyDetailsResult fromResult(Study study,
+        StudyProgressResult currentStudyProgress) {
+        return StudyDetailsResult.builder()
             .study(study)
             .currentStudyProgress(currentStudyProgress)
             .build();

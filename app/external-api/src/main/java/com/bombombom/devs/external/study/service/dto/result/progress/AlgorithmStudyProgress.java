@@ -11,7 +11,7 @@ public record AlgorithmStudyProgress(
     Round round,
     List<AlgorithmProblem> algorithmProblems,
     List<AlgorithmProblemAssignmentSolveHistory> histories
-) {
+) implements StudyProgress {
 
     public static AlgorithmStudyProgress fromEntity(
         Round round,

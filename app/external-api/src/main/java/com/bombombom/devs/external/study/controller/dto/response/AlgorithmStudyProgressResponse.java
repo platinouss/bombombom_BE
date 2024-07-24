@@ -16,7 +16,7 @@ public record AlgorithmStudyProgressResponse(
     LocalDate startDate,
     LocalDate endDate,
     Map<Long, AlgorithmProblemInfo> problems,
-    Map<Long, StudyMemberInfo> users
+    Map<Long, MemberInfo> users
 ) implements StudyProgressResponse {
 
     @Builder
@@ -40,25 +40,25 @@ public record AlgorithmStudyProgressResponse(
     }
 
     @Builder
-    public record StudyMemberInfo(
+    public record MemberInfo(
         String username,
         Map<Long, Boolean> tasks
     ) {
 
     }
 
-    public static AlgorithmStudyProgressResponse fromResult(StudyProgressResult<?> studyProgress) {
+    public static AlgorithmStudyProgressResponse fromResult(StudyProgressResult studyProgress) {
         AlgorithmStudyProgress algorithmStudyProgress = (AlgorithmStudyProgress) studyProgress.studyProgress();
         Map<Long, AlgorithmProblemInfo> algorithmProblemInfo = algorithmStudyProgress
             .algorithmProblems().stream().collect(
                 Collectors.toMap(AlgorithmProblem::getId, AlgorithmProblemInfo::fromResult));
         Map<Long, Boolean> studyTask = algorithmStudyProgress.algorithmProblems()
             .stream().collect(Collectors.toMap(AlgorithmProblem::getId, (study) -> false));
-        Map<Long, StudyMemberInfo> users = new HashMap<>();
-        studyProgress.studyMembers().forEach(member -> {
+        Map<Long, MemberInfo> users = new HashMap<>();
+        studyProgress.members().forEach(member -> {
             Map<Long, Boolean> tasks = new HashMap<>(studyTask);
             users.put(member.getId(),
-                StudyMemberInfo.builder().username(member.getUsername()).tasks(tasks).build());
+                MemberInfo.builder().username(member.getUsername()).tasks(tasks).build());
         });
         algorithmStudyProgress.histories().forEach(history -> users.get(history.getUser().getId())
             .tasks.put(history.getProblem().getId(), true));
