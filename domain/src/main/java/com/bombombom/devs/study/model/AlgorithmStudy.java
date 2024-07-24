@@ -1,6 +1,6 @@
 package com.bombombom.devs.study.model;
 
-import static com.bombombom.devs.algo.model.AlgorithmProblemFeedback.FeedbackDifficultyMedian;
+import static com.bombombom.devs.algo.model.AlgorithmProblemFeedback.FeedbackDifficultyAverage;
 
 import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
 import com.bombombom.devs.core.Pair;
@@ -108,7 +108,7 @@ public class AlgorithmStudy extends Study {
     }
 
     private Float getDifficultyVariance(AlgorithmProblemFeedback feedback) {
-        return (FeedbackDifficultyMedian - feedback.getDifficulty())
+        return (FeedbackDifficultyAverage - feedback.getDifficulty())
             / headCount.floatValue();
     }
 

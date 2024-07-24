@@ -53,7 +53,7 @@ public class AlgorithmProblemFeedback extends BaseEntity {
 
     public static final int FeedbackDifficultyBegin = 1;
     public static final int FeedbackDifficultyEnd = 5;
-    public static final float FeedbackDifficultyMedian =
+    public static final float FeedbackDifficultyAverage =
         (FeedbackDifficultyBegin + FeedbackDifficultyEnd) / 2f;
 
 
