@@ -1,11 +1,10 @@
-// @formatter:off
-
 package com.bombombom.devs.external.algo.service;
 
 import com.bombombom.devs.algo.model.AlgoTag;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.external.algo.config.ProbabilityConfig;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +20,14 @@ public class AlgorithmProblemService {
     private final RandomGenerator randomGenerator;
     private final AlgorithmProblemRepository algorithmProblemRepository;
 
-    public List<AlgorithmProblem> saveProblems(List<AlgorithmProblem> problems) {
-        return algorithmProblemRepository.saveAll(problems);
+    public List<AlgorithmProblem> findProblemsThenSaveWhenNotExist(List<AlgorithmProblem> problems) {
+        List<AlgorithmProblem> foundOrSavedProblems = new ArrayList<>();
+        for (AlgorithmProblem problem : problems) {
+            AlgorithmProblem foundProblem = algorithmProblemRepository.findByRefId(problem.getRefId())
+                .orElseGet(() -> algorithmProblemRepository.save(problem));
+            foundOrSavedProblems.add(foundProblem);
+        }
+        return foundOrSavedProblems;
     }
 
     /**

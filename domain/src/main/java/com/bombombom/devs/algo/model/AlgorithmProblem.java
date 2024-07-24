@@ -23,7 +23,7 @@ public class AlgorithmProblem extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ref_id")
+    @Column(name = "ref_id", unique = true)
     private Integer refId;
 
     private AlgoTag tag;
