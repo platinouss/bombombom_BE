@@ -21,7 +21,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Entity
 @Getter
 @SuperBuilder
@@ -48,13 +50,13 @@ public class Round extends BaseEntity {
     @OneToMany(mappedBy = "round", cascade = CascadeType.PERSIST)
     private List<AlgorithmProblemAssignment> assignments;
 
-    public void assignProblems(
-        List<AlgorithmProblem> unSolvedProblems) {
+    public List<AlgorithmProblemAssignment> assignProblems(List<AlgorithmProblem> unSolvedProblems) {
         List<AlgorithmProblemAssignment> newAssignments = new ArrayList<>();
         for (AlgorithmProblem problem : unSolvedProblems) {
             newAssignments.add(assignProblem(problem));
         }
         assignments = newAssignments;
+        return newAssignments;
     }
 
     public AlgorithmProblemAssignment assignProblem(AlgorithmProblem problem) {
