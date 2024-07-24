@@ -1,6 +1,7 @@
 package com.bombombom.devs.external.study.service;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.external.study.exception.NotFoundException;
@@ -9,12 +10,17 @@ import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmSt
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
+import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
 import com.bombombom.devs.global.util.Clock;
+import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -38,6 +44,9 @@ public class StudyService {
     private final BookRepository bookRepository;
     private final UserStudyRepository userStudyRepository;
     private final RoundRepository roundRepository;
+    private final StudyServiceFactory studyServiceFactory;
+    private final AlgorithmProblemRepository algoProblemRepository;
+    private final AlgorithmProblemConverter algorithmProblemConverter;
 
     @Transactional
     public AlgorithmStudyResult createAlgorithmStudy(
@@ -150,8 +159,7 @@ public class StudyService {
     }
 
     @Transactional
-    public void assignProblemToRound(
-        Round round, List<AlgorithmProblem> problems) {
+    public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
         round.assignProblems(problems);
         roundRepository.save(round);
     }
@@ -161,4 +169,30 @@ public class StudyService {
         return roundRepository.findRoundsWithStudyByStartDate(clock.today());
     }
 
+    @Transactional(readOnly = true)
+    public StudyDetailsResult findStudyDetails(Long studyId) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+        Round currentRound = roundRepository.findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(
+                studyId, study.getWeeks() - 1, clock.today())
+            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
+        return StudyDetailsResult.fromResult(study, findStudyProgress(study, currentRound));
+    }
+
+    @Transactional(readOnly = true)
+    public StudyProgressResult findStudyProgress(Long studyId, Integer roundIdx) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+        Round round = roundRepository.findRoundByStudyAndIdx(studyId, roundIdx)
+            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
+        return findStudyProgress(study, round);
+    }
+
+    @Transactional(readOnly = true)
+    public StudyProgressResult findStudyProgress(Study study, Round round) {
+        List<User> members = userStudyRepository.findByStudyId(study.getId()).stream()
+            .map(UserStudy::getUser).toList();
+        return StudyProgressResult.fromEntity(study.getStudyType(), members,
+            studyServiceFactory.getService(study.getStudyType()).findStudyProgress(round, members));
+    }
 }
