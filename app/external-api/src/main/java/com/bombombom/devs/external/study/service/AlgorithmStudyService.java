@@ -3,11 +3,11 @@ package com.bombombom.devs.external.study.service;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
-import com.bombombom.devs.study.model.AlgorithmProblemAssignmentSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
-import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentSolveHistoryRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
 import com.bombombom.devs.user.model.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class AlgorithmStudyService implements StudyProgressService {
 
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
-    private final AlgorithmProblemAssignmentSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    private final AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
 
     @Override
     public StudyType getStudyType() {
@@ -31,7 +31,7 @@ public class AlgorithmStudyService implements StudyProgressService {
         List<AlgorithmProblem> problems = algorithmProblemAssignmentRepository.findProblemWithStudyByRound(
             round.getId()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
         List<Long> problemsId = problems.stream().map(AlgorithmProblem::getId).toList();
-        List<AlgorithmProblemAssignmentSolveHistory> histories = algorithmProblemSolveHistoryRepository
+        List<AlgorithmProblemSolveHistory> histories = algorithmProblemSolveHistoryRepository
             .findSolvedHistoryWithUserAndProblem(membersId, problemsId);
         return AlgorithmStudyProgress.fromEntity(round, problems, histories);
     }

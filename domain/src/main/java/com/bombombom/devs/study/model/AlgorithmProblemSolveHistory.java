@@ -24,8 +24,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "algorithm_problem_assignment_solve_history")
-public class AlgorithmProblemAssignmentSolveHistory extends BaseEntity {
+@Table(name = "algorithm_problem_solve_history")
+public class AlgorithmProblemSolveHistory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
