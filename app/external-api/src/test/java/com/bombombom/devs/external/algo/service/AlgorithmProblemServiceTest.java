@@ -16,6 +16,7 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.config.ProbabilityConfig;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
@@ -23,12 +24,14 @@ import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.StudyStatus;
 import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
@@ -51,6 +54,8 @@ class AlgorithmProblemServiceTest {
 
     @Mock
     AlgorithmProblemRepository algorithmProblemRepository;
+    @Mock
+    AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
     @Mock
     UserStudyRepository userStudyRepository;
     @Mock
@@ -412,6 +417,15 @@ class AlgorithmProblemServiceTest {
         when(algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(
             round.getId(),
             algorithmProblem.getId())).thenReturn(false);
+
+        AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        when(history.getSolvedAt()).thenReturn(now);
+        when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            1L, algorithmProblem.getId()
+        )).thenReturn(Optional.of(history));
         /*
          * When & Then
          */
@@ -475,6 +489,15 @@ class AlgorithmProblemServiceTest {
         when(algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(
             round.getId(),
             algorithmProblem.getId())).thenReturn(true);
+
+        AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        when(history.getSolvedAt()).thenReturn(now);
+        when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            testuser.getId(), algorithmProblem.getId()
+        )).thenReturn(Optional.of(history));
 
         when(userStudyRepository.existsByUserIdAndStudyId(
             testuser.getId(), study.getId()
@@ -547,7 +570,14 @@ class AlgorithmProblemServiceTest {
             testuser.getId()
         )).thenReturn(Optional.empty());
 
+        AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
 
+        LocalDateTime now = LocalDateTime.now();
+
+        when(history.getSolvedAt()).thenReturn(now);
+        when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            testuser.getId(), algorithmProblem.getId()
+        )).thenReturn(Optional.of(history));
         /*
          * When & Then
          */
@@ -556,6 +586,118 @@ class AlgorithmProblemServiceTest {
             .isInstanceOf(NotFoundException.class)
             .hasMessage("User Not Found");
 
+
+    }
+
+
+    @Test
+    @DisplayName("유저의 문제 풀이 기록을 찾을 수 없으면 실패한다")
+    void apply_feedback_fail_if_solve_history_not_found() {
+
+        /*
+         * Given
+         */
+
+        FeedbackAlgorithmProblemCommand feedback = FeedbackAlgorithmProblemCommand.builder()
+            .studyId(1L)
+            .problemId(1L)
+            .difficulty(2)
+            .again(true)
+            .build();
+
+        Long userId = 10L;
+        AlgorithmProblem problem = mock(AlgorithmProblem.class);
+        when(problem.getId()).thenReturn(feedback.problemId());
+
+        when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
+            Optional.of(problem));
+
+        AlgorithmStudy study = mock(AlgorithmStudy.class);
+        when(study.getId()).thenReturn(feedback.studyId());
+        when(study.getStudyType()).thenReturn(StudyType.ALGORITHM);
+
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
+            Optional.of(study));
+
+        when(clock.today()).thenReturn(LocalDate.now());
+
+        Round round = mock(Round.class);
+
+        when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
+            eq(study.getId()),
+            any(LocalDate.class))).thenReturn(Optional.of(round));
+
+        AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            userId, problem.getId()
+        )).thenReturn(Optional.empty());
+
+        /*
+         * When & Then
+         */
+        assertThatThrownBy(() -> algorithmProblemService.feedback(
+            userId, feedback))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Solve History Not Found");
+
+    }
+
+
+    @Test
+    @DisplayName("유저가 문제를 풀지 않았다면 실패한다")
+    void apply_feedback_fail_if_unsolved() {
+
+        /*
+         * Given
+         */
+
+        FeedbackAlgorithmProblemCommand feedback = FeedbackAlgorithmProblemCommand.builder()
+            .studyId(1L)
+            .problemId(1L)
+            .difficulty(2)
+            .again(true)
+            .build();
+
+        Long userId = 10L;
+        AlgorithmProblem problem = mock(AlgorithmProblem.class);
+        when(problem.getId()).thenReturn(feedback.problemId());
+
+        when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
+            Optional.of(problem));
+
+        AlgorithmStudy study = mock(AlgorithmStudy.class);
+        when(study.getId()).thenReturn(feedback.studyId());
+        when(study.getStudyType()).thenReturn(StudyType.ALGORITHM);
+
+        when(studyRepository.findById(feedback.studyId())).thenReturn(
+            Optional.of(study));
+
+        when(clock.today()).thenReturn(LocalDate.now());
+
+        Round round = mock(Round.class);
+
+        when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
+            eq(study.getId()),
+            any(LocalDate.class))).thenReturn(Optional.of(round));
+
+        AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            userId, problem.getId()
+        )).thenReturn(Optional.of(history));
+
+        /*
+         * When & Then
+         */
+        assertThatThrownBy(() -> algorithmProblemService.feedback(
+            userId, feedback))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Cant Give Feedback On Unsolved Problem");
 
     }
 }

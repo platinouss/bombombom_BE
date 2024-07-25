@@ -13,8 +13,10 @@ import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
 import com.bombombom.devs.external.study.controller.StudyController;
+import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.StudyStatus;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.user.model.Role;
 import com.bombombom.devs.user.model.User;
@@ -53,6 +55,8 @@ public class AlgoIntegrationTest {
     private UserRepository userRepository;
     @Autowired
     private AlgorithmProblemRepository problemRepository;
+    @Autowired
+    private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
 
     @Autowired
     private StudyRepository studyRepository;
@@ -126,6 +130,13 @@ public class AlgoIntegrationTest {
             study.createRounds();
             study.getRounds().getFirst().assignProblems(List.of(problem));
             studyRepository.save(study);
+
+            algorithmProblemSolveHistoryRepository.save(AlgorithmProblemSolveHistory.builder()
+                .tryCount(1)
+                .solvedAt(clock.now())
+                .problem(problem)
+                .user(leader)
+                .build());
 
         }
 

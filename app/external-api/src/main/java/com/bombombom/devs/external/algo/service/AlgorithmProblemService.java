@@ -12,11 +12,13 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.config.ProbabilityConfig;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
@@ -44,6 +46,7 @@ public class AlgorithmProblemService {
     private final UserStudyRepository userStudyRepository;
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
     private final AlgorithmProblemFeedbackRepository algorithmProblemFeedbackRepository;
+    private final AlgorithmProblemSolveHistoryRepository algorithmProblemAssignmentSolveHistoryRepository;
 
 
     public void saveProblems(List<AlgorithmProblem> problems) {
@@ -116,6 +119,18 @@ public class AlgorithmProblemService {
                 feedbackAlgorithmProblemCommand.problemId())
             .orElseThrow(() -> new NotFoundException("Problem Not Found"));
 
+
+        AlgorithmProblemSolveHistory history = algorithmProblemAssignmentSolveHistoryRepository.findByUserIdAndProblemId(userId, problem.getId())
+            .orElseThrow(() -> new NotFoundException("Solve History Not Found"));
+        
+        System.out.println("history.getSolvedAt() = " + history.getSolvedAt());
+        if( history.getSolvedAt() == null ){
+            throw new IllegalStateException("Cant Give Feedback On Unsolved Problem");
+        }
+
+
+
+
         if(!algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(round.getId(),
                 problem.getId())){
             throw new NotAcceptableException("Problem is not ongoing assignment");
@@ -126,8 +141,6 @@ public class AlgorithmProblemService {
             algorithmStudy.getId())) {
             throw new NotAcceptableException("User is not a member");
         }
-
-        //TODO user가 problem에 해결했는지 solvehistory로 검증
 
 
         User user = userRepository.findById(userId)
