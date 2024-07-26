@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.algo.config;
 
-import com.bombombom.devs.algo.model.AlgoTag;
+import com.bombombom.devs.core.enums.AlgoTag;
 import jakarta.annotation.PostConstruct;
 import java.util.Random;
 import java.util.random.RandomGenerator;
@@ -13,28 +13,20 @@ public class ProbabilityConfig {
 
     @Value("${algo.probability.math}")
     private Double math;
-
     @Value("${algo.probability.dp}")
     private Double dp;
-
     @Value("${algo.probability.greedy}")
     private Double greedy;
-
     @Value("${algo.probability.impl}")
     private Double impl;
-
     @Value("${algo.probability.graph}")
     private Double graph;
-
     @Value("${algo.probability.geometry}")
     private Double geometry;
-
     @Value("${algo.probability.ds}")
     private Double ds;
-
     @Value("${algo.probability.string}")
     private Double string;
-
     public static Double totalProbability;
 
     @PostConstruct
@@ -47,7 +39,6 @@ public class ProbabilityConfig {
         AlgoTag.GEOMETRY.setProbability(geometry);
         AlgoTag.DATA_STRUCTURES.setProbability(ds);
         AlgoTag.STRING.setProbability(string);
-
         double choiceSpreadStart = 0;
         for (AlgoTag tag : AlgoTag.values()) {
             tag.setChoiceSpreadStart(choiceSpreadStart);
@@ -61,5 +52,4 @@ public class ProbabilityConfig {
     public RandomGenerator randomGenerator() {
         return new Random();
     }
-
 }

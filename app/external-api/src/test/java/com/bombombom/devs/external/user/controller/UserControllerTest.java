@@ -9,13 +9,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
 import com.bombombom.devs.external.user.controller.dto.SignupRequest;
 import com.bombombom.devs.external.user.service.UserService;
 import com.bombombom.devs.external.user.service.dto.SignupCommand;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
-import com.bombombom.devs.global.util.SystemClock;
 import com.bombombom.devs.user.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;

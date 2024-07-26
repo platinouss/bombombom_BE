@@ -10,8 +10,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bombombom.devs.ExternalApiApplication;
+import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.util.Clock;
+import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
 import com.bombombom.devs.external.study.controller.StudyController;
@@ -24,11 +29,13 @@ import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
+import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.StudyStatus;
 import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.user.model.Role;
 import com.bombombom.devs.user.model.User;
@@ -66,7 +73,13 @@ public class StudyIntegrationTest {
     MockMvc mockMvc;
 
     @Autowired
+    Clock clock;
+    @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    @Autowired
+    private AlgorithmProblemRepository problemRepository;
 
     @Autowired
     private StudyRepository studyRepository;
@@ -103,6 +116,81 @@ public class StudyIntegrationTest {
                 .build();
 
             userRepository.save(testuser);
+
+        }
+
+        @Test
+        @DisplayName("알고리즘 문제에 대한 피드백을 줄 수 있다.")
+        @WithUserDetails(value = "testuser",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        void can_feedback() throws Exception {
+            /*
+             Given
+             */
+
+            AlgorithmProblem problem = AlgorithmProblem.builder()
+                .title("히스토그램에서 가장큰 직사각형")
+                .refId(1023)
+                .tag(AlgoTag.DATA_STRUCTURES)
+                .difficulty(15)
+                .build();
+
+            problemRepository.save(problem);
+
+            AlgorithmStudy study =
+                AlgorithmStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .difficultyDp(12.4f)
+                    .difficultyDs(12f)
+                    .difficultyGraph(12.9f)
+                    .difficultyGap(5)
+                    .capacity(10)
+                    .difficultyGeometry(11f)
+                    .difficultyMath(11f)
+                    .difficultyString(13.5f)
+                    .problemCount(5)
+                    .startDate(clock.today())
+                    .build();
+            study.admit(testuser);
+            study.createRounds();
+            study.getRounds().getFirst().assignProblems(List.of(problem));
+            studyRepository.save(study);
+
+            algorithmProblemSolveHistoryRepository.save(AlgorithmProblemSolveHistory.builder()
+                .tryCount(1)
+                .solvedAt(clock.now())
+                .problem(problem)
+                .user(testuser)
+                .build());
+
+            FeedbackAlgorithmProblemRequest feedback = FeedbackAlgorithmProblemRequest.builder()
+                .studyId(study.getId())
+                .problemId(problem.getId())
+                .again(true)
+                .difficulty(4)
+                .build();
+
+            /*
+             When
+             */
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/feedback")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(feedback))
+            );
+
+            /*
+            Then
+             */
+            resultActions.andDo(print())
+                .andExpect(status().isOk());
 
         }
 

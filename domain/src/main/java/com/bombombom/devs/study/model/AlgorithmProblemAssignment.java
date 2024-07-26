@@ -39,8 +39,8 @@ public class AlgorithmProblemAssignment extends BaseEntity {
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private AlgorithmProblem problem;
 
-    public AlgorithmProblemAssignmentSolveHistory createSolveHistory(User user) {
-        return AlgorithmProblemAssignmentSolveHistory.builder()
+    public AlgorithmProblemSolveHistory createSolveHistory(User user) {
+        return AlgorithmProblemSolveHistory.builder()
             .problem(problem)
             .user(user)
             .tryCount(0)

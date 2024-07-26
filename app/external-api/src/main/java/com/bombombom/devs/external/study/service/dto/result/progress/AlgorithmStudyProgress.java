@@ -4,7 +4,7 @@ import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;
-import com.bombombom.devs.study.model.AlgorithmProblemAssignmentSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.Round;
 import java.util.List;
 import lombok.Builder;
@@ -15,11 +15,11 @@ public record AlgorithmStudyProgress(
     List<AlgorithmProblemResult> algorithmProblems,
     List<AlgorithmProblemSolveHistoryResult> histories
 ) implements StudyProgress {
-    
+
     public static AlgorithmStudyProgress fromEntity(
         Round round,
         List<AlgorithmProblem> algorithmProblems,
-        List<AlgorithmProblemAssignmentSolveHistory> histories
+        List<AlgorithmProblemSolveHistory> histories
     ) {
         return AlgorithmStudyProgress.builder()
             .round(RoundResult.fromEntity(round))

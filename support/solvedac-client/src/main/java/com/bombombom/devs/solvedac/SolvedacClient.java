@@ -1,5 +1,7 @@
 package com.bombombom.devs.solvedac;
 
+import com.bombombom.devs.core.Pair;
+import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -27,12 +28,12 @@ public class SolvedacClient {
 
     public ProblemListResponse getUnSolvedProblems(
         List<String> baekjoonIds,
-        Map<String, Integer> problemCountForEachTag,
-        Map<String, Pair<Integer, Integer>> difficultySpreadForEachTag
+        Map<AlgoTag, Integer> problemCountForEachTag,
+        Map<AlgoTag, Pair<Integer, Integer>> difficultySpreadForEachTag
     ) {
         ProblemListResponse unSolvedProblems = new ProblemListResponse(new ArrayList<>());
         WebClient webClient = WebClient.builder().baseUrl(BASE_URL).build();
-        for (String tag : problemCountForEachTag.keySet()) {
+        for (AlgoTag tag : problemCountForEachTag.keySet()) {
             Integer numberOfProblems = problemCountForEachTag.get(tag);
             Pair<Integer, Integer> difficultySpread = difficultySpreadForEachTag.get(tag);
             ProblemListResponse problemsByTag = getUnSolvedProblemsByTag(
@@ -50,7 +51,7 @@ public class SolvedacClient {
     private ProblemListResponse getUnSolvedProblemsByTag(
         WebClient webClient,
         List<String> baekjoonIds,
-        String tag,
+        AlgoTag tag,
         Pair<Integer, Integer> difficultySpread
     ) {
         CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
@@ -80,7 +81,7 @@ public class SolvedacClient {
 
     private String makeGetUnSolvedProblemsQueryParams(
         List<String> baekjoonIds,
-        String tag,
+        AlgoTag tag,
         Pair<Integer, Integer> difficultySpread
     ) {
         StringBuilder queryBuilder = new StringBuilder();

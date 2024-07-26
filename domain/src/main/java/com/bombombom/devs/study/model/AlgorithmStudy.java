@@ -1,6 +1,10 @@
 package com.bombombom.devs.study.model;
 
-import com.bombombom.devs.algo.model.AlgoTag;
+import static com.bombombom.devs.algo.model.AlgorithmProblemFeedback.FeedbackDifficultyAverage;
+
+import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
+import com.bombombom.devs.core.Pair;
+import com.bombombom.devs.core.enums.AlgoTag;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -10,7 +14,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.util.Pair;
 
 @Entity
 @Getter
@@ -55,16 +58,16 @@ public class AlgorithmStudy extends Study {
         return StudyType.ALGORITHM;
     }
 
-    public Map<String, Pair<Integer, Integer>> getDifficultySpreadForEachTag() {
+    public Map<AlgoTag, Pair<Integer, Integer>> getDifficultySpreadForEachTag() {
         return Map.of(
-            AlgoTag.MATH.name(), getDifficultySpread(difficultyMath),
-            AlgoTag.DP.name(), getDifficultySpread(difficultyDp),
-            AlgoTag.GREEDY.name(), getDifficultySpread(difficultyGreedy),
-            AlgoTag.IMPLEMENTATION.name(), getDifficultySpread(difficultyImpl),
-            AlgoTag.GRAPHS.name(), getDifficultySpread(difficultyGraph),
-            AlgoTag.GEOMETRY.name(), getDifficultySpread(difficultyGeometry),
-            AlgoTag.DATA_STRUCTURES.name(), getDifficultySpread(difficultyDs),
-            AlgoTag.STRING.name(), getDifficultySpread(difficultyString)
+            AlgoTag.MATH, getDifficultySpread(difficultyMath),
+            AlgoTag.DP, getDifficultySpread(difficultyDp),
+            AlgoTag.GREEDY, getDifficultySpread(difficultyGreedy),
+            AlgoTag.IMPLEMENTATION, getDifficultySpread(difficultyImpl),
+            AlgoTag.GRAPHS, getDifficultySpread(difficultyGraph),
+            AlgoTag.GEOMETRY, getDifficultySpread(difficultyGeometry),
+            AlgoTag.DATA_STRUCTURES, getDifficultySpread(difficultyDs),
+            AlgoTag.STRING, getDifficultySpread(difficultyString)
         );
     }
 
@@ -73,4 +76,19 @@ public class AlgorithmStudy extends Study {
         Integer spreadRight = spreadLeft + difficultyGap;
         return Pair.of(spreadLeft, spreadRight);
     }
+
+
+    /**
+     * feedback 정보로 줄 수 있는 Difficulty의 평균값을 DifficultyAverage라고 할 때 난이도는 스터디 멤버들이 제출한 feedback의
+     * (DifficultyAverage - difficulty)의 평균값만큼 변동됩니다.
+     *
+     * @param feedback
+     * @return Float
+     */
+    public Float getDifficultyVariance(AlgorithmProblemFeedback feedback) {
+        return (FeedbackDifficultyAverage - feedback.getDifficulty())
+            / headCount.floatValue();
+    }
+
+
 }

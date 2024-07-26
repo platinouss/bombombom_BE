@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.when;
 
-import com.bombombom.devs.algo.model.AlgoTag;
+import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.external.algo.config.ProbabilityConfig;
 import java.util.Map;
 import java.util.random.RandomGenerator;
@@ -24,6 +24,7 @@ class AlgorithmProblemServiceTest {
 
     @InjectMocks
     private AlgorithmProblemService algorithmProblemService;
+
 
     @Test
     @DisplayName("각 태그마다 정해진 추첨 스프레드를 가지고 해당 스프레드는 누적합을 통해 계산된다.")
@@ -49,104 +50,104 @@ class AlgorithmProblemServiceTest {
          * When (Random Double = 0.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(0.0);
-        Map<String, Integer> result0 =
+        Map<AlgoTag, Integer> result0 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result0).isNotNull();
-        assertThat(result0.get(AlgoTag.MATH.name())).isEqualTo(totalProblemCount);
+        assertThat(result0.get(AlgoTag.MATH)).isEqualTo(totalProblemCount);
 
         /*
          * When (Random Double = 1.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(1.0);
-        Map<String, Integer> result1 =
+        Map<AlgoTag, Integer> result1 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result1).isNotNull();
-        assertThat(result1.get(AlgoTag.DP.name())).isEqualTo(totalProblemCount);
+        assertThat(result1.get(AlgoTag.DP)).isEqualTo(totalProblemCount);
 
         /*
          * When (Random Double = 2.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(2.0);
-        Map<String, Integer> result2 =
+        Map<AlgoTag, Integer> result2 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result2).isNotNull();
-        assertThat(result2.get(AlgoTag.GREEDY.name())).isEqualTo(totalProblemCount);
+        assertThat(result2.get(AlgoTag.GREEDY)).isEqualTo(totalProblemCount);
 
         /*
          * When (Random Double = 3.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(3.0);
-        Map<String, Integer> result3 =
+        Map<AlgoTag, Integer> result3 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result3).isNotNull();
-        assertThat(result3.get(AlgoTag.IMPLEMENTATION.name())).isEqualTo(totalProblemCount);
+        assertThat(result3.get(AlgoTag.IMPLEMENTATION)).isEqualTo(totalProblemCount);
 
         /*
          * When (Random Double = 4.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(4.0);
-        Map<String, Integer> result4 =
+        Map<AlgoTag, Integer> result4 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result4).isNotNull();
-        assertThat(result4.get(AlgoTag.GRAPHS.name())).isEqualTo(totalProblemCount);
+        assertThat(result4.get(AlgoTag.GRAPHS)).isEqualTo(totalProblemCount);
 
         /*
          * When (Random Double = 5.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(5.0);
-        Map<String, Integer> result5 =
+        Map<AlgoTag, Integer> result5 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result5).isNotNull();
-        assertThat(result5.get(AlgoTag.GEOMETRY.name())).isEqualTo(totalProblemCount);
+        assertThat(result5.get(AlgoTag.GEOMETRY)).isEqualTo(totalProblemCount);
 
         /*
          * When (Random Double = 6.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(6.0);
-        Map<String, Integer> result6 =
+        Map<AlgoTag, Integer> result6 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result6).isNotNull();
-        assertThat(result6.get(AlgoTag.DATA_STRUCTURES.name())).isEqualTo(totalProblemCount);
+        assertThat(result6.get(AlgoTag.DATA_STRUCTURES)).isEqualTo(totalProblemCount);
 
         /*
          * When (Random Double = 7.0)
          */
         when(randomGenerator.nextDouble(anyDouble())).thenReturn(7.0);
-        Map<String, Integer> result7 =
+        Map<AlgoTag, Integer> result7 =
             algorithmProblemService.getProblemCountForEachTag(totalProblemCount);
 
         /*
          * Then
          */
         assertThat(result7).isNotNull();
-        assertThat(result7.get(AlgoTag.STRING.name())).isEqualTo(totalProblemCount);
+        assertThat(result7.get(AlgoTag.STRING)).isEqualTo(totalProblemCount);
     }
 }

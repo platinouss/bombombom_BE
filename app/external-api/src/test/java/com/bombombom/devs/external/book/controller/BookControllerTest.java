@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.dto.NaverBookApiQuery;
 import com.bombombom.devs.dto.NaverBookApiResult;
 import com.bombombom.devs.dto.NaverBookApiResult.SearchBookItem;
@@ -20,7 +21,6 @@ import com.bombombom.devs.external.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.global.security.JwtUtils;
-import com.bombombom.devs.global.util.SystemClock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Date;
 import java.util.List;

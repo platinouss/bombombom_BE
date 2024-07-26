@@ -2,9 +2,9 @@
 
 package com.bombombom.devs.external.algo.service;
 
-import com.bombombom.devs.algo.model.AlgoTag;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
+import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.external.algo.config.ProbabilityConfig;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,8 +21,9 @@ public class AlgorithmProblemService {
     private final RandomGenerator randomGenerator;
     private final AlgorithmProblemRepository algorithmProblemRepository;
 
-    public List<AlgorithmProblem> saveProblems(List<AlgorithmProblem> problems) {
-        return algorithmProblemRepository.saveAll(problems);
+
+    public void saveProblems(List<AlgorithmProblem> problems) {
+        algorithmProblemRepository.saveAll(problems);
     }
 
     /**
@@ -51,11 +52,11 @@ public class AlgorithmProblemService {
     // 함수 인자로 선택할 Tag, 혹은 제외할 Tag를 받는 것도 고려해봤지만
     // 오버엔지니어링이 될 수 있으므로 최소 스펙으로 구현하였습니다
 
-    public Map<String, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
-        Map<String, Integer> problemCountByTag = new HashMap<>();
+    public Map<AlgoTag, Integer> getProblemCountForEachTag(Integer totalProblemCount) {
+        Map<AlgoTag, Integer> problemCountByTag = new HashMap<>();
         while (totalProblemCount-- > 0) {
             AlgoTag tag = drawProblem();
-            problemCountByTag.merge(tag.name(), 1, Integer::sum);
+            problemCountByTag.merge(tag, 1, Integer::sum);
         }
         return problemCountByTag;
     }
@@ -67,6 +68,7 @@ public class AlgorithmProblemService {
             .findFirst()
             .orElse(null);
     }
+
 
 
 }

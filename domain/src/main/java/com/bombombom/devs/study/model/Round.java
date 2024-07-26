@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -45,8 +46,9 @@ public class Round extends BaseEntity {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "round", cascade = CascadeType.PERSIST)
-    private List<AlgorithmProblemAssignment> assignments;
+    @OneToMany(mappedBy = "round", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Builder.Default
+    private List<AlgorithmProblemAssignment> assignments = new ArrayList<>();
 
     public void assignProblems(
         List<AlgorithmProblem> unSolvedProblems) {
@@ -62,5 +64,6 @@ public class Round extends BaseEntity {
             .round(this)
             .problem(problem)
             .build();
+
     }
 }

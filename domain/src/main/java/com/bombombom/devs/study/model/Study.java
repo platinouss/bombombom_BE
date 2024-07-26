@@ -21,8 +21,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -83,10 +85,12 @@ public abstract class Study extends BaseEntity {
     protected StudyStatus state;
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.PERSIST)
-    protected List<UserStudy> userStudies;
+    @Builder.Default
+    protected List<UserStudy> userStudies = new ArrayList<>();
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.PERSIST)
-    protected List<Round> rounds;
+    @Builder.Default
+    protected List<Round> rounds = new ArrayList<>();
 
     public abstract StudyType getStudyType();
 
