@@ -12,8 +12,10 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.external.study.service.dto.command.CheckAlgorithmProblemSolvedCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.SolvedAlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.solvedac.SolvedacClient;
@@ -35,6 +37,7 @@ import com.bombombom.devs.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,9 +46,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AlgorithmStudyService implements StudyProgressService {
 
+    private final Clock clock;
+    private final SolvedacClient solvedacClient;
+    private final UserRepository userRepository;
     private final StudyRepository studyRepository;
     private final RoundRepository roundRepository;
-    private final UserRepository userRepository;
     private final UserStudyRepository userStudyRepository;
     private final AlgorithmProblemRepository algoProblemRepository;
     private final AlgorithmProblemAssignmentRepository algoAssignmentRepository;
@@ -54,11 +59,13 @@ public class AlgorithmStudyService implements StudyProgressService {
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
     private final AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
     private final AlgorithmStudyDifficultyRepository algorithmStudyDifficultyRepository;
-    private final SolvedacClient solvedacClient;
     private final AlgorithmProblemService algorithmProblemService;
     private final AlgorithmProblemConverter algorithmProblemConverter;
-    private final Clock clock;
 
+    @Override
+    public StudyType getStudyType() {
+        return StudyType.ALGORITHM;
+    }
 
     @Transactional
     public AlgorithmStudyResult createStudy(
@@ -104,11 +111,6 @@ public class AlgorithmStudyService implements StudyProgressService {
     }
 
     @Override
-    public StudyType getStudyType() {
-        return StudyType.ALGORITHM;
-    }
-
-    @Override
     public AlgorithmStudyProgress findStudyProgress(Round round, List<User> members) {
         List<Long> membersId = members.stream().map(User::getId).toList();
         List<AlgorithmProblem> problems = algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId(
@@ -140,6 +142,37 @@ public class AlgorithmStudyService implements StudyProgressService {
         assignProblemToRound(round, foundOrSavedProblems);
     }
 
+    @Transactional
+    public SolvedAlgorithmProblemResult checkAlgorithmProblemSolved(
+        CheckAlgorithmProblemSolvedCommand command) {
+        User user = userRepository.findById(command.userId())
+            .orElseThrow(() -> new IllegalStateException("User Not Found"));
+        List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemsId());
+        if (problems.isEmpty()) {
+            throw new IllegalStateException("Algorithm Problem Not Found");
+        }
+        Map<Integer, AlgorithmProblem> refIdToAlgorithmProblemMap = problems.stream().collect(
+            Collectors.toMap(AlgorithmProblem::getRefId, problem -> problem));
+        ProblemListResponse solvedProblemsResponse = solvedacClient.checkProblemSolved(
+            user.getBaekjoon(), refIdToAlgorithmProblemMap.keySet());
+        List<AlgorithmProblem> algorithmProblems = solvedProblemsResponse.items().stream()
+            .map(problemResponse -> refIdToAlgorithmProblemMap.get(problemResponse.problemId()))
+            .toList();
+        addAlgorithmProblemSolvedHistories(user, algorithmProblems);
+        return SolvedAlgorithmProblemResult.fromEntity(user, problems, solvedProblemsResponse);
+    }
+
+    @Transactional
+    public void addAlgorithmProblemSolvedHistories(User user,
+        List<AlgorithmProblem> algorithmProblems) {
+        List<AlgorithmProblemSolveHistory> histories = new ArrayList<>();
+        algorithmProblems.forEach(problem -> histories.add(AlgorithmProblemSolveHistory.builder()
+            .user(user)
+            .problem(problem)
+            .solvedAt(clock.now())
+            .build()));
+        algorithmProblemSolveHistoryRepository.saveAll(histories);
+    }
 
     @Transactional
     public void feedback(Long userId,

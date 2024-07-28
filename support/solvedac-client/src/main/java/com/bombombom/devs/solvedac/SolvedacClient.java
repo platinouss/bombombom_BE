@@ -3,10 +3,13 @@ package com.bombombom.devs.solvedac;
 import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
+import com.bombombom.devs.solvedac.exception.ExternalApiException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,9 +24,15 @@ public class SolvedacClient {
     private static final String BASE_URL = "https://solved.ac/api/v3";
     private static final String SEARCH_PROBLEM_PATH = "/search/problem";
     private static final String USER_PREFIX = "!@";
+    private static final String USER_SOLVED_PREFIX = "@";
     private static final String TAG_PREFIX = "#";
     private static final String DIFFICULTY_PREFIX = "*";
     private static final String DIFFICULTY_GAP = "..";
+    private static final String PROBLEM_ID_PREFIX = "id:";
+    private static final String LEFT_ROUND_BRACKETS = "(";
+    private static final String RIGHT_ROUND_BRACKETS = ")";
+    private static final String AND_OPERATION = "&";
+    private static final String OR_OPERATION = "|";
     private static final String SPACE = " ";
 
     public ProblemListResponse getUnSolvedProblems(
@@ -48,6 +57,25 @@ public class SolvedacClient {
                 Math.min(numberOfProblems, problemsByTag.items().size())));
         }
         return unSolvedProblems;
+    }
+
+    public ProblemListResponse checkProblemSolved(String baekjoonId, Set<Integer> problemsRefId) {
+        CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
+        WebClient webClient = WebClient.builder().baseUrl(BASE_URL).build();
+        Mono<ProblemListResponse> mono = webClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(SEARCH_PROBLEM_PATH)
+                .queryParam("query", makeCheckSolvedProblemQueryParam(baekjoonId, problemsRefId))
+                .build()
+            )
+            .retrieve()
+            .bodyToMono(ProblemListResponse.class);
+        mono.subscribe(
+            completableFuture::complete,
+            error -> completableFuture.completeExceptionally(
+                new ExternalApiException("Failed to request solvedac API." + error.getMessage()))
+        );
+        return completableFuture.join();
     }
 
     private ProblemListResponse getUnSolvedProblemsByTag(
@@ -105,4 +133,13 @@ public class SolvedacClient {
         return queryBuilder.toString();
     }
 
+    private String makeCheckSolvedProblemQueryParam(String baekjoonId, Set<Integer> problemsId) {
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append(USER_SOLVED_PREFIX).append(baekjoonId);
+        queryBuilder.append(AND_OPERATION);
+        queryBuilder.append(PROBLEM_ID_PREFIX).append(LEFT_ROUND_BRACKETS).append(
+                problemsId.stream().map(String::valueOf).collect(Collectors.joining(OR_OPERATION)))
+            .append(RIGHT_ROUND_BRACKETS);
+        return queryBuilder.toString();
+    }
 }
