@@ -19,31 +19,44 @@ import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
-import com.bombombom.devs.external.study.controller.StudyController;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
+import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
+import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse.StudyDetails;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
+import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
+import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.StudyStatus;
 import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.model.UserStudy;
+import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
+import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
+import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.Role;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -74,28 +87,40 @@ public class StudyIntegrationTest {
 
     @Autowired
     Clock clock;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
-    @Autowired
-    private AlgorithmProblemRepository problemRepository;
-
-    @Autowired
-    private StudyRepository studyRepository;
-    @Autowired
-    private BookRepository bookRepository;
-
-    @Autowired
-    private StudyController studyController;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AlgorithmProblemRepository problemRepository;
+
+    @Autowired
+    private StudyRepository studyRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RoundRepository roundRepository;
 
+    @Autowired
+    private UserStudyRepository userStudyRepository;
+
+    @Autowired
+    private AlgorithmProblemRepository algorithmProblemRepository;
+
+    @Autowired
+    private AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
+
+    @Autowired
+    private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    
     @Nested
     @DisplayName("인증이 필요한 테스트")
     @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
@@ -573,5 +598,295 @@ public class StudyIntegrationTest {
             .andExpect(content().json(expectedResponse));
     }
 
+    @DisplayName("알고리즘 스터디의 특정 회차 진행 현황을 조회할 수 있다.")
+    @Test
+    void can_retrieve_algorithm_study_progress() throws Exception {
+        Long studyId = 1L;
+        Integer roundIdx = 1;
+        LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
+        LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
+        User user1 = User.builder()
+            .id(1L)
+            .username("username1")
+            .password("password")
+            .role(Role.USER)
+            .reliability(50)
+            .build();
+        User user2 = User.builder()
+            .id(2L)
+            .username("username2")
+            .password("password")
+            .role(Role.USER)
+            .reliability(60)
+            .build();
+        userRepository.saveAll(List.of(user1, user2));
+        Study study = AlgorithmStudy.builder()
+            .id(studyId)
+            .name("스터디")
+            .introduce("안녕하세요")
+            .headCount(1)
+            .capacity(5)
+            .penalty(10000)
+            .reliabilityLimit(0)
+            .startDate(roundStartDate)
+            .weeks(2)
+            .leader(user1)
+            .state(StudyStatus.RUNNING)
+            .build();
+        studyRepository.save(study);
+        Round round = Round.builder()
+            .id(1L)
+            .idx(roundIdx)
+            .study(study)
+            .idx(roundIdx)
+            .startDate(roundStartDate)
+            .endDate(roundEndDate)
+            .build();
+        roundRepository.save(round);
+        UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
+        UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
+        userStudyRepository.saveAll(List.of(userStudy1, userStudy2));
+        AlgorithmProblem problem1 = AlgorithmProblem.builder()
+            .id(1L)
+            .refId(1000)
+            .tag(AlgoTag.DP)
+            .title("A")
+            .link("https://www.test.com/1000")
+            .difficulty(10)
+            .build();
+        AlgorithmProblem problem2 = AlgorithmProblem.builder()
+            .id(2L)
+            .refId(2000)
+            .tag(AlgoTag.DP)
+            .title("B")
+            .link("https://www.test.com/2000")
+            .difficulty(5)
+            .build();
+        algorithmProblemRepository.saveAll(List.of(problem1, problem2));
+        AlgorithmProblemAssignment assignment1 = AlgorithmProblemAssignment.builder()
+            .id(1L)
+            .round(round)
+            .problem(problem1)
+            .build();
+        AlgorithmProblemAssignment assignment2 = AlgorithmProblemAssignment.builder()
+            .id(2L)
+            .round(round)
+            .problem(problem2)
+            .build();
+        AlgorithmProblemSolveHistory history = AlgorithmProblemSolveHistory.builder()
+            .id(1L)
+            .problem(problem2)
+            .user(user1)
+            .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+            .tryCount(2)
+            .build();
+        algorithmProblemAssignmentRepository.saveAll(List.of(assignment1, assignment2));
+        algorithmProblemSolveHistoryRepository.save(history);
 
+        Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
+        AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
+            .refId(1000)
+            .tag(AlgoTag.DP)
+            .title("A")
+            .link("https://www.test.com/1000")
+            .difficulty(10)
+            .build();
+        AlgorithmProblemInfo algorithmProblemInfo2 = AlgorithmProblemInfo.builder()
+            .refId(2000)
+            .tag(AlgoTag.DP)
+            .title("B")
+            .link("https://www.test.com/2000")
+            .difficulty(5)
+            .build();
+        problems.put(1L, algorithmProblemInfo1);
+        problems.put(2L, algorithmProblemInfo2);
+        Map<Long, MemberInfo> users = new HashMap<>();
+        Map<Long, Boolean> tasks1 = new HashMap<>();
+        tasks1.put(1L, false);
+        tasks1.put(2L, true);
+        MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+            .build();
+        Map<Long, Boolean> tasks2 = new HashMap<>();
+        tasks2.put(1L, false);
+        tasks2.put(2L, false);
+        MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+            .build();
+        users.put(1L, memberInfo1);
+        users.put(2L, memberInfo2);
+        AlgorithmStudyProgressResponse progressResponse = AlgorithmStudyProgressResponse.builder()
+            .idx(roundIdx)
+            .startDate(LocalDate.of(2024, 7, 22))
+            .endDate(LocalDate.of(2024, 7, 28))
+            .problems(problems)
+            .users(users)
+            .build();
+
+        /*
+        When
+         */
+        ResultActions resultActions = mockMvc.perform(
+            get("/api/v1/studies/progress/" + studyId).param("idx", String.valueOf(roundIdx))
+        );
+
+        /*
+        Then
+         */
+        String expectedResponse = objectMapper.writeValueAsString(progressResponse);
+        resultActions.andExpect(status().isOk()).andExpect(content().json(expectedResponse));
+    }
+
+    @DisplayName("알고리즘 스터디 상세 정보를 조회할 수 있다.")
+    @Test
+    void can_retrieve_algorithm_study_details() throws Exception {
+        /*
+        Given
+         */
+        Long studyId = 1L;
+        Integer roundIdx = 1;
+        LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
+        LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
+        User user1 = User.builder()
+            .id(1L)
+            .username("username1")
+            .password("password")
+            .role(Role.USER)
+            .reliability(50)
+            .build();
+        User user2 = User.builder()
+            .id(2L)
+            .username("username2")
+            .password("password")
+            .role(Role.USER)
+            .reliability(60)
+            .build();
+        userRepository.saveAll(List.of(user1, user2));
+        Study study = AlgorithmStudy.builder()
+            .id(studyId)
+            .name("스터디")
+            .introduce("안녕하세요")
+            .headCount(1)
+            .capacity(5)
+            .penalty(10000)
+            .reliabilityLimit(0)
+            .startDate(roundStartDate)
+            .weeks(2)
+            .leader(user1)
+            .state(StudyStatus.RUNNING)
+            .build();
+        studyRepository.save(study);
+        Round round = Round.builder()
+            .id(1L)
+            .idx(roundIdx)
+            .study(study)
+            .idx(roundIdx)
+            .startDate(roundStartDate)
+            .endDate(roundEndDate)
+            .build();
+        roundRepository.save(round);
+        UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
+        UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
+        userStudyRepository.saveAll(List.of(userStudy1, userStudy2));
+        AlgorithmProblem problem1 = AlgorithmProblem.builder()
+            .id(1L)
+            .refId(1000)
+            .tag(AlgoTag.DP)
+            .title("A")
+            .link("https://www.test.com/1000")
+            .difficulty(10)
+            .build();
+        AlgorithmProblem problem2 = AlgorithmProblem.builder()
+            .id(2L)
+            .refId(2000)
+            .tag(AlgoTag.DP)
+            .title("B")
+            .link("https://www.test.com/2000")
+            .difficulty(5)
+            .build();
+        algorithmProblemRepository.saveAll(List.of(problem1, problem2));
+        AlgorithmProblemAssignment assignment1 = AlgorithmProblemAssignment.builder()
+            .id(1L)
+            .round(round)
+            .problem(problem1)
+            .build();
+        AlgorithmProblemAssignment assignment2 = AlgorithmProblemAssignment.builder()
+            .id(2L)
+            .round(round)
+            .problem(problem2)
+            .build();
+        AlgorithmProblemSolveHistory history = AlgorithmProblemSolveHistory.builder()
+            .id(1L)
+            .problem(problem2)
+            .user(user1)
+            .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+            .tryCount(2)
+            .build();
+        algorithmProblemAssignmentRepository.saveAll(List.of(assignment1, assignment2));
+        algorithmProblemSolveHistoryRepository.save(history);
+
+        StudyDetails studyDetails = StudyDetails.builder()
+            .studyType(StudyType.ALGORITHM)
+            .name("스터디")
+            .introduce("안녕하세요")
+            .headCount(1)
+            .capacity(5)
+            .penalty(10000)
+            .reliabilityLimit(0)
+            .startDate(LocalDate.of(2024, 7, 22))
+            .weeks(2)
+            .leaderId(1L)
+            .status(StudyStatus.RUNNING)
+            .build();
+        Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
+        AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
+            .refId(1000)
+            .tag(AlgoTag.DP)
+            .title("A")
+            .link("https://www.test.com/1000")
+            .difficulty(10)
+            .build();
+        AlgorithmProblemInfo algorithmProblemInfo2 = AlgorithmProblemInfo.builder()
+            .refId(2000)
+            .tag(AlgoTag.DP)
+            .title("B")
+            .link("https://www.test.com/2000")
+            .difficulty(5)
+            .build();
+        problems.put(1L, algorithmProblemInfo1);
+        problems.put(2L, algorithmProblemInfo2);
+        Map<Long, MemberInfo> users = new HashMap<>();
+        Map<Long, Boolean> tasks1 = new HashMap<>();
+        tasks1.put(1L, false);
+        tasks1.put(2L, true);
+        MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+            .build();
+        Map<Long, Boolean> tasks2 = new HashMap<>();
+        tasks2.put(1L, false);
+        tasks2.put(2L, false);
+        MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+            .build();
+        users.put(1L, memberInfo1);
+        users.put(2L, memberInfo2);
+        AlgorithmStudyProgressResponse progressResponse = AlgorithmStudyProgressResponse.builder()
+            .idx(roundIdx)
+            .startDate(LocalDate.of(2024, 7, 22))
+            .endDate(LocalDate.of(2024, 7, 28))
+            .problems(problems)
+            .users(users)
+            .build();
+        StudyDetailsResponse studyDetailsResponse = StudyDetailsResponse.builder()
+            .details(studyDetails)
+            .round(progressResponse)
+            .build();
+
+        /*
+        When
+         */
+        ResultActions resultActions = mockMvc.perform(get("/api/v1/studies/" + studyId));
+
+        /*
+        Then
+         */
+        String expectedResponse = objectMapper.writeValueAsString(studyDetailsResponse);
+        resultActions.andExpect(status().isOk()).andExpect(content().json(expectedResponse));
+    }
 }
