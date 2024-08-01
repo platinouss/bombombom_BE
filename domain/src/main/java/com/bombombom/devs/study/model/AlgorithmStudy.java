@@ -3,14 +3,21 @@ package com.bombombom.devs.study.model;
 import static com.bombombom.devs.algo.model.AlgorithmProblemFeedback.FeedbackDifficultyAverage;
 
 import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
-import com.bombombom.devs.core.Pair;
+import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.util.Util;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -23,29 +30,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AlgorithmStudy extends Study {
 
-    @Column(name = "difficulty_math")
-    private Float difficultyMath;
-
-    @Column(name = "difficulty_dp")
-    private Float difficultyDp;
-
-    @Column(name = "difficulty_greedy")
-    private Float difficultyGreedy;
-
-    @Column(name = "difficulty_impl")
-    private Float difficultyImpl;
-
-    @Column(name = "difficulty_graph")
-    private Float difficultyGraph;
-
-    @Column(name = "difficulty_geometry")
-    private Float difficultyGeometry;
-
-    @Column(name = "difficulty_ds")
-    private Float difficultyDs;
-
-    @Column(name = "difficulty_string")
-    private Float difficultyString;
+    @OneToMany(mappedBy = "study", cascade = CascadeType.PERSIST)
+    @Builder.Default
+    protected List<AlgorithmStudyDifficulty> difficulties = new ArrayList<>();
 
     @Column(name = "difficulty_gap")
     private Integer difficultyGap;
@@ -53,28 +40,41 @@ public class AlgorithmStudy extends Study {
     @Column(name = "problem_count")
     private Integer problemCount;
 
+
     @Override
     public StudyType getStudyType() {
         return StudyType.ALGORITHM;
     }
 
-    public Map<AlgoTag, Pair<Integer, Integer>> getDifficultySpreadForEachTag() {
-        return Map.of(
-            AlgoTag.MATH, getDifficultySpread(difficultyMath),
-            AlgoTag.DP, getDifficultySpread(difficultyDp),
-            AlgoTag.GREEDY, getDifficultySpread(difficultyGreedy),
-            AlgoTag.IMPLEMENTATION, getDifficultySpread(difficultyImpl),
-            AlgoTag.GRAPHS, getDifficultySpread(difficultyGraph),
-            AlgoTag.GEOMETRY, getDifficultySpread(difficultyGeometry),
-            AlgoTag.DATA_STRUCTURES, getDifficultySpread(difficultyDs),
-            AlgoTag.STRING, getDifficultySpread(difficultyString)
+    public void setDifficulty(Float difficulty) {
+        AlgoTag.getTagNames().forEach(
+            tag -> {
+                difficulties.add(AlgorithmStudyDifficulty.builder()
+                    .study(this)
+                    .algoTag(AlgoTag.valueOf(tag))
+                    .difficulty(difficulty)
+                    .build());
+            }
         );
     }
 
-    private Pair<Integer, Integer> getDifficultySpread(Float difficulty) {
-        Integer spreadLeft = Math.round(difficulty);
-        Integer spreadRight = spreadLeft + difficultyGap;
-        return Pair.of(spreadLeft, spreadRight);
+    public Map<AlgoTag, Spread> getDifficultySpreadMap() {
+        return difficulties.stream().collect(
+            Collectors.toMap(AlgorithmStudyDifficulty::getAlgoTag,
+                algorithmStudyDifficulty ->
+                    getDifficultySpread(algorithmStudyDifficulty.getDifficulty())
+            )
+        );
+    }
+
+    private Spread getDifficultySpread(Float difficulty) {
+
+        Integer spreadLeft = Util.ensureRange(Math.round(difficulty), MIN_DIFFICULTY_LEVEL,
+            MAX_DIFFICULTY_LEVEL);
+
+        Integer spreadRight = Util.ensureRange(spreadLeft + difficultyGap, MIN_DIFFICULTY_LEVEL,
+            MAX_DIFFICULTY_LEVEL);
+        return Spread.of(spreadLeft, spreadRight);
     }
 
 

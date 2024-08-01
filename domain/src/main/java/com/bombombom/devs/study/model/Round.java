@@ -22,7 +22,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Entity
 @Getter
 @SuperBuilder
@@ -50,13 +52,13 @@ public class Round extends BaseEntity {
     @Builder.Default
     private List<AlgorithmProblemAssignment> assignments = new ArrayList<>();
 
-    public void assignProblems(
-        List<AlgorithmProblem> unSolvedProblems) {
+    public List<AlgorithmProblemAssignment> assignProblems(List<AlgorithmProblem> unSolvedProblems) {
         List<AlgorithmProblemAssignment> newAssignments = new ArrayList<>();
         for (AlgorithmProblem problem : unSolvedProblems) {
             newAssignments.add(assignProblem(problem));
         }
         assignments = newAssignments;
+        return newAssignments;
     }
 
     public AlgorithmProblemAssignment assignProblem(AlgorithmProblem problem) {
@@ -65,5 +67,10 @@ public class Round extends BaseEntity {
             .problem(problem)
             .build();
 
+    }
+
+    public void changeDate(LocalDate date) {
+        startDate = date.plusWeeks(idx);
+        endDate = date.plusWeeks(idx + 1);
     }
 }

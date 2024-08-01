@@ -1,6 +1,6 @@
 package com.bombombom.devs.solvedac;
 
-import com.bombombom.devs.core.Pair;
+import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import java.util.ArrayList;
@@ -29,13 +29,13 @@ public class SolvedacClient {
     public ProblemListResponse getUnSolvedProblems(
         List<String> baekjoonIds,
         Map<AlgoTag, Integer> problemCountForEachTag,
-        Map<AlgoTag, Pair<Integer, Integer>> difficultySpreadForEachTag
+        Map<AlgoTag, Spread> difficultySpreadForEachTag
     ) {
         ProblemListResponse unSolvedProblems = new ProblemListResponse(new ArrayList<>());
         WebClient webClient = WebClient.builder().baseUrl(BASE_URL).build();
         for (AlgoTag tag : problemCountForEachTag.keySet()) {
             Integer numberOfProblems = problemCountForEachTag.get(tag);
-            Pair<Integer, Integer> difficultySpread = difficultySpreadForEachTag.get(tag);
+            Spread difficultySpread = difficultySpreadForEachTag.get(tag);
             ProblemListResponse problemsByTag = getUnSolvedProblemsByTag(
                 webClient,
                 baekjoonIds,
@@ -43,7 +43,9 @@ public class SolvedacClient {
                 difficultySpread
             );
             log.debug("problemsByTag.items.size: {}", problemsByTag.items().size());
-            unSolvedProblems.items().addAll(problemsByTag.items().subList(0, numberOfProblems));
+            log.debug("numberOfProblems: {}", numberOfProblems);
+            unSolvedProblems.items().addAll(problemsByTag.items().subList(0,
+                Math.min(numberOfProblems, problemsByTag.items().size())));
         }
         return unSolvedProblems;
     }
@@ -52,7 +54,7 @@ public class SolvedacClient {
         WebClient webClient,
         List<String> baekjoonIds,
         AlgoTag tag,
-        Pair<Integer, Integer> difficultySpread
+        Spread difficultySpread
     ) {
         CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
         String queryParam = makeGetUnSolvedProblemsQueryParams(baekjoonIds, tag, difficultySpread);
@@ -82,7 +84,7 @@ public class SolvedacClient {
     private String makeGetUnSolvedProblemsQueryParams(
         List<String> baekjoonIds,
         AlgoTag tag,
-        Pair<Integer, Integer> difficultySpread
+        Spread difficultySpread
     ) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("s");
@@ -97,9 +99,9 @@ public class SolvedacClient {
             .append(tag)
             .append(SPACE)
             .append(DIFFICULTY_PREFIX)
-            .append(difficultySpread.getFirst())
+            .append(difficultySpread.getLeft())
             .append(DIFFICULTY_GAP)
-            .append(difficultySpread.getSecond());
+            .append(difficultySpread.getRight());
         return queryBuilder.toString();
     }
 

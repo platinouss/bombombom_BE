@@ -1,6 +1,8 @@
 package com.bombombom.devs.study.model;
 
 import com.bombombom.devs.common.BaseEntity;
+import com.bombombom.devs.core.exception.NotAcceptableException;
+import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.user.model.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -23,6 +25,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,7 +46,8 @@ public abstract class Study extends BaseEntity {
 
     public static final int MAX_RELIABILITY_LIMIT = 100;
     public static final int MAX_PENALTY = 100_000;
-    public static final int MAX_DIFFICULTY_LEVEL = 29;
+    public static final int MIN_DIFFICULTY_LEVEL = 1;
+    public static final int MAX_DIFFICULTY_LEVEL = 30;
     public static final int MAX_PROBLEM_COUNT = 20;
 
     @Id
@@ -94,7 +98,12 @@ public abstract class Study extends BaseEntity {
 
     public abstract StudyType getStudyType();
 
-    public void check(User user) {
+
+    public Integer calculateDeposit() {
+        return penalty * weeks;
+    }
+
+    public void admit(User user) {
         if (state.equals(StudyStatus.END)) {
             throw new IllegalStateException("The Study is End");
         }
@@ -104,13 +113,6 @@ public abstract class Study extends BaseEntity {
         if (reliabilityLimit != null && user.getReliability() < reliabilityLimit) {
             throw new IllegalStateException("User reliability is low");
         }
-    }
-
-    public Integer calculateDeposit() {
-        return penalty * weeks;
-    }
-
-    public void admit(User user) {
         UserStudy userStudy = UserStudy.of(user, this, calculateDeposit());
 
         headCount++;
@@ -137,5 +139,39 @@ public abstract class Study extends BaseEntity {
             .endDate(startDate.plusWeeks(idx + 1))
             .build();
         rounds.add(round);
+    }
+
+    private void changeStartDate(LocalDate date) {
+        if (startDate == date) {
+            return;
+        }
+        startDate = date;
+        IntStream.range(0, rounds.size())
+            .forEach(
+                idx -> {
+                    Round round = rounds.get(idx);
+                    round.changeDate(date);
+                }
+            );
+
+
+    }
+
+    public Round getFirstRound() {
+        return rounds.getFirst();
+    }
+
+    public void start(Clock clock, Long userId) {
+        changeStartDate(clock.today());
+
+        if (!leader.getId().equals(userId)) {
+            throw new IllegalStateException("Only Leader Can Start Study");
+        }
+
+        if (state != StudyStatus.READY) {
+            throw new NotAcceptableException("Study Already Started");
+        }
+
+        state = StudyStatus.RUNNING;
     }
 }

@@ -1,11 +1,14 @@
 package com.bombombom.devs.external.study.controller.dto.response;
 
+import com.bombombom.devs.core.Spread;
+import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.user.controller.dto.UserProfileResponse;
 import com.bombombom.devs.study.model.StudyStatus;
 import com.bombombom.devs.study.model.StudyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
+import java.util.Map;
 import lombok.Builder;
 
 @Builder
@@ -24,22 +27,7 @@ public record AlgorithmStudyResponse(
     UserProfileResponse leader,
     StudyType studyType,
 
-    Float difficultyMath,
-
-    Float difficultyDp,
-
-    Float difficultyGreedy,
-
-    Float difficultyImpl,
-
-    Float difficultyGraph,
-
-    Float difficultyGeometry,
-
-    Float difficultyDs,
-
-    Float difficultyString,
-
+    Map<AlgoTag, Spread> difficultySpreadMap,
     Integer difficultyGap,
 
     Integer problemCount)
@@ -58,17 +46,10 @@ public record AlgorithmStudyResponse(
             .reliabilityLimit(res.reliabilityLimit())
             .penalty(res.penalty())
             .leader(UserProfileResponse.fromResult(res.leader()))
+            .difficultySpreadMap(res.difficultySpreadMap())
             .state(res.state())
             .studyType(res.studyType())
-            .difficultyDp(res.difficultyDp())
-            .difficultyDs(res.difficultyDs())
             .difficultyGap(res.difficultyGap())
-            .difficultyGeometry(res.difficultyGeometry())
-            .difficultyMath(res.difficultyMath())
-            .difficultyGreedy(res.difficultyGreedy())
-            .difficultyString(res.difficultyString())
-            .difficultyGraph(res.difficultyGraph())
-            .difficultyImpl(res.difficultyImpl())
             .problemCount(res.problemCount())
             .build();
 

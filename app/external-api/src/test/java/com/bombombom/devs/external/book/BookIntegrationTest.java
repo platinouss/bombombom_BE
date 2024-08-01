@@ -118,11 +118,11 @@ public class BookIntegrationTest {
             .build();
         BookResult bookResult = BookResult.builder()
             .title("자바 최적화(Optimizing Java) (가장 빠른 성능을 구현하는 검증된 10가지 기법)")
-            .author("벤저민 J. 에번스^제임스 고프^크리스 뉴랜드")
+            .author("벤저민 J. 에번스")
             .publisher("한빛미디어")
             .isbn(9791162241776L)
             .imageUrl(
-                "https://shopping-phinf.pstatic.net/main_3243601/32436011847.20221228073547.jpg")
+                "https://shopping-phinf.pstatic.net/main_3243601/32436011847.20240730091049.jpg")
             .build();
         SearchBooksResult searchBooksResult = SearchBooksResult.builder()
             .bookResults(List.of(bookResult))

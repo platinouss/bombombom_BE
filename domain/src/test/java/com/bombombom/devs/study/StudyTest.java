@@ -73,7 +73,7 @@ class StudyTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> study.check(testuser))
+        assertThatThrownBy(() -> study.admit(testuser))
             .isInstanceOf(IllegalStateException.class);
     }
 
@@ -101,7 +101,7 @@ class StudyTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> study.check(testuser))
+        assertThatThrownBy(() -> study.admit(testuser))
             .isInstanceOf(IllegalStateException.class);
     }
 
@@ -129,7 +129,7 @@ class StudyTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> study.check(testuser))
+        assertThatThrownBy(() -> study.admit(testuser))
             .isInstanceOf(IllegalStateException.class);
     }
 

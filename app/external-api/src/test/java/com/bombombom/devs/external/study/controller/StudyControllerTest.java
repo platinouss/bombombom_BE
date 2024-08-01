@@ -37,6 +37,7 @@ import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsRes
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse.StudyDetails;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
+import com.bombombom.devs.external.study.service.AlgorithmStudyService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
@@ -85,12 +86,14 @@ class StudyControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-    
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @MockBean
     private StudyService studyService;
+    @MockBean
+    private AlgorithmStudyService algorithmStudyService;
 
     @DisplayName("BookStudy 생성 테스트")
     @Nested
@@ -662,14 +665,6 @@ class StudyControllerTest {
                 .weeks(5)
                 .leader(leaderProfile)
                 .state(StudyStatus.READY)
-                .difficultyDp(10f)
-                .difficultyDs(10f)
-                .difficultyImpl(10f)
-                .difficultyGraph(10f)
-                .difficultyGreedy(10f)
-                .difficultyMath(10f)
-                .difficultyString(10f)
-                .difficultyGeometry(10f)
                 .difficultyGap(5)
                 .problemCount(5).build();
 
@@ -1082,7 +1077,7 @@ class StudyControllerTest {
         @Test
         @WithUserDetails(value = "testuser")
         @DisplayName(
-            "difficultyBegin이 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+            "difficultyBegin이 1이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_difficulty_begin_not_in_range() throws Exception {
             /*
             Given
@@ -1096,7 +1091,7 @@ class StudyControllerTest {
                     .startDate(LocalDate.now())
                     .penalty(5000)
                     .weeks(5)
-                    .difficultyBegin(-1)
+                    .difficultyBegin(0)
                     .difficultyEnd(10)
                     .problemCount(5)
                     .build();
@@ -1130,7 +1125,7 @@ class StudyControllerTest {
         @Test
         @WithUserDetails(value = "testuser")
         @DisplayName(
-            "difficultyEnd가 0이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
+            "difficultyEnd가 1이상 " + MAX_DIFFICULTY_LEVEL + "이하가 아니라면 AlgorithmStudy를 생성할 수 없다")
         void register_algorithm_study_fails_if_difficulty_end_not_in_range() throws Exception {
             /*
             Given
@@ -1397,15 +1392,8 @@ class StudyControllerTest {
                 .startDate(LocalDate.of(2024, 06, 14))
                 .penalty(5000)
                 .weeks(5)
-                .difficultyDp(12.4f)
-                .difficultyDs(12f)
-                .difficultyGraph(12.9f)
-                .difficultyGap(5)
                 .capacity(10)
                 .leader(leaderProfile)
-                .difficultyGeometry(11f)
-                .difficultyMath(11f)
-                .difficultyString(13.5f)
                 .problemCount(5)
                 .build();
 

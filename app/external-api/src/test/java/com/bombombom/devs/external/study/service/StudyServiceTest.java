@@ -23,6 +23,7 @@ import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmPro
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.external.study.service.dto.command.StartStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
@@ -37,6 +38,7 @@ import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
+import com.bombombom.devs.study.model.AlgorithmStudyDifficulty;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
@@ -56,6 +58,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -107,7 +110,7 @@ class StudyServiceTest {
 
     @InjectMocks
     private StudyService studyService;
-    
+
     @Test
     @DisplayName("readStudy 메소드는 Page<StudyResult>를 반환한다")
     void read_study_returns_page_of_study_result() throws Exception {
@@ -141,14 +144,8 @@ class StudyServiceTest {
                 .penalty(5000)
                 .weeks(5)
                 .leader(leader)
-                .difficultyDp(12.4f)
-                .difficultyDs(12f)
-                .difficultyGraph(12.9f)
                 .difficultyGap(5)
                 .capacity(10)
-                .difficultyGeometry(11f)
-                .difficultyMath(11f)
-                .difficultyString(13.5f)
                 .problemCount(5)
                 .build();
 
@@ -169,7 +166,8 @@ class StudyServiceTest {
         repositoryResponses.add(study2);
 
         Page<Study> studies = new PageImpl<>(repositoryResponses);
-        when(studyRepository.findAllWithUserAndBook(any(Pageable.class))).thenReturn(studies);
+        when(studyRepository.findAllWithDifficultiesAndLeaderAndBook(
+            any(Pageable.class))).thenReturn(studies);
 
         /*
         When
@@ -260,16 +258,20 @@ class StudyServiceTest {
             .weeks(5)
             .state(StudyStatus.READY)
             .leader(testuser)
-            .difficultyDp(10f)
-            .difficultyDs(10f)
-            .difficultyImpl(10f)
-            .difficultyGraph(10f)
-            .difficultyGreedy(10f)
-            .difficultyMath(10f)
-            .difficultyString(10f)
-            .difficultyGeometry(10f)
             .difficultyGap(5)
             .problemCount(5)
+            .difficulties(
+                AlgoTag.getTagNames().stream().map(
+                    tagName ->
+                        AlgorithmStudyDifficulty.builder()
+                            .algoTag(AlgoTag.valueOf(tagName))
+                            .difficulty(
+                                registerAlgorithmStudyCommand.difficultyBegin().floatValue())
+
+                            .build()
+
+                ).collect(Collectors.toList())
+            )
             .build();
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(testuser));
@@ -391,7 +393,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("Problem Not Found");
@@ -434,7 +436,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("Study Not Found");
@@ -478,7 +480,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotAcceptableException.class)
             .hasMessage("Feedback can only be given to Algorithm Study");
@@ -527,7 +529,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("Ongoing Round Not Found");
@@ -593,7 +595,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotAcceptableException.class)
             .hasMessage("Problem is not ongoing assignment");
@@ -669,7 +671,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             testuser.getId(), feedback))
             .isInstanceOf(NotAcceptableException.class)
             .hasMessage("User is not a member");
@@ -745,7 +747,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             testuser.getId(), feedback))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("User Not Found");
@@ -802,7 +804,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             userId, feedback))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("Solve History Not Found");
@@ -858,7 +860,7 @@ class StudyServiceTest {
         /*
          * When & Then
          */
-        assertThatThrownBy(() -> studyService.feedback(
+        assertThatThrownBy(() -> algorithmStudyService.feedback(
             userId, feedback))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Cant Give Feedback On Unsolved Problem");
@@ -1001,7 +1003,7 @@ class StudyServiceTest {
         doReturn(members).when(userStudyRepository).findByStudyId(anyLong());
         doReturn(algorithmStudyService).when(studyServiceFactory).getService(StudyType.ALGORITHM);
         doReturn(List.of(assignment1, assignment2)).when(algorithmProblemAssignmentRepository)
-            .findProblemWithStudyByRound(anyLong());
+            .findAssignmentWithProblemByRoundId(anyLong());
         doReturn(List.of(history)).when(algorithmProblemSolveHistoryRepository)
             .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
 
@@ -1221,7 +1223,7 @@ class StudyServiceTest {
         doReturn(members).when(userStudyRepository).findByStudyId(anyLong());
         doReturn(algorithmStudyService).when(studyServiceFactory).getService(StudyType.ALGORITHM);
         doReturn(List.of(assignment1, assignment2)).when(algorithmProblemAssignmentRepository)
-            .findProblemWithStudyByRound(anyLong());
+            .findAssignmentWithProblemByRoundId(anyLong());
         doReturn(List.of(history)).when(algorithmProblemSolveHistoryRepository)
             .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
 
@@ -1286,4 +1288,97 @@ class StudyServiceTest {
         assertThrows(IllegalStateException.class, () -> studyService.findStudyDetails(studyId));
     }
 
+    @DisplayName("스터디 시작은 스터디를 찾지 못한 경우 실패한다")
+    @Test
+    void start_study_fails_if_study_not_found() {
+        /*
+        Given
+         */
+        Long userId = 1L;
+
+        StartStudyCommand startStudyCommand = StartStudyCommand.builder()
+            .studyId(3L)
+            .build();
+
+        when(studyRepository.findWithLeaderById(startStudyCommand.studyId()))
+            .thenReturn(
+                Optional.empty()
+            );
+
+        /*
+        When & Then
+         */
+        assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Study Not Found");
+
+
+    }
+
+    @DisplayName("스터디 시작은 리더가 아닌 경우 실패한다")
+    @Test
+    void start_study_fails_if_user_is_not_leader() {
+        /*
+        Given
+         */
+        Long userId = 1L;
+
+        StartStudyCommand startStudyCommand = StartStudyCommand.builder()
+            .studyId(3L)
+            .build();
+
+        Study study = AlgorithmStudy.builder()
+            .id(startStudyCommand.studyId())
+            .leader(User.builder()
+                .id(userId + 1).build())
+            .build();
+
+        when(studyRepository.findWithLeaderById(startStudyCommand.studyId()))
+            .thenReturn(
+                Optional.of(study)
+            );
+
+        /*
+        When & Then
+         */
+        assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Only Leader Can Start Study");
+
+
+    }
+
+    @DisplayName("스터디가 이미 시작한 경우 스터디 시작은 실패한다")
+    @Test
+    void start_study_fails_if_study_already_started() {
+        /*
+        Given
+         */
+        Long userId = 1L;
+
+        StartStudyCommand startStudyCommand = StartStudyCommand.builder()
+            .studyId(3L)
+            .build();
+
+        Study study = AlgorithmStudy.builder()
+            .id(startStudyCommand.studyId())
+            .leader(User.builder()
+                .id(userId).build())
+            .state(StudyStatus.RUNNING)
+            .build();
+
+        when(studyRepository.findWithLeaderById(startStudyCommand.studyId()))
+            .thenReturn(
+                Optional.of(study)
+            );
+
+        /*
+        When & Then
+         */
+        assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
+            .isInstanceOf(NotAcceptableException.class)
+            .hasMessage("Study Already Started");
+
+
+    }
 }

@@ -6,12 +6,14 @@ import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.request.StartStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
+import com.bombombom.devs.external.study.service.AlgorithmStudyService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
@@ -43,6 +45,8 @@ public class StudyController {
 
     public static final String RESOURCE_PATH = "/api/v1/studies";
     private final StudyService studyService;
+    private final AlgorithmStudyService algorithmStudyService;
+
 
     @PostMapping("/algo")
     public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(
@@ -120,8 +124,20 @@ public class StudyController {
         @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody FeedbackAlgorithmProblemRequest feedbackAlgorithmProblemRequest) {
 
-        studyService.feedback(userDetails.getId(),
+        algorithmStudyService.feedback(userDetails.getId(),
             feedbackAlgorithmProblemRequest.toServiceDto());
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/start")
+    public ResponseEntity<Void> start(
+        @LoginUser AppUserDetails userDetails,
+
+        @Valid @RequestBody StartStudyRequest startStudyRequest) {
+
+        studyService.start(userDetails.getId(),
+            startStudyRequest.toServiceDto());
 
         return ResponseEntity.ok().build();
     }

@@ -2,17 +2,11 @@ package com.bombombom.devs.job;
 
 import static org.quartz.JobBuilder.newJob;
 
-import com.bombombom.devs.algo.model.AlgorithmProblem;
-import com.bombombom.devs.core.enums.AlgoTag;
-import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.study.service.StudyService;
-import com.bombombom.devs.solvedac.SolvedacClient;
-import com.bombombom.devs.solvedac.dto.ProblemListResponse;
-import com.bombombom.devs.study.model.AlgorithmStudy;
+import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
 import com.bombombom.devs.study.model.Round;
-import com.bombombom.devs.study.repository.RoundRepository;
+import com.bombombom.devs.study.model.Study;
 import java.util.List;
-import java.util.Map;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,10 +33,7 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
     private static final String JOB_WORK = "Work";
 
     private final StudyService studyService;
-    private final AlgorithmProblemService algorithmProblemService;
-    private final SolvedacClient solvedacClient;
-    private final RoundRepository roundRepository;
-    private final AlgorithmProblemConverter algorithmProblemConverter;
+    private final StudyServiceFactory studyServiceFactory;
     private boolean isInterrupted = false;
 
     public static Trigger buildJobTrigger() {
@@ -86,9 +77,9 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
                 isInterrupted = false;
                 return;
             }
-            if (round.getStudy() instanceof AlgorithmStudy study) {
-                startRoundOfAlgoStudy(study, round);
-            }
+            Study study = round.getStudy();
+
+            studyServiceFactory.getService(study.getStudyType()).startRound(study, round);
         });
 
         long endTime = System.currentTimeMillis();
@@ -97,19 +88,5 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
         log.debug("RoundJob 수행 시간: " + executionTime + "ms");
     }
 
-
-    private void startRoundOfAlgoStudy(AlgorithmStudy study, Round round) {
-        Map<AlgoTag, Integer> problemCountForEachTag =
-            algorithmProblemService.getProblemCountForEachTag(study.getProblemCount());
-
-        ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
-            study.getBaekjoonIds(), problemCountForEachTag, study.getDifficultySpreadForEachTag());
-
-        List<AlgorithmProblem> problems = algorithmProblemConverter.convert(problemListResponse);
-
-        algorithmProblemService.saveProblems(problems);
-
-        studyService.assignProblemToRound(round, problems);
-    }
 
 }

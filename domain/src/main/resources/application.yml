@@ -17,6 +17,7 @@ spring:
         show_sql: true
         format_sql: true
   security:
+    front-server-origin: ${FRONT_SERVER_ORIGIN}
     jwt:
       secret-key: ${JWT_SECRET_KEY}
       access-token:
@@ -43,6 +44,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   elasticsearch:
     uris: ${ELASTICSEARCH_URI}
 logging.level:
@@ -50,6 +55,8 @@ logging.level:
     TRACE
   com.bombombom: ${LOG_LEVEL}
   org.springframework.security: TRACE
+  org.hibernate.SQL : debug
+  org.hibernate.orm.jdbc.bind: trace
 
 # 테스트 프로파일 설정
 ---

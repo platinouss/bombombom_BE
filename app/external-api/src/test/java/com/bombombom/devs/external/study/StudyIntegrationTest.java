@@ -1,6 +1,8 @@
 package com.bombombom.devs.external.study;
 
 
+import static com.bombombom.devs.study.model.Study.MAX_DIFFICULTY_LEVEL;
+import static com.bombombom.devs.study.model.Study.MIN_DIFFICULTY_LEVEL;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,17 +13,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.ExternalApiApplication;
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
+import com.bombombom.devs.core.util.Util;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.request.StartStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
@@ -57,6 +64,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -120,7 +131,7 @@ public class StudyIntegrationTest {
 
     @Autowired
     private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
-    
+
     @Nested
     @DisplayName("인증이 필요한 테스트")
     @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
@@ -145,6 +156,84 @@ public class StudyIntegrationTest {
         }
 
         @Test
+        @DisplayName("알고리즘 스터디를 시작할 수 있다")
+        @WithUserDetails(value = "testuser",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        void can_start_algorithm_study()
+            throws Exception {
+            /*
+            Given
+             */
+
+            Integer difficultyGap = 5;
+            Long difficultyBegin = 10L;
+            AlgorithmStudy study1 =
+                AlgorithmStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(clock.today().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .difficultyGap(difficultyGap)
+                    .problemCount(5)
+                    .build();
+            study1.createRounds();
+            study1.setDifficulty(difficultyBegin.floatValue());
+
+            studyRepository.save(study1);
+
+            StartStudyRequest startStudyRequest = StartStudyRequest.builder()
+                .studyId(study1.getId())
+                .build();
+
+            /*
+            When
+             */
+            ResultActions resultActions = mockMvc.perform(
+                post("/api/v1/studies/start")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(startStudyRequest))
+            );
+
+
+            /*
+            Then
+             */
+            resultActions.andDo(print())
+                .andExpect(status().isOk());
+
+            AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithRoundsById(
+                    study1.getId())
+                .orElseThrow(() -> new NotFoundException("Study Not Found"));
+
+            Assertions.assertThat(algorithmStudy.getState())
+                .isEqualTo(StudyStatus.RUNNING);
+            Assertions.assertThat(algorithmStudy.getStartDate())
+                .isEqualTo(clock.today());
+
+            Assertions.assertThat(
+                    algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId
+                        (algorithmStudy.getFirstRound().getId()).size())
+                .isEqualTo(algorithmStudy.getProblemCount());
+
+            Assertions.assertThat(
+                algorithmStudy.getRounds().stream().map(
+                    round -> round.getStartDate()
+                ).toList()
+            ).isEqualTo(
+                IntStream.range(0, algorithmStudy.getWeeks())
+                    .mapToObj(idx -> clock.today().plusWeeks(idx)).toList()
+            );
+
+
+        }
+
+        @Test
         @DisplayName("알고리즘 문제에 대한 피드백을 줄 수 있다.")
         @WithUserDetails(value = "testuser",
             setupBefore = TestExecutionEvent.TEST_EXECUTION)
@@ -153,11 +242,17 @@ public class StudyIntegrationTest {
              Given
              */
 
+            Random gen = new Random();
+            List<String> tags = AlgoTag.getTagNames();
+            AlgoTag randomTag = AlgoTag.valueOf(tags.get(gen.nextInt(tags.size())));
+            Integer difficultyGap = 10;
+            Integer difficultyBegin = gen.nextInt(MIN_DIFFICULTY_LEVEL, MAX_DIFFICULTY_LEVEL);
+
             AlgorithmProblem problem = AlgorithmProblem.builder()
                 .title("히스토그램에서 가장큰 직사각형")
                 .refId(1023)
-                .tag(AlgoTag.DATA_STRUCTURES)
-                .difficulty(15)
+                .tag(randomTag)
+                .difficulty(difficultyBegin + difficultyGap / 2)
                 .build();
 
             problemRepository.save(problem);
@@ -172,20 +267,15 @@ public class StudyIntegrationTest {
                     .state(StudyStatus.READY)
                     .headCount(0)
                     .leader(testuser)
-                    .difficultyDp(12.4f)
-                    .difficultyDs(12f)
-                    .difficultyGraph(12.9f)
-                    .difficultyGap(5)
                     .capacity(10)
-                    .difficultyGeometry(11f)
-                    .difficultyMath(11f)
-                    .difficultyString(13.5f)
                     .problemCount(5)
+                    .difficultyGap(difficultyGap)
                     .startDate(clock.today())
                     .build();
             study.admit(testuser);
             study.createRounds();
             study.getRounds().getFirst().assignProblems(List.of(problem));
+            study.setDifficulty(difficultyBegin.floatValue());
             studyRepository.save(study);
 
             algorithmProblemSolveHistoryRepository.save(AlgorithmProblemSolveHistory.builder()
@@ -216,6 +306,29 @@ public class StudyIntegrationTest {
              */
             resultActions.andDo(print())
                 .andExpect(status().isOk());
+
+            AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithDifficultiesById(
+                    feedback.studyId())
+                .orElseThrow(() -> new NotFoundException("Study Not Found"));
+
+            Map<AlgoTag, Spread> difficultyMap =
+                study.getDifficultySpreadMap();
+            Float variance = study.getDifficultyVariance(
+                AlgorithmProblemFeedback.builder()
+                    .difficulty(feedback.difficulty())
+                    .build()
+            );
+            Integer adjustedDifficulty = Math.round(difficultyBegin + variance);
+            difficultyMap.put(randomTag,
+                Spread.of(
+                    Util.ensureRange(adjustedDifficulty, MIN_DIFFICULTY_LEVEL,
+                        MAX_DIFFICULTY_LEVEL),
+                    Util.ensureRange(adjustedDifficulty + difficultyGap, MIN_DIFFICULTY_LEVEL,
+                        MAX_DIFFICULTY_LEVEL)
+                ));
+
+            Assertions.assertThat(algorithmStudy.getDifficultySpreadMap())
+                .isEqualTo(difficultyMap);
 
         }
 
@@ -265,7 +378,6 @@ public class StudyIntegrationTest {
             JoinStudyRequest request = JoinStudyRequest.builder()
                 .studyId(study.getId()).build();
 
-            System.out.println("study.getId() = " + study.getId());
             /*
              When
              */
@@ -280,6 +392,7 @@ public class StudyIntegrationTest {
              */
             resultActions.andDo(print())
                 .andExpect(status().isOk());
+
         }
 
         @Test
@@ -297,7 +410,7 @@ public class StudyIntegrationTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.now())
+                    .startDate(LocalDate.now().plusWeeks(1))
                     .penalty(1000)
                     .weeks(5)
                     .difficultyBegin(10)
@@ -321,21 +434,20 @@ public class StudyIntegrationTest {
                 .name("스터디1")
                 .headCount(1)
                 .capacity(10)
-                .startDate(LocalDate.now())
+                .startDate(registerAlgorithmStudyRequest.startDate())
                 .penalty(1000)
                 .weeks(5)
                 .leader(profile)
                 .state(StudyStatus.READY)
                 .studyType(StudyType.ALGORITHM)
-                .difficultyDp(10f)
-                .difficultyDs(10f)
-                .difficultyImpl(10f)
-                .difficultyGraph(10f)
-                .difficultyGreedy(10f)
-                .difficultyMath(10f)
-                .difficultyString(10f)
-                .difficultyGeometry(10f)
                 .difficultyGap(5)
+                .difficultySpreadMap(
+                    AlgoTag.getTagNames().stream().collect(Collectors.toMap(AlgoTag::valueOf,
+                        tag -> Spread.of(
+                            registerAlgorithmStudyRequest.difficultyBegin(),
+                            registerAlgorithmStudyRequest.difficultyEnd()
+                        ))
+                    ))
                 .problemCount(5).build();
 
             /*
@@ -411,7 +523,7 @@ public class StudyIntegrationTest {
                     .introduce("안녕하세요")
                     .name("스터디1")
                     .capacity(10)
-                    .startDate(LocalDate.now())
+                    .startDate(LocalDate.now().plusWeeks(1))
                     .penalty(1000)
                     .weeks(5)
                     .isbn(123456789L)
@@ -425,7 +537,7 @@ public class StudyIntegrationTest {
                     .name("스터디1")
                     .headCount(1)
                     .capacity(10)
-                    .startDate(LocalDate.now())
+                    .startDate(registerBookStudyRequest.startDate())
                     .penalty(1000)
                     .weeks(5)
                     .leader(profile)
@@ -542,14 +654,8 @@ public class StudyIntegrationTest {
                 .state(StudyStatus.READY)
                 .headCount(0)
                 .leader(leader)
-                .difficultyDp(12.4f)
-                .difficultyDs(12f)
-                .difficultyGraph(12.9f)
-                .difficultyGap(5)
+
                 .capacity(10)
-                .difficultyGeometry(11f)
-                .difficultyMath(11f)
-                .difficultyString(13.5f)
                 .problemCount(5)
                 .build();
 
@@ -889,4 +995,6 @@ public class StudyIntegrationTest {
         String expectedResponse = objectMapper.writeValueAsString(studyDetailsResponse);
         resultActions.andExpect(status().isOk()).andExpect(content().json(expectedResponse));
     }
+
+
 }
