@@ -14,7 +14,6 @@ import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStud
 import com.bombombom.devs.external.study.controller.dto.request.StartStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.VoteAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyResponse;
-import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyTaskStatusResponse;
 import com.bombombom.devs.external.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
@@ -27,7 +26,6 @@ import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult
 import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
 import com.bombombom.devs.external.study.service.dto.result.AssignmentVoteResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
-import com.bombombom.devs.external.study.service.dto.result.SolvedAlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.security.AppUserDetails;
@@ -164,12 +162,11 @@ public class StudyController {
     }
 
     @PostMapping("/algo/status")
-    public ResponseEntity<AlgorithmStudyTaskStatusResponse> checkAlgorithmProblemSolved(
+    public ResponseEntity<Void> checkAlgorithmProblemSolved(
         @Valid @RequestBody CheckAlgorithmProblemSolvedRequest checkAlgorithmProblemSolvedRequest) {
-        SolvedAlgorithmProblemResult solvedAlgorithmProblemResult = algorithmStudyService.checkAlgorithmProblemSolved(
+        algorithmStudyService.updateAlgorithmTaskStatus(
             checkAlgorithmProblemSolvedRequest.toServiceDto());
-        return ResponseEntity.ok()
-            .body(AlgorithmStudyTaskStatusResponse.fromResult(solvedAlgorithmProblemResult));
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/start-voting")

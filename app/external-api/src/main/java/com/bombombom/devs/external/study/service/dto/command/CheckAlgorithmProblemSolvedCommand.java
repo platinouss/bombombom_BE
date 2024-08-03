@@ -7,7 +7,7 @@ import lombok.Builder;
 public record CheckAlgorithmProblemSolvedCommand(
     Long studyId,
     Integer roundIdx,
-    List<Long> problemsId,
+    List<Long> problemIds,
     Long userId
 ) {
 

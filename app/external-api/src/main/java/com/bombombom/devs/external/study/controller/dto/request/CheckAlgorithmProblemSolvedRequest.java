@@ -8,7 +8,7 @@ import java.util.List;
 public record CheckAlgorithmProblemSolvedRequest(
     @NotNull Long studyId,
     @NotNull Integer roundIdx,
-    @Size(min = 1) List<Long> problemsId,
+    @Size(min = 1) List<Long> problemIds,
     @NotNull Long userId
 ) {
 
@@ -16,7 +16,7 @@ public record CheckAlgorithmProblemSolvedRequest(
         return CheckAlgorithmProblemSolvedCommand.builder()
             .studyId(studyId)
             .roundIdx(roundIdx)
-            .problemsId(problemsId)
+            .problemIds(problemIds)
             .userId(userId)
             .build();
     }

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
-import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.user.model.User;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +36,7 @@ class AlgorithmProblemAssignmentTest {
             .round(round)
             .problem(problem)
             .build();
-        AlgorithmProblemSolveHistory history = assignment.createSolveHistory(user);
+        AlgorithmProblemSolvedHistory history = assignment.createSolveHistory(user);
 
         /*
          * Then

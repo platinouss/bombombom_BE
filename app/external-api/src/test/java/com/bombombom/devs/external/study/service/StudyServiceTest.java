@@ -47,7 +47,7 @@ import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.enums.VotingProcess;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
-import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.AlgorithmStudyDifficulty;
 import com.bombombom.devs.study.model.Assignment;
@@ -57,7 +57,7 @@ import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
-import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRepository;
 import com.bombombom.devs.study.repository.AssignmentRepository;
 import com.bombombom.devs.study.repository.AssignmentVoteRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
@@ -111,6 +111,7 @@ class StudyServiceTest {
 
     @Mock
     private StudyServiceFactory studyServiceFactory;
+
     @Mock
     private AssignmentRepository assignmentRepository;
 
@@ -121,7 +122,8 @@ class StudyServiceTest {
     private AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
 
     @Mock
-    private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    private AlgorithmProblemSolvedHistoryRepository algorithmProblemSolvedHistoryRepository;
+
     @Mock
     private AssignmentVoteRepository assignmentVoteRepository;
 
@@ -611,17 +613,18 @@ class StudyServiceTest {
                 round.getId(),
                 algorithmProblem.getId())).thenReturn(false);
 
-            AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+            AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
             when(history.getSolvedAt()).thenReturn(now);
-            when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
                 1L, algorithmProblem.getId()
             )).thenReturn(Optional.of(history));
+
             /*
-             * When & Then
-             */
+            * When & Then
+            */
             assertThatThrownBy(() -> algorithmStudyService.feedback(
                 1L, feedback))
                 .isInstanceOf(NotFoundException.class)
@@ -683,12 +686,12 @@ class StudyServiceTest {
                 round.getId(),
                 algorithmProblem.getId())).thenReturn(true);
 
-            AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+            AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
             when(history.getSolvedAt()).thenReturn(now);
-            when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
                 testuser.getId(), algorithmProblem.getId()
             )).thenReturn(Optional.of(history));
 
@@ -763,14 +766,15 @@ class StudyServiceTest {
                 testuser.getId()
             )).thenReturn(Optional.empty());
 
-            AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+            AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
             when(history.getSolvedAt()).thenReturn(now);
-            when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
                 testuser.getId(), algorithmProblem.getId()
             )).thenReturn(Optional.of(history));
+
             /*
              * When & Then
              */
@@ -778,8 +782,6 @@ class StudyServiceTest {
                 testuser.getId(), feedback))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
-
-
         }
 
 
@@ -820,11 +822,11 @@ class StudyServiceTest {
                 eq(study.getId()),
                 any(LocalDate.class))).thenReturn(Optional.of(round));
 
-            AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+            AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
-            when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
                 userId, problem.getId()
             )).thenReturn(Optional.empty());
 
@@ -835,7 +837,6 @@ class StudyServiceTest {
                 userId, feedback))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SOLVE_HISTORY_NOT_FOUND);
-
         }
 
 
@@ -876,11 +877,11 @@ class StudyServiceTest {
                 eq(study.getId()),
                 any(LocalDate.class))).thenReturn(Optional.of(round));
 
-            AlgorithmProblemSolveHistory history = mock(AlgorithmProblemSolveHistory.class);
+            AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
-            when(algorithmProblemSolveHistoryRepository.findByUserIdAndProblemId(
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
                 userId, problem.getId()
             )).thenReturn(Optional.of(history));
 
@@ -891,7 +892,6 @@ class StudyServiceTest {
                 userId, feedback))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROBLEM_NOT_SOLVED);
-
         }
     }
 
@@ -903,85 +903,85 @@ class StudyServiceTest {
         @DisplayName("알고리즘 스터디 진행현황")
         class AlgorithmStudyProgressTest {
 
-            @DisplayName("study id와 round 순서번호로 특정 회차의 알고리즘 스터디 진행 현황 결과를 반환할 수 있다.")
-            @Test
-            void retrieve_algorithm_study_progress_by_study_id_and_round_idx() {
-                /*
-                 * Given
-                 */
-                Long studyId = 1L;
-                Integer roundIdx = 1;
-                LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
-                LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
-                User user1 = User.builder()
-                    .id(1L)
-                    .username("username1")
-                    .role(Role.USER)
-                    .reliability(50)
-                    .build();
-                User user2 = User.builder()
-                    .id(2L)
-                    .username("username2")
-                    .role(Role.USER)
-                    .reliability(60)
-                    .build();
-                Study study = AlgorithmStudy.builder()
-                    .id(studyId)
-                    .name("스터디")
-                    .introduce("안녕하세요")
-                    .headCount(1)
-                    .capacity(5)
-                    .penalty(10000)
-                    .reliabilityLimit(0)
-                    .startDate(roundStartDate)
-                    .weeks(2)
-                    .leader(user1)
-                    .state(StudyStatus.RUNNING)
-                    .build();
-                Round round = Round.builder()
-                    .id(1L)
-                    .idx(roundIdx)
-                    .study(study)
-                    .idx(roundIdx)
-                    .startDate(roundStartDate)
-                    .endDate(roundEndDate)
-                    .build();
-                UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
-                UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
-                List<UserStudy> members = List.of(userStudy1, userStudy2);
-                AlgorithmProblem problem1 = AlgorithmProblem.builder()
-                    .id(1L)
-                    .refId(1000)
-                    .tag(AlgoTag.DP)
-                    .title("A")
-                    .link("https://www.test.com/1000")
-                    .difficulty(10)
-                    .build();
-                AlgorithmProblem problem2 = AlgorithmProblem.builder()
-                    .id(2L)
-                    .refId(2000)
-                    .tag(AlgoTag.DP)
-                    .title("B")
-                    .link("https://www.test.com/2000")
-                    .difficulty(5)
-                    .build();
-                AlgorithmProblemAssignment assignment1 = AlgorithmProblemAssignment.builder()
-                    .id(1L)
-                    .round(round)
-                    .problem(problem1)
-                    .build();
-                AlgorithmProblemAssignment assignment2 = AlgorithmProblemAssignment.builder()
-                    .id(2L)
-                    .round(round)
-                    .problem(problem2)
-                    .build();
-                AlgorithmProblemSolveHistory history = AlgorithmProblemSolveHistory.builder()
-                    .id(1L)
-                    .problem(problem2)
-                    .user(user1)
-                    .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
-                    .tryCount(2)
-                    .build();
+        @DisplayName("study id와 round 순서번호로 특정 회차의 알고리즘 스터디 진행 현황 결과를 반환할 수 있다.")
+        @Test
+        void retrieve_algorithm_study_progress_by_study_id_and_round_idx() {
+            /*
+            Given
+             */
+            Long studyId = 1L;
+            Integer roundIdx = 1;
+            LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
+            LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
+            User user1 = User.builder()
+                .id(1L)
+                .username("username1")
+                .role(Role.USER)
+                .reliability(50)
+                .build();
+            User user2 = User.builder()
+                .id(2L)
+                .username("username2")
+                .role(Role.USER)
+                .reliability(60)
+                .build();
+            Study study = AlgorithmStudy.builder()
+                .id(studyId)
+                .name("스터디")
+                .introduce("안녕하세요")
+                .headCount(1)
+                .capacity(5)
+                .penalty(10000)
+                .reliabilityLimit(0)
+                .startDate(roundStartDate)
+                .weeks(2)
+                .leader(user1)
+                .state(StudyStatus.RUNNING)
+                .build();
+            Round round = Round.builder()
+                .id(1L)
+                .idx(roundIdx)
+                .study(study)
+                .idx(roundIdx)
+                .startDate(roundStartDate)
+                .endDate(roundEndDate)
+                .build();
+            UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
+            UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
+            List<UserStudy> members = List.of(userStudy1, userStudy2);
+            AlgorithmProblem problem1 = AlgorithmProblem.builder()
+                .id(1L)
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblem problem2 = AlgorithmProblem.builder()
+                .id(2L)
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            AlgorithmProblemAssignment assignment1 = AlgorithmProblemAssignment.builder()
+                .id(1L)
+                .round(round)
+                .problem(problem1)
+                .build();
+            AlgorithmProblemAssignment assignment2 = AlgorithmProblemAssignment.builder()
+                .id(2L)
+                .round(round)
+                .problem(problem2)
+                .build();
+            AlgorithmProblemSolvedHistory history = AlgorithmProblemSolvedHistory.builder()
+                .id(1L)
+                .problem(problem2)
+                .user(user1)
+                .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+                .tryCount(2)
+                .build();
 
                 UserProfileResult userProfileResult1 = UserProfileResult.builder()
                     .id(1L)
@@ -1033,18 +1033,15 @@ class StudyServiceTest {
                     .studyProgress(algorithmStudyProgress)
                     .build();
 
-                doReturn(Optional.of(study)).when(studyRepository)
-                    .findWithDifficultiesAndLeaderAndBookById(anyLong());
-                doReturn(Optional.of(round)).when(roundRepository)
-                    .findRoundByStudyAndIdx(anyLong(), anyInt());
-                doReturn(members).when(userStudyRepository).findWithUserByStudyId(anyLong());
-                doReturn(algorithmStudyService).when(studyServiceFactory)
-                    .getService(StudyType.ALGORITHM);
-                doReturn(List.of(assignment1, assignment2)).when(
-                        algorithmProblemAssignmentRepository)
-                    .findAssignmentWithProblemByRoundId(anyLong());
-                doReturn(List.of(history)).when(algorithmProblemSolveHistoryRepository)
-                    .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
+            doReturn(Optional.of(study)).when(studyRepository).findById(anyLong());
+            doReturn(Optional.of(round)).when(roundRepository)
+                .findRoundByStudyAndIdx(anyLong(), anyInt());
+            doReturn(members).when(userStudyRepository).findWithUserByStudyId(anyLong());
+            doReturn(algorithmStudyService).when(studyServiceFactory).getService(StudyType.ALGORITHM);
+            doReturn(List.of(assignment1, assignment2)).when(algorithmProblemAssignmentRepository)
+                .findAssignmentWithProblemByRoundId(anyLong());
+            doReturn(List.of(history)).when(algorithmProblemSolvedHistoryRepository)
+                .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
 
                 /*
                  * When & Then
@@ -1117,85 +1114,85 @@ class StudyServiceTest {
 
             }
 
-            @DisplayName("study id로 해당 알고리즘 스터디의 정보 조회 결과를 반환할 수 있다.")
-            @Test
-            void retrieve_algorithm_study_details_by_study_id() {
-                /*
-                 *  Given
-                 */
-                Long studyId = 1L;
-                Integer roundIdx = 1;
-                LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
-                LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
-                User user1 = User.builder()
-                    .id(1L)
-                    .username("username1")
-                    .role(Role.USER)
-                    .reliability(50)
-                    .build();
-                User user2 = User.builder()
-                    .id(2L)
-                    .username("username2")
-                    .role(Role.USER)
-                    .reliability(60)
-                    .build();
-                Study study = AlgorithmStudy.builder()
-                    .id(studyId)
-                    .name("스터디")
-                    .introduce("안녕하세요")
-                    .headCount(1)
-                    .capacity(5)
-                    .penalty(10000)
-                    .reliabilityLimit(0)
-                    .startDate(roundStartDate)
-                    .weeks(2)
-                    .leader(user1)
-                    .state(StudyStatus.RUNNING)
-                    .build();
-                Round round = Round.builder()
-                    .id(1L)
-                    .idx(roundIdx)
-                    .study(study)
-                    .idx(roundIdx)
-                    .startDate(roundStartDate)
-                    .endDate(roundEndDate)
-                    .build();
-                UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
-                UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
-                List<UserStudy> members = List.of(userStudy1, userStudy2);
-                AlgorithmProblem problem1 = AlgorithmProblem.builder()
-                    .id(1L)
-                    .refId(1000)
-                    .tag(AlgoTag.DP)
-                    .title("A")
-                    .link("https://www.test.com/1000")
-                    .difficulty(10)
-                    .build();
-                AlgorithmProblem problem2 = AlgorithmProblem.builder()
-                    .id(2L)
-                    .refId(2000)
-                    .tag(AlgoTag.DP)
-                    .title("B")
-                    .link("https://www.test.com/2000")
-                    .difficulty(5)
-                    .build();
-                AlgorithmProblemAssignment assignment1 = AlgorithmProblemAssignment.builder()
-                    .id(1L)
-                    .round(round)
-                    .problem(problem1)
-                    .build();
-                AlgorithmProblemAssignment assignment2 = AlgorithmProblemAssignment.builder()
-                    .id(2L)
-                    .round(round)
-                    .problem(problem2)
-                    .build();
-                AlgorithmProblemSolveHistory history = AlgorithmProblemSolveHistory.builder()
-                    .id(1L)
-                    .problem(problem2)
-                    .user(user1)
-                    .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
-                    .tryCount(2)
-                    .build();
+        @DisplayName("study id로 해당 알고리즘 스터디의 정보 조회 결과를 반환할 수 있다.")
+        @Test
+        void retrieve_algorithm_study_details_by_study_id() {
+            /*
+            Given
+             */
+            Long studyId = 1L;
+            Integer roundIdx = 1;
+            LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
+            LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
+            User user1 = User.builder()
+                .id(1L)
+                .username("username1")
+                .role(Role.USER)
+                .reliability(50)
+                .build();
+            User user2 = User.builder()
+                .id(2L)
+                .username("username2")
+                .role(Role.USER)
+                .reliability(60)
+                .build();
+            Study study = AlgorithmStudy.builder()
+                .id(studyId)
+                .name("스터디")
+                .introduce("안녕하세요")
+                .headCount(1)
+                .capacity(5)
+                .penalty(10000)
+                .reliabilityLimit(0)
+                .startDate(roundStartDate)
+                .weeks(2)
+                .leader(user1)
+                .state(StudyStatus.RUNNING)
+                .build();
+            Round round = Round.builder()
+                .id(1L)
+                .idx(roundIdx)
+                .study(study)
+                .idx(roundIdx)
+                .startDate(roundStartDate)
+                .endDate(roundEndDate)
+                .build();
+            UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
+            UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
+            List<UserStudy> members = List.of(userStudy1, userStudy2);
+            AlgorithmProblem problem1 = AlgorithmProblem.builder()
+                .id(1L)
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblem problem2 = AlgorithmProblem.builder()
+                .id(2L)
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            AlgorithmProblemAssignment assignment1 = AlgorithmProblemAssignment.builder()
+                .id(1L)
+                .round(round)
+                .problem(problem1)
+                .build();
+            AlgorithmProblemAssignment assignment2 = AlgorithmProblemAssignment.builder()
+                .id(2L)
+                .round(round)
+                .problem(problem2)
+                .build();
+            AlgorithmProblemSolvedHistory history = AlgorithmProblemSolvedHistory.builder()
+                .id(1L)
+                .problem(problem2)
+                .user(user1)
+                .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+                .tryCount(2)
+                .build();
 
                 UserProfileResult userProfileResult1 = UserProfileResult.builder()
                     .id(1L)
@@ -1267,19 +1264,16 @@ class StudyServiceTest {
                     .currentStudyProgress(studyProgressResult)
                     .build();
 
-                doReturn(Optional.of(study)).when(studyRepository)
-                    .findWithDifficultiesAndLeaderAndBookById(studyId);
-                doReturn(Optional.of(round)).when(roundRepository)
-                    .findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(eq(studyId), anyInt(),
-                        any(LocalDate.class));
-                doReturn(members).when(userStudyRepository).findWithUserByStudyId(studyId);
-                doReturn(algorithmStudyService).when(studyServiceFactory)
-                    .getService(StudyType.ALGORITHM);
-                doReturn(List.of(assignment1, assignment2)).when(
-                        algorithmProblemAssignmentRepository)
-                    .findAssignmentWithProblemByRoundId(anyLong());
-                doReturn(List.of(history)).when(algorithmProblemSolveHistoryRepository)
-                    .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
+            doReturn(Optional.of(study)).when(studyRepository).findById(anyLong());
+            doReturn(Optional.of(round)).when(roundRepository)
+                .findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(anyLong(), anyInt(),
+                    any(LocalDate.class));
+            doReturn(members).when(userStudyRepository).findWithUserByStudyId(anyLong());
+            doReturn(algorithmStudyService).when(studyServiceFactory).getService(StudyType.ALGORITHM);
+            doReturn(List.of(assignment1, assignment2)).when(algorithmProblemAssignmentRepository)
+                .findAssignmentWithProblemByRoundId(anyLong());
+            doReturn(List.of(history)).when(algorithmProblemSolvedHistoryRepository)
+                .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
 
                 /*
                  *  When & Then
@@ -1447,8 +1441,6 @@ class StudyServiceTest {
             assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
-
-
         }
 
         @DisplayName("스터디 시작은 리더가 아닌 경우 실패한다")
@@ -1480,8 +1472,6 @@ class StudyServiceTest {
             assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
                 .isInstanceOf(ForbiddenException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ONLY_LEADER_ALLOWED);
-
-
         }
 
         @DisplayName("스터디가 이미 시작한 경우 스터디 시작은 실패한다")
@@ -2616,6 +2606,4 @@ class StudyServiceTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
         }
     }
-
-
 }

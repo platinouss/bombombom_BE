@@ -34,7 +34,7 @@ import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorith
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
-import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyTaskStatusResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
@@ -1555,16 +1555,18 @@ class StudyControllerTest {
                 .build();
             problems.put(1L, algorithmProblemInfo1);
             problems.put(2L, algorithmProblemInfo2);
-            Map<Long, MemberInfo> users = new HashMap<>();
+            Map<Long, AlgorithmStudyTaskStatusResponse> users = new HashMap<>();
             Map<Long, Boolean> tasks1 = new HashMap<>();
             tasks1.put(1L, false);
             tasks1.put(2L, true);
-            MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+            AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
+                .username("username1").tasks(tasks1)
                 .build();
             Map<Long, Boolean> tasks2 = new HashMap<>();
             tasks2.put(1L, false);
             tasks2.put(2L, false);
-            MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+            AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
+                .username("username2").tasks(tasks2)
                 .build();
             users.put(1L, memberInfo1);
             users.put(2L, memberInfo2);
@@ -1837,16 +1839,18 @@ class StudyControllerTest {
                 .build();
             problems.put(1L, algorithmProblemInfo1);
             problems.put(2L, algorithmProblemInfo2);
-            Map<Long, MemberInfo> users = new HashMap<>();
+            Map<Long, AlgorithmStudyTaskStatusResponse> users = new HashMap<>();
             Map<Long, Boolean> tasks1 = new HashMap<>();
             tasks1.put(1L, false);
             tasks1.put(2L, true);
-            MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+            AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
+                .username("username1").tasks(tasks1)
                 .build();
             Map<Long, Boolean> tasks2 = new HashMap<>();
             tasks2.put(1L, false);
             tasks2.put(2L, false);
-            MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+            AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
+                .username("username2").tasks(tasks2)
                 .build();
             users.put(1L, memberInfo1);
             users.put(2L, memberInfo2);

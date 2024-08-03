@@ -24,8 +24,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "algorithm_problem_solve_history")
-public class AlgorithmProblemSolveHistory extends BaseEntity {
+@Table(name = "algorithm_problem_solved_history")
+public class AlgorithmProblemSolvedHistory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,4 +46,13 @@ public class AlgorithmProblemSolveHistory extends BaseEntity {
 
     @Column(name = "try_count")
     private Integer tryCount;
+
+    public static AlgorithmProblemSolvedHistory createAlgorithmProblemSolvedHistory(User user,
+        AlgorithmProblem problem, LocalDateTime requestTime) {
+        return AlgorithmProblemSolvedHistory.builder()
+            .user(user)
+            .problem(problem)
+            .solvedAt(requestTime)
+            .build();
+    }
 }

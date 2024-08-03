@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.algo.service.dto.result;
 
-import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import java.time.LocalDateTime;
 import lombok.Builder;
 
@@ -13,7 +13,7 @@ public record AlgorithmProblemSolveHistoryResult(
 ) {
 
     public static AlgorithmProblemSolveHistoryResult fromEntity(
-        AlgorithmProblemSolveHistory history) {
+        AlgorithmProblemSolvedHistory history) {
         return AlgorithmProblemSolveHistoryResult.builder()
             .userId(history.getUser().getId())
             .problemId(history.getProblem().getId())

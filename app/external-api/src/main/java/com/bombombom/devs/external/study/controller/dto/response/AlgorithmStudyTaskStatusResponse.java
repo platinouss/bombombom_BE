@@ -26,7 +26,7 @@ public record AlgorithmStudyTaskStatusResponse(
             .collect(Collectors.toMap(AlgorithmProblemResult::refId, AlgorithmProblemResult::id));
         Map<Long, Boolean> taskStatus = result.algorithmProblems().stream()
             .collect(Collectors.toMap(AlgorithmProblemResult::id, (study) -> false));
-        result.solvedProblemsRefId()
+        result.solvedProblemRefIds()
             .forEach(refId -> taskStatus.put(refIdToIdMap.get(refId), true));
         return AlgorithmStudyTaskStatusResponse.builder()
             .username(result.username())

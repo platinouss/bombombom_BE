@@ -11,23 +11,23 @@ import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
+import com.bombombom.devs.external.algo.service.AlgorithmProblemSolvedHistoryService;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
 import com.bombombom.devs.external.study.service.dto.command.CheckAlgorithmProblemSolvedCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
-import com.bombombom.devs.external.study.service.dto.result.SolvedAlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.solvedac.SolvedacClient;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
-import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
-import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRepository;
 import com.bombombom.devs.study.repository.AlgorithmStudyDifficultyRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
@@ -37,7 +37,6 @@ import com.bombombom.devs.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,10 +53,11 @@ public class AlgorithmStudyService implements StudyProgressService {
     private final UserStudyRepository userStudyRepository;
     private final AlgorithmProblemRepository algoProblemRepository;
     private final AlgorithmProblemAssignmentRepository algoAssignmentRepository;
-    private final AlgorithmProblemSolveHistoryRepository algoSolveHistoryRepository;
+    private final AlgorithmProblemSolvedHistoryRepository algoSolvedHistoryRepository;
     private final AlgorithmProblemFeedbackRepository algoFeedbackRepository;
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
-    private final AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    private final AlgorithmProblemSolvedHistoryService algorithmProblemSolvedHistoryService;
+    private final AlgorithmProblemSolvedHistoryRepository algorithmProblemSolvedHistoryRepository;
     private final AlgorithmStudyDifficultyRepository algorithmStudyDifficultyRepository;
     private final AlgorithmProblemService algorithmProblemService;
     private final AlgorithmProblemConverter algorithmProblemConverter;
@@ -115,9 +115,9 @@ public class AlgorithmStudyService implements StudyProgressService {
         List<Long> membersId = members.stream().map(User::getId).toList();
         List<AlgorithmProblem> problems = algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId(
             round.getId()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
-        List<Long> problemsId = problems.stream().map(AlgorithmProblem::getId).toList();
-        List<AlgorithmProblemSolveHistory> histories = algorithmProblemSolveHistoryRepository
-            .findSolvedHistoryWithUserAndProblem(membersId, problemsId);
+        List<Long> problemIds = problems.stream().map(AlgorithmProblem::getId).toList();
+        List<AlgorithmProblemSolvedHistory> histories = algorithmProblemSolvedHistoryRepository
+            .findSolvedHistoryWithUserAndProblem(membersId, problemIds);
         return AlgorithmStudyProgress.fromEntity(round, problems, histories);
     }
 
@@ -143,35 +143,14 @@ public class AlgorithmStudyService implements StudyProgressService {
     }
 
     @Transactional
-    public SolvedAlgorithmProblemResult checkAlgorithmProblemSolved(
-        CheckAlgorithmProblemSolvedCommand command) {
+    public void updateAlgorithmTaskStatus(CheckAlgorithmProblemSolvedCommand command) {
         User user = userRepository.findById(command.userId())
-            .orElseThrow(() -> new IllegalStateException("User Not Found"));
-        List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemsId());
-        if (problems.isEmpty()) {
-            throw new IllegalStateException("Algorithm Problem Not Found");
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+        if (command.problemIds().isEmpty()) {
+            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
         }
-        Map<Integer, AlgorithmProblem> refIdToAlgorithmProblemMap = problems.stream().collect(
-            Collectors.toMap(AlgorithmProblem::getRefId, problem -> problem));
-        ProblemListResponse solvedProblemsResponse = solvedacClient.checkProblemSolved(
-            user.getBaekjoon(), refIdToAlgorithmProblemMap.keySet());
-        List<AlgorithmProblem> algorithmProblems = solvedProblemsResponse.items().stream()
-            .map(problemResponse -> refIdToAlgorithmProblemMap.get(problemResponse.problemId()))
-            .toList();
-        addAlgorithmProblemSolvedHistories(user, algorithmProblems);
-        return SolvedAlgorithmProblemResult.fromEntity(user, problems, solvedProblemsResponse);
-    }
-
-    @Transactional
-    public void addAlgorithmProblemSolvedHistories(User user,
-        List<AlgorithmProblem> algorithmProblems) {
-        List<AlgorithmProblemSolveHistory> histories = new ArrayList<>();
-        algorithmProblems.forEach(problem -> histories.add(AlgorithmProblemSolveHistory.builder()
-            .user(user)
-            .problem(problem)
-            .solvedAt(clock.now())
-            .build()));
-        algorithmProblemSolveHistoryRepository.saveAll(histories);
+        List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemIds());
+        algorithmProblemSolvedHistoryService.addUpdateTaskStatusRequest(user, problems);
     }
 
     @Transactional
@@ -196,7 +175,7 @@ public class AlgorithmStudyService implements StudyProgressService {
                 feedbackAlgorithmProblemCommand.problemId())
             .orElseThrow(() -> new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND));
 
-        AlgorithmProblemSolveHistory history = algoSolveHistoryRepository.findByUserIdAndProblemId(
+        AlgorithmProblemSolvedHistory history = algoSolvedHistoryRepository.findByUserIdAndProblemId(
                 userId, problem.getId())
             .orElseThrow(() -> new NotFoundException(ErrorCode.SOLVE_HISTORY_NOT_FOUND));
 
@@ -264,6 +243,4 @@ public class AlgorithmStudyService implements StudyProgressService {
         }
         algorithmProblemAssignmentRepository.saveAll(assignments);
     }
-
-
 }

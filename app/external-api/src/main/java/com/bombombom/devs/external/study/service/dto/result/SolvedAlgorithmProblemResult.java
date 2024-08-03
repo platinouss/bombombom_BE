@@ -11,7 +11,7 @@ import lombok.Builder;
 public record SolvedAlgorithmProblemResult(
     String username,
     List<AlgorithmProblemResult> algorithmProblems,
-    List<Integer> solvedProblemsRefId
+    List<Integer> solvedProblemRefIds
 ) {
 
     public static SolvedAlgorithmProblemResult fromEntity(User user,
@@ -19,7 +19,7 @@ public record SolvedAlgorithmProblemResult(
         return SolvedAlgorithmProblemResult.builder()
             .username(user.getUsername())
             .algorithmProblems(problems.stream().map(AlgorithmProblemResult::fromEntity).toList())
-            .solvedProblemsRefId(
+            .solvedProblemRefIds(
                 solvedProblemListResponse.items().stream().map(ProblemResponse::problemId).toList())
             .build();
     }

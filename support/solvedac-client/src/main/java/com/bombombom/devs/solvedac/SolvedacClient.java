@@ -59,13 +59,13 @@ public class SolvedacClient {
         return unSolvedProblems;
     }
 
-    public ProblemListResponse checkProblemSolved(String baekjoonId, Set<Integer> problemsRefId) {
+    public ProblemListResponse checkProblemSolved(String baekjoonId, Set<Integer> problemRefIds) {
         CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
         WebClient webClient = WebClient.builder().baseUrl(BASE_URL).build();
         Mono<ProblemListResponse> mono = webClient.get()
             .uri(uriBuilder -> uriBuilder
                 .path(SEARCH_PROBLEM_PATH)
-                .queryParam("query", makeCheckSolvedProblemQueryParam(baekjoonId, problemsRefId))
+                .queryParam("query", makeCheckSolvedProblemQueryParam(baekjoonId, problemRefIds))
                 .build()
             )
             .retrieve()
@@ -133,12 +133,12 @@ public class SolvedacClient {
         return queryBuilder.toString();
     }
 
-    private String makeCheckSolvedProblemQueryParam(String baekjoonId, Set<Integer> problemsId) {
+    private String makeCheckSolvedProblemQueryParam(String baekjoonId, Set<Integer> problemIds) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append(USER_SOLVED_PREFIX).append(baekjoonId);
         queryBuilder.append(AND_OPERATION);
         queryBuilder.append(PROBLEM_ID_PREFIX).append(LEFT_ROUND_BRACKETS).append(
-                problemsId.stream().map(String::valueOf).collect(Collectors.joining(OR_OPERATION)))
+                problemIds.stream().map(String::valueOf).collect(Collectors.joining(OR_OPERATION)))
             .append(RIGHT_ROUND_BRACKETS);
         return queryBuilder.toString();
     }
