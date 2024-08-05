@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
-import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
@@ -43,6 +42,7 @@ import com.bombombom.devs.external.study.service.BookStudyService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolvedHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;
@@ -1521,7 +1521,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1636,7 +1636,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1710,7 +1710,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1789,7 +1789,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1923,7 +1923,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1970,7 +1970,5 @@ class StudyControllerTest {
              */
             resultActions.andExpect(status().isBadRequest());
         }
-
-
     }
 }

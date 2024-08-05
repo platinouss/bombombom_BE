@@ -6,6 +6,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'com.bucket4j:bucket4j-redis:8.10.1'
     
     implementation project(':core')
 

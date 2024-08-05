@@ -10,6 +10,7 @@ import com.bombombom.devs.external.study.service.dto.command.StartStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
+import com.bombombom.devs.external.study.service.dto.result.progress.StudyProgress;
 import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
@@ -109,9 +110,9 @@ public class StudyService {
     public StudyProgressResult findStudyProgress(Study study, Round round) {
         List<User> members = userStudyRepository.findWithUserByStudyId(study.getId()).stream()
             .map(UserStudy::getUser).toList();
-
-        return StudyProgressResult.fromEntity(study.getStudyType(), members,
-            studyServiceFactory.getService(study.getStudyType()).findStudyProgress(round, members));
+        StudyProgress studyProgress = studyServiceFactory.getService(study.getStudyType())
+            .findStudyProgress(round, members);
+        return StudyProgressResult.fromEntity(study.getStudyType(), members, studyProgress);
     }
 
 

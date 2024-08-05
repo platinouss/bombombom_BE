@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StreamOperations;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -41,6 +42,11 @@ public class RedisConfiguration {
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new StringRedisSerializer());
         return template;
+    }
+
+    @Bean
+    ValueOperations<String, Object> valueOperations() {
+        return redisTemplate().opsForValue();
     }
 
     @Bean

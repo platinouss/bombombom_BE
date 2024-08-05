@@ -1,8 +1,10 @@
 package com.bombombom.devs.external.algo.service;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.algo.model.vo.AlgorithmTaskUpdateStatus;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.core.exception.NotFoundException;
+import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.dto.command.UpdateAlgorithmTaskStatusCommand;
 import com.bombombom.devs.solvedac.SolvedacClient;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
@@ -13,7 +15,7 @@ import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryReposito
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
-import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +28,9 @@ public class AlgorithmProblemSolvedHistoryService {
 
     static final long UPDATE_INTERVAL_MS = 5 * 60 * 1000;
 
-    private final UserRepository userRepository;
+    private final Clock clock;
     private final SolvedacClient solvedacClient;
+    private final UserRepository userRepository;
     private final AlgorithmProblemRepository algorithmProblemRepository;
     private final AlgorithmProblemSolvedHistoryRepository algorithmProblemSolvedHistoryRepository;
     private final AlgorithmProblemSolvedHistoryRedisRepository algorithmProblemSolvedHistoryRedisRepository;
@@ -38,14 +41,18 @@ public class AlgorithmProblemSolvedHistoryService {
     }
 
     @Transactional
-    public void addUpdateTaskStatusRequest(User user, List<AlgorithmProblem> problems) {
-        if (hasRecentlyUpdatedTaskStatus(user.getId())) {
-            throw new IllegalStateException("Algorithm task status has been recently updated");
+    public void addUpdateTaskStatusRequest(User user, List<AlgorithmProblem> problems,
+        Long studyId) {
+        if (hasRecentlyUpdatedTaskStatus(studyId, user.getId())) {
+            throw new IllegalStateException(
+                "task status has been recently updated or is currently in progress");
         }
-        List<Integer> problemRefIds = problems.stream().map(AlgorithmProblem::getRefId).toList();
-        algorithmProblemSolvedHistoryRedisRepository.addMessage(user.getId(), user.getBaekjoon(),
-            problemRefIds);
-        algorithmProblemSolvedHistoryRedisRepository.updateLastTaskUpdateTime(user.getId());
+        List<Integer> problemRefIds = problems.stream().map(AlgorithmProblem::getRefId)
+            .toList();
+        algorithmProblemSolvedHistoryRedisRepository.addMessage(studyId, user.getId(),
+            user.getBaekjoon(), problemRefIds);
+        algorithmProblemSolvedHistoryRedisRepository.setTaskUpdateInProgress(studyId,
+            user.getId());
     }
 
     @Transactional
@@ -61,6 +68,8 @@ public class AlgorithmProblemSolvedHistoryService {
             AlgorithmProblemSolvedHistory.createAlgorithmProblemSolvedHistory(user, problem,
                 command.requestTime())).toList();
         algorithmProblemSolvedHistoryRepository.saveAll(histories);
+        algorithmProblemSolvedHistoryRedisRepository.setTaskUpdateCompleted(command.studyId(),
+            command.userId());
         algorithmProblemSolvedHistoryRedisRepository.ackMessage(command.recordId());
     }
 
@@ -68,14 +77,14 @@ public class AlgorithmProblemSolvedHistoryService {
         return algorithmProblemSolvedHistoryRedisRepository.readMessage();
     }
 
-    private boolean hasRecentlyUpdatedTaskStatus(Long userId) {
-        long currentTimeMillis = Instant.now().toEpochMilli();
-        String lastUpdateTime = algorithmProblemSolvedHistoryRedisRepository.getLastTaskUpdateTime(
-            userId);
-        if (lastUpdateTime == null) {
+    private boolean hasRecentlyUpdatedTaskStatus(Long studyId, Long userId) {
+        AlgorithmTaskUpdateStatus taskUpdateStatus = algorithmProblemSolvedHistoryRedisRepository.getTaskUpdateStatus(
+            studyId, userId);
+        if (taskUpdateStatus == null || taskUpdateStatus.statusUpdatedAt() == null) {
             return false;
         }
-        long lastUpdateTimeMillis = Long.parseLong(lastUpdateTime);
-        return (currentTimeMillis - lastUpdateTimeMillis) > UPDATE_INTERVAL_MS;
+        long currentTimeMillis = clock.now().toInstant(ZoneOffset.UTC).toEpochMilli();
+        return taskUpdateStatus.isUpdating()
+            || (currentTimeMillis - taskUpdateStatus.statusUpdatedAt()) < UPDATE_INTERVAL_MS;
     }
 }

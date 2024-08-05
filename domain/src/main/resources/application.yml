@@ -16,6 +16,10 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
+  data:
+    redis:
+      repositories:
+        enabled: false
   security:
     front-server-origin: ${FRONT_SERVER_ORIGIN}
     jwt:
@@ -82,6 +86,10 @@ spring:
       mode: always
   elasticsearch:
     uris: ${TEST_ELASTICSEARCH_URI}
+  data:
+    redis:
+      host: ${TEST_REDIS_HOST}
+      port: ${TEST_REDIS_PORT}
 logging.level:
   tracer:
     TRACE

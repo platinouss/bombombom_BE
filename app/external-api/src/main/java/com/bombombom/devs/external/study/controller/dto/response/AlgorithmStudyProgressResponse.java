@@ -1,6 +1,7 @@
 package com.bombombom.devs.external.study.controller.dto.response;
 
 import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmTaskUpdateStatusResult;
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
@@ -47,8 +48,11 @@ public record AlgorithmStudyProgressResponse(
         Map<Long, Boolean> studyTask = algorithmStudyProgress.algorithmProblems()
             .stream().collect(Collectors.toMap(AlgorithmProblemResult::id, (study) -> false));
         Map<Long, AlgorithmStudyTaskStatusResponse> users = new HashMap<>();
-        studyProgress.members().forEach(member -> users.put(member.id(),
-            AlgorithmStudyTaskStatusResponse.fromResult(member, new HashMap<>(studyTask))));
+        studyProgress.members().forEach(member -> {
+            Map<Long, AlgorithmTaskUpdateStatusResult> taskUpdateStatuses = algorithmStudyProgress.taskUpdateStatuses();
+            users.put(member.id(), AlgorithmStudyTaskStatusResponse.fromResult(member,
+                taskUpdateStatuses.get(member.id()), new HashMap<>(studyTask)));
+        });
         algorithmStudyProgress.histories()
             .forEach(history -> users.get(history.userId()).tasks().put(history.problemId(), true));
         return AlgorithmStudyProgressResponse.builder()

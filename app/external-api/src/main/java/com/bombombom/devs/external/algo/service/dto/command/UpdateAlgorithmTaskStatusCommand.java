@@ -13,6 +13,7 @@ import lombok.Builder;
 @Builder
 public record UpdateAlgorithmTaskStatusCommand(
     String recordId,
+    Long studyId,
     Long userId,
     String baekjoonId,
     Set<Integer> problemRefIds,
@@ -32,6 +33,7 @@ public record UpdateAlgorithmTaskStatusCommand(
             Instant.ofEpochMilli(requestTimeMillis), ZoneId.systemDefault());
         return UpdateAlgorithmTaskStatusCommand.builder()
             .recordId(recordId)
+            .studyId(Long.parseLong(message.get("studyId")))
             .userId(Long.parseLong(message.get("userId")))
             .baekjoonId(message.get("baekjoonId"))
             .problemRefIds(problemRefIds)

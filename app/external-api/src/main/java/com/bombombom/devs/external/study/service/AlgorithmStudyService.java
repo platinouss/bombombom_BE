@@ -2,6 +2,7 @@ package com.bombombom.devs.external.study.service;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
+import com.bombombom.devs.algo.model.vo.AlgorithmTaskUpdateStatus;
 import com.bombombom.devs.algo.repository.AlgorithmProblemFeedbackRepository;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
@@ -27,6 +28,7 @@ import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRedisRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRepository;
 import com.bombombom.devs.study.repository.AlgorithmStudyDifficultyRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
@@ -61,6 +63,7 @@ public class AlgorithmStudyService implements StudyProgressService {
     private final AlgorithmStudyDifficultyRepository algorithmStudyDifficultyRepository;
     private final AlgorithmProblemService algorithmProblemService;
     private final AlgorithmProblemConverter algorithmProblemConverter;
+    private final AlgorithmProblemSolvedHistoryRedisRepository algorithmProblemSolvedHistoryRedisRepository;
 
     @Override
     public StudyType getStudyType() {
@@ -112,13 +115,15 @@ public class AlgorithmStudyService implements StudyProgressService {
 
     @Override
     public AlgorithmStudyProgress findStudyProgress(Round round, List<User> members) {
-        List<Long> membersId = members.stream().map(User::getId).toList();
+        List<Long> memberIds = members.stream().map(User::getId).toList();
         List<AlgorithmProblem> problems = algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId(
             round.getId()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
         List<Long> problemIds = problems.stream().map(AlgorithmProblem::getId).toList();
         List<AlgorithmProblemSolvedHistory> histories = algorithmProblemSolvedHistoryRepository
-            .findSolvedHistoryWithUserAndProblem(membersId, problemIds);
-        return AlgorithmStudyProgress.fromEntity(round, problems, histories);
+            .findSolvedHistoryWithUserAndProblem(memberIds, problemIds);
+        Map<Long, AlgorithmTaskUpdateStatus> taskUpdateStatuses = algorithmProblemSolvedHistoryRedisRepository.getTaskUpdateStatuses(
+            round.getStudy().getId(), memberIds);
+        return AlgorithmStudyProgress.fromEntity(round, problems, histories, taskUpdateStatuses);
     }
 
     @Override
@@ -149,8 +154,12 @@ public class AlgorithmStudyService implements StudyProgressService {
         if (command.problemIds().isEmpty()) {
             throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
         }
+        if (user.getBaekjoon() == null || user.getBaekjoon().isBlank()) {
+            throw new NotFoundException("Baekjoon id does not exist.");
+        }
         List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemIds());
-        algorithmProblemSolvedHistoryService.addUpdateTaskStatusRequest(user, problems);
+        algorithmProblemSolvedHistoryService.addUpdateTaskStatusRequest(user, problems,
+            command.studyId());
     }
 
     @Transactional

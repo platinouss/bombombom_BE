@@ -60,22 +60,9 @@ public class SolvedacClient {
     }
 
     public ProblemListResponse checkProblemSolved(String baekjoonId, Set<Integer> problemRefIds) {
-        CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
         WebClient webClient = WebClient.builder().baseUrl(BASE_URL).build();
-        Mono<ProblemListResponse> mono = webClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .path(SEARCH_PROBLEM_PATH)
-                .queryParam("query", makeCheckSolvedProblemQueryParam(baekjoonId, problemRefIds))
-                .build()
-            )
-            .retrieve()
-            .bodyToMono(ProblemListResponse.class);
-        mono.subscribe(
-            completableFuture::complete,
-            error -> completableFuture.completeExceptionally(
-                new ExternalApiException("Failed to request solvedac API." + error.getMessage()))
-        );
-        return completableFuture.join();
+        String queryParam = makeCheckSolvedProblemQueryParam(baekjoonId, problemRefIds);
+        return fetchProblemListFromSolvedacApi(webClient, queryParam);
     }
 
     private ProblemListResponse getUnSolvedProblemsByTag(
@@ -84,9 +71,14 @@ public class SolvedacClient {
         AlgoTag tag,
         Spread difficultySpread
     ) {
-        CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
         String queryParam = makeGetUnSolvedProblemsQueryParams(baekjoonIds, tag, difficultySpread);
         log.debug("getUnSolvedProblemsByTag() Query: {}", queryParam);
+        return fetchProblemListFromSolvedacApi(webClient, queryParam);
+    }
+
+    public ProblemListResponse fetchProblemListFromSolvedacApi(WebClient webClient,
+        String queryParam) {
+        CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
         Mono<ProblemListResponse> mono = webClient.get()
             .uri(uriBuilder -> uriBuilder
                 .path(SEARCH_PROBLEM_PATH)
@@ -98,13 +90,16 @@ public class SolvedacClient {
             )
             .retrieve()
             .bodyToMono(ProblemListResponse.class);
-
         mono.subscribe(
             response -> {
                 log.debug("getUnSolvedProblems() Response: {}", response);
                 completableFuture.complete(response);
             },
-            error -> log.error("Error during getUnSolvedProblems: " + error.getMessage())
+            error -> {
+                log.error("Error during getUnSolvedProblems: {}", error.getMessage());
+                completableFuture.completeExceptionally(new ExternalApiException(
+                    "Failed to request solvedac API." + error.getMessage()));
+            }
         );
         return completableFuture.join();
     }
