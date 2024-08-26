@@ -1,5 +1,6 @@
 package com.bombombom.devs.external.study.controller;
 
+import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.global.security.AppUserDetails;
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
@@ -112,4 +113,17 @@ public class StudyController {
         StudyProgressResult studyProgressResult = studyService.findStudyProgress(studyId, idx);
         return ResponseEntity.ok().body(StudyProgressResponse.fromResult(studyProgressResult));
     }
+
+
+    @PostMapping("/feedback")
+    public ResponseEntity<Void> feedback(
+        @LoginUser AppUserDetails userDetails,
+        @Valid @RequestBody FeedbackAlgorithmProblemRequest feedbackAlgorithmProblemRequest) {
+
+        studyService.feedback(userDetails.getId(),
+            feedbackAlgorithmProblemRequest.toServiceDto());
+
+        return ResponseEntity.ok().build();
+    }
+
 }

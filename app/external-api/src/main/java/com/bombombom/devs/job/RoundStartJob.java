@@ -3,6 +3,7 @@ package com.bombombom.devs.job;
 import static org.quartz.JobBuilder.newJob;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.solvedac.SolvedacClient;
@@ -94,8 +95,9 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
         log.debug("RoundJob 수행 시간: " + executionTime + "ms");
     }
 
+
     private void startRoundOfAlgoStudy(AlgorithmStudy study, Round round) {
-        Map<String, Integer> problemCountForEachTag =
+        Map<AlgoTag, Integer> problemCountForEachTag =
             algorithmProblemService.getProblemCountForEachTag(study.getProblemCount());
 
         ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
@@ -107,4 +109,5 @@ public class RoundStartJob extends QuartzJobBean implements InterruptableJob {
             algorithmProblemService.findProblemsThenSaveWhenNotExist(problems);
         studyService.assignProblemToRound(round, unsolvedProblems);
     }
+
 }

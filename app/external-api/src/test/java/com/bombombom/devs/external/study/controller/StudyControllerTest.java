@@ -8,6 +8,9 @@ import static com.bombombom.devs.study.model.Study.MAX_RELIABILITY_LIMIT;
 import static com.bombombom.devs.study.model.Study.MAX_WEEKS;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,28 +22,44 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
+import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
+import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse.StudyDetails;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.RoundResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
+import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
-import com.bombombom.devs.global.util.SystemClock;
 import com.bombombom.devs.study.model.StudyStatus;
+import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.user.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -64,14 +83,14 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import({TestUserDetailsServiceConfig.class, JwtUtils.class, SystemClock.class})
 class StudyControllerTest {
 
+    @Autowired
+    private MockMvc mockMvc;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private StudyService studyService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private MockMvc mockMvc;
 
     @DisplayName("BookStudy 생성 테스트")
     @Nested
@@ -1466,4 +1485,503 @@ class StudyControllerTest {
             .andExpect(status().isBadRequest());
     }
 
+    @DisplayName("알고리즘 스터디 진행 현황 조회 테스트")
+    @Nested
+    class RetrieveAlgorithmStudyProgressTest {
+
+        @DisplayName("특정 회차의 알고리즘 스터디 진행 현황을 조회할 수 있다.")
+        @WithMockUser
+        @Test
+        void can_retrieve_algorithm_study_progress() throws Exception {
+            /*
+            Given
+             */
+            Long studyId = 1L;
+            Integer roundIdx = 1;
+            UserProfileResult user1 = UserProfileResult.builder()
+                .id(1L)
+                .username("username1")
+                .role(Role.USER)
+                .reliability(50)
+                .build();
+            UserProfileResult user2 = UserProfileResult.builder()
+                .id(2L)
+                .username("username2")
+                .role(Role.USER)
+                .reliability(60)
+                .build();
+            RoundResult round = RoundResult.builder()
+                .idx(roundIdx)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .endDate(LocalDate.of(2024, 7, 28))
+                .build();
+            AlgorithmProblemResult problem1 = AlgorithmProblemResult.builder()
+                .id(1L)
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblemResult problem2 = AlgorithmProblemResult.builder()
+                .id(2L)
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+                .problemId(problem2.id())
+                .userId(user1.id())
+                .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+                .tryCount(2)
+                .build();
+            AlgorithmStudyProgress algorithmStudyProgress = AlgorithmStudyProgress.builder()
+                .round(round)
+                .algorithmProblems(List.of(problem1, problem2))
+                .histories(List.of(history))
+                .build();
+            StudyProgressResult studyProgressResult = StudyProgressResult.builder()
+                .studyType(StudyType.ALGORITHM)
+                .members(List.of(user1, user2))
+                .studyProgress(algorithmStudyProgress)
+                .build();
+
+            Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
+            AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblemInfo algorithmProblemInfo2 = AlgorithmProblemInfo.builder()
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            problems.put(1L, algorithmProblemInfo1);
+            problems.put(2L, algorithmProblemInfo2);
+            Map<Long, MemberInfo> users = new HashMap<>();
+            Map<Long, Boolean> tasks1 = new HashMap<>();
+            tasks1.put(1L, false);
+            tasks1.put(2L, true);
+            MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+                .build();
+            Map<Long, Boolean> tasks2 = new HashMap<>();
+            tasks2.put(1L, false);
+            tasks2.put(2L, false);
+            MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+                .build();
+            users.put(1L, memberInfo1);
+            users.put(2L, memberInfo2);
+            AlgorithmStudyProgressResponse progressResponse = AlgorithmStudyProgressResponse.builder()
+                .idx(roundIdx)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .endDate(LocalDate.of(2024, 7, 28))
+                .problems(problems)
+                .users(users)
+                .build();
+
+            doReturn(studyProgressResult).when(studyService).findStudyProgress(anyLong(), anyInt());
+
+            /*
+            When
+             */
+            ResultActions resultActions = mockMvc.perform(
+                get("/api/v1/studies/progress/" + studyId).param("idx", String.valueOf(roundIdx))
+            );
+
+            /*
+            Then
+             */
+            String expectedResponse = objectMapper.writeValueAsString(progressResponse);
+            resultActions.andExpect(status().isOk()).andExpect(content().json(expectedResponse));
+        }
+
+        @DisplayName("studyId가 숫자 타입이 아닌 경우 알고리즘 스터디 진행 현황 조회에 실패한다.")
+        @WithMockUser
+        @Test
+        void retrieve_algorithm_study_progress_for_invalid_study_id_fail() throws Exception {
+            /*
+            Given
+             */
+            String studyId = "test";
+            Integer roundIdx = 1;
+            UserProfileResult user1 = UserProfileResult.builder()
+                .id(1L)
+                .username("username1")
+                .role(Role.USER)
+                .reliability(50)
+                .build();
+            UserProfileResult user2 = UserProfileResult.builder()
+                .id(2L)
+                .username("username2")
+                .role(Role.USER)
+                .reliability(60)
+                .build();
+            RoundResult round = RoundResult.builder()
+                .idx(1)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .endDate(LocalDate.of(2024, 7, 28))
+                .build();
+            AlgorithmProblemResult problem1 = AlgorithmProblemResult.builder()
+                .id(1L)
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblemResult problem2 = AlgorithmProblemResult.builder()
+                .id(2L)
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+                .problemId(problem2.id())
+                .userId(user1.id())
+                .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+                .tryCount(2)
+                .build();
+            AlgorithmStudyProgress algorithmStudyProgress = AlgorithmStudyProgress.builder()
+                .round(round)
+                .algorithmProblems(List.of(problem1, problem2))
+                .histories(List.of(history))
+                .build();
+            StudyProgressResult studyProgressResult = StudyProgressResult.builder()
+                .studyType(StudyType.ALGORITHM)
+                .members(List.of(user1, user2))
+                .studyProgress(algorithmStudyProgress)
+                .build();
+
+            doReturn(studyProgressResult).when(studyService).findStudyProgress(anyLong(), anyInt());
+
+            /*
+            When
+             */
+            ResultActions resultActions = mockMvc.perform(
+                get("/api/v1/studies/progress/" + studyId).param("idx", String.valueOf(roundIdx))
+            );
+
+            /*
+            Then
+             */
+            resultActions.andExpect(status().isBadRequest());
+        }
+
+        @DisplayName("round의 idx가 숫자 타입이 아닌 경우 알고리즘 스터디 진행 현황 조회에 실패한다.")
+        @WithMockUser
+        @Test
+        void retrieve_algorithm_study_progress_for_invalid_round_idx_fail() throws Exception {
+            /*
+            Given
+             */
+            Long studyId = 1L;
+            String roundIdx = "test";
+            UserProfileResult user1 = UserProfileResult.builder()
+                .id(1L)
+                .username("username1")
+                .role(Role.USER)
+                .reliability(50)
+                .build();
+            UserProfileResult user2 = UserProfileResult.builder()
+                .id(2L)
+                .username("username2")
+                .role(Role.USER)
+                .reliability(60)
+                .build();
+            RoundResult round = RoundResult.builder()
+                .idx(1)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .endDate(LocalDate.of(2024, 7, 28))
+                .build();
+            AlgorithmProblemResult problem1 = AlgorithmProblemResult.builder()
+                .id(1L)
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblemResult problem2 = AlgorithmProblemResult.builder()
+                .id(2L)
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+                .problemId(problem2.id())
+                .userId(user1.id())
+                .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+                .tryCount(2)
+                .build();
+            AlgorithmStudyProgress algorithmStudyProgress = AlgorithmStudyProgress.builder()
+                .round(round)
+                .algorithmProblems(List.of(problem1, problem2))
+                .histories(List.of(history))
+                .build();
+            StudyProgressResult studyProgressResult = StudyProgressResult.builder()
+                .studyType(StudyType.ALGORITHM)
+                .members(List.of(user1, user2))
+                .studyProgress(algorithmStudyProgress)
+                .build();
+
+            doReturn(studyProgressResult).when(studyService).findStudyProgress(anyLong(), anyInt());
+
+            /*
+            When
+             */
+            ResultActions resultActions = mockMvc.perform(
+                get("/api/v1/studies/progress/" + studyId).param("idx", roundIdx)
+            );
+
+            /*
+            Then
+             */
+            resultActions.andExpect(status().isBadRequest());
+        }
+    }
+
+    @DisplayName("알고리즘 스터디 정보 조회 테스트")
+    @Nested
+    class RetrieveAlgorithmStudyDetailsTest {
+
+        @DisplayName("알고리즘 스터디 정보를 조회할 수 있다.")
+        @WithMockUser
+        @Test
+        void can_retrieve_algorithm_study_details() throws Exception {
+            /*
+            Given
+             */
+            Long studyId = 1L;
+            Integer roundIdx = 1;
+            UserProfileResult user1 = UserProfileResult.builder()
+                .id(1L)
+                .username("username1")
+                .role(Role.USER)
+                .reliability(50)
+                .build();
+            UserProfileResult user2 = UserProfileResult.builder()
+                .id(2L)
+                .username("username2")
+                .role(Role.USER)
+                .reliability(60)
+                .build();
+            RoundResult round = RoundResult.builder()
+                .idx(roundIdx)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .endDate(LocalDate.of(2024, 7, 28))
+                .build();
+            AlgorithmProblemResult problem1 = AlgorithmProblemResult.builder()
+                .id(1L)
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblemResult problem2 = AlgorithmProblemResult.builder()
+                .id(2L)
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+                .problemId(problem2.id())
+                .userId(user1.id())
+                .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+                .tryCount(2)
+                .build();
+            AlgorithmStudyProgress algorithmStudyProgress = AlgorithmStudyProgress.builder()
+                .round(round)
+                .algorithmProblems(List.of(problem1, problem2))
+                .histories(List.of(history))
+                .build();
+            StudyProgressResult studyProgressResult = StudyProgressResult.builder()
+                .studyType(StudyType.ALGORITHM)
+                .members(List.of(user1, user2))
+                .studyProgress(algorithmStudyProgress)
+                .build();
+            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+                .studyType(StudyType.ALGORITHM)
+                .name("스터디")
+                .introduce("안녕하세요")
+                .headCount(1)
+                .capacity(5)
+                .penalty(10000)
+                .reliabilityLimit(0)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .weeks(2)
+                .leaderId(1L)
+                .status(StudyStatus.RUNNING)
+                .currentStudyProgress(studyProgressResult)
+                .build();
+
+            StudyDetails studyDetails = StudyDetails.builder()
+                .studyType(StudyType.ALGORITHM)
+                .name("스터디")
+                .introduce("안녕하세요")
+                .headCount(1)
+                .capacity(5)
+                .penalty(10000)
+                .reliabilityLimit(0)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .weeks(2)
+                .leaderId(1L)
+                .status(StudyStatus.RUNNING)
+                .build();
+            Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
+            AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblemInfo algorithmProblemInfo2 = AlgorithmProblemInfo.builder()
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            problems.put(1L, algorithmProblemInfo1);
+            problems.put(2L, algorithmProblemInfo2);
+            Map<Long, MemberInfo> users = new HashMap<>();
+            Map<Long, Boolean> tasks1 = new HashMap<>();
+            tasks1.put(1L, false);
+            tasks1.put(2L, true);
+            MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+                .build();
+            Map<Long, Boolean> tasks2 = new HashMap<>();
+            tasks2.put(1L, false);
+            tasks2.put(2L, false);
+            MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+                .build();
+            users.put(1L, memberInfo1);
+            users.put(2L, memberInfo2);
+            AlgorithmStudyProgressResponse progressResponse = AlgorithmStudyProgressResponse.builder()
+                .idx(roundIdx)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .endDate(LocalDate.of(2024, 7, 28))
+                .problems(problems)
+                .users(users)
+                .build();
+            StudyDetailsResponse studyDetailsResponse = StudyDetailsResponse.builder()
+                .details(studyDetails)
+                .round(progressResponse)
+                .build();
+
+            doReturn(studyDetailsResult).when(studyService).findStudyDetails(anyLong());
+
+            /*
+            When
+             */
+            ResultActions resultActions = mockMvc.perform(get("/api/v1/studies/" + studyId));
+
+            /*
+            Then
+             */
+            String expectedResponse = objectMapper.writeValueAsString(studyDetailsResponse);
+            resultActions.andExpect(status().isOk()).andExpect(content().json(expectedResponse));
+
+        }
+
+        @DisplayName("studyId가 숫자 타입이 아닌 경우 알고리즘 스터디 상세 정보 조회에 실패한다.")
+        @WithMockUser
+        @Test
+        void retrieve_algorithm_study_details_for_invalid_study_id_fail() throws Exception {
+            /*
+            Given
+             */
+            String studyId = "test";
+            Integer roundIdx = 1;
+            UserProfileResult user1 = UserProfileResult.builder()
+                .id(1L)
+                .username("username1")
+                .role(Role.USER)
+                .reliability(50)
+                .build();
+            UserProfileResult user2 = UserProfileResult.builder()
+                .id(2L)
+                .username("username2")
+                .role(Role.USER)
+                .reliability(60)
+                .build();
+            RoundResult round = RoundResult.builder()
+                .idx(roundIdx)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .endDate(LocalDate.of(2024, 7, 28))
+                .build();
+            AlgorithmProblemResult problem1 = AlgorithmProblemResult.builder()
+                .id(1L)
+                .refId(1000)
+                .tag(AlgoTag.DP)
+                .title("A")
+                .link("https://www.test.com/1000")
+                .difficulty(10)
+                .build();
+            AlgorithmProblemResult problem2 = AlgorithmProblemResult.builder()
+                .id(2L)
+                .refId(2000)
+                .tag(AlgoTag.DP)
+                .title("B")
+                .link("https://www.test.com/2000")
+                .difficulty(5)
+                .build();
+            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+                .problemId(problem2.id())
+                .userId(user1.id())
+                .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
+                .tryCount(2)
+                .build();
+            AlgorithmStudyProgress algorithmStudyProgress = AlgorithmStudyProgress.builder()
+                .round(round)
+                .algorithmProblems(List.of(problem1, problem2))
+                .histories(List.of(history))
+                .build();
+            StudyProgressResult studyProgressResult = StudyProgressResult.builder()
+                .studyType(StudyType.ALGORITHM)
+                .members(List.of(user1, user2))
+                .studyProgress(algorithmStudyProgress)
+                .build();
+            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+                .studyType(StudyType.ALGORITHM)
+                .name("스터디")
+                .introduce("안녕하세요")
+                .headCount(1)
+                .capacity(5)
+                .penalty(10000)
+                .reliabilityLimit(0)
+                .startDate(LocalDate.of(2024, 7, 22))
+                .weeks(2)
+                .leaderId(1L)
+                .status(StudyStatus.RUNNING)
+                .currentStudyProgress(studyProgressResult)
+                .build();
+
+            doReturn(studyDetailsResult).when(studyService).findStudyDetails(anyLong());
+
+            /*
+            When
+             */
+            ResultActions resultActions = mockMvc.perform(get("/api/v1/studies/" + studyId));
+
+            /*
+            Then
+             */
+            resultActions.andExpect(status().isBadRequest());
+        }
+    }
 }

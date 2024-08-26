@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.global.security;
 
-import com.bombombom.devs.global.util.Clock;
+import com.bombombom.devs.core.util.Clock;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,9 +24,8 @@ public class JwtUtils {
 
     @Value("${spring.security.jwt.refresh-token.expire-length}")
     private long refreshTokenExpiration;
-
+    
     private final Clock clock;
-
 
     public String generateAccessToken(Authentication authentication) {
         return Jwts.builder()

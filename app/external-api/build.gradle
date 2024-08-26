@@ -1,9 +1,9 @@
 dependencies {
 
-    implementation project(':domain:integrated')
     implementation project(':domain')
     implementation project(':support:naver-client')
     implementation project(':support:solvedac-client')
+    implementation project(':core')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

@@ -1,6 +1,5 @@
-package com.bombombom.devs.study.model;
+package com.bombombom.devs.algo.model;
 
-import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.user.model.User;
 import jakarta.persistence.Column;
@@ -14,36 +13,52 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Entity
-@Getter
+
 @SuperBuilder
+@Getter
+@Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "algorithm_problem_assignment_solve_history")
-public class AlgorithmProblemAssignmentSolveHistory extends BaseEntity {
+@Table(name = "algorithm_problem_feedback")
+public class AlgorithmProblemFeedback extends BaseEntity {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "algorithm_problem_feedback_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",
+        nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private User user;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id",
+        nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private AlgorithmProblem problem;
 
-    @Column(name = "solved_at")
-    private LocalDateTime solvedAt;
+    @Column
+    private Boolean again;
 
-    @Column(name = "try_count")
-    private Integer tryCount;
+    @Column
+    private Integer difficulty;
+
+    public static final int FeedbackDifficultyBegin = 1;
+    public static final int FeedbackDifficultyEnd = 5;
+    public static final float FeedbackDifficultyAverage =
+        (FeedbackDifficultyBegin + FeedbackDifficultyEnd) / 2f;
+
+
+    public void update(AlgorithmProblemFeedback newFeedback) {
+        again = newFeedback.getAgain();
+        difficulty = newFeedback.getDifficulty();
+    }
 }

@@ -1,9 +1,10 @@
 package com.bombombom.devs.external.study.controller.dto.response;
 
-import com.bombombom.devs.algo.model.AlgoTag;
-import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
+import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,13 +29,13 @@ public record AlgorithmStudyProgressResponse(
         Integer difficulty
     ) {
 
-        public static AlgorithmProblemInfo fromResult(AlgorithmProblem algorithmProblem) {
+        public static AlgorithmProblemInfo fromResult(AlgorithmProblemResult result) {
             return AlgorithmProblemInfo.builder()
-                .refId(algorithmProblem.getRefId())
-                .tag(algorithmProblem.getTag())
-                .title(algorithmProblem.getTitle())
-                .link(algorithmProblem.getLink())
-                .difficulty(algorithmProblem.getDifficulty())
+                .refId(result.refId())
+                .tag(result.tag())
+                .title(result.title())
+                .link(result.link())
+                .difficulty(result.difficulty())
                 .build();
         }
     }
@@ -45,27 +46,32 @@ public record AlgorithmStudyProgressResponse(
         Map<Long, Boolean> tasks
     ) {
 
+        public static MemberInfo fromResult(UserProfileResult result, Map<Long, Boolean> tasks) {
+            return MemberInfo.builder()
+                .username(result.username())
+                .tasks(tasks)
+                .build();
+        }
+
     }
 
     public static AlgorithmStudyProgressResponse fromResult(StudyProgressResult studyProgress) {
         AlgorithmStudyProgress algorithmStudyProgress = (AlgorithmStudyProgress) studyProgress.studyProgress();
         Map<Long, AlgorithmProblemInfo> algorithmProblemInfo = algorithmStudyProgress
             .algorithmProblems().stream().collect(
-                Collectors.toMap(AlgorithmProblem::getId, AlgorithmProblemInfo::fromResult));
+                Collectors.toMap(AlgorithmProblemResult::id, AlgorithmProblemInfo::fromResult));
         Map<Long, Boolean> studyTask = algorithmStudyProgress.algorithmProblems()
-            .stream().collect(Collectors.toMap(AlgorithmProblem::getId, (study) -> false));
+            .stream().collect(Collectors.toMap(AlgorithmProblemResult::id, (study) -> false));
         Map<Long, MemberInfo> users = new HashMap<>();
         studyProgress.members().forEach(member -> {
-            Map<Long, Boolean> tasks = new HashMap<>(studyTask);
-            users.put(member.getId(),
-                MemberInfo.builder().username(member.getUsername()).tasks(tasks).build());
+            users.put(member.id(), MemberInfo.fromResult(member, new HashMap<>(studyTask)));
         });
-        algorithmStudyProgress.histories().forEach(history -> users.get(history.getUser().getId())
-            .tasks.put(history.getProblem().getId(), true));
+        algorithmStudyProgress.histories()
+            .forEach(history -> users.get(history.userId()).tasks.put(history.problemId(), true));
         return AlgorithmStudyProgressResponse.builder()
-            .idx(algorithmStudyProgress.round().getIdx())
-            .startDate(algorithmStudyProgress.round().getStartDate())
-            .endDate(algorithmStudyProgress.round().getEndDate())
+            .idx(algorithmStudyProgress.round().idx())
+            .startDate(algorithmStudyProgress.round().startDate())
+            .endDate(algorithmStudyProgress.round().endDate())
             .problems(algorithmProblemInfo)
             .users(users)
             .build();

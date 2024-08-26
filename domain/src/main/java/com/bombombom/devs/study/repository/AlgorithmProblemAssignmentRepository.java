@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 public interface AlgorithmProblemAssignmentRepository
     extends JpaRepository<AlgorithmProblemAssignment, Long> {
 
+    boolean existsByRoundIdAndProblemId(Long roundId,
+        Long problemId);
+
     @Query("SELECT a FROM AlgorithmProblemAssignment a JOIN FETCH a.problem "
         + "WHERE a.round.id = :roundId")
     List<AlgorithmProblemAssignment> findProblemWithStudyByRound(Long roundId);

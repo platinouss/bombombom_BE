@@ -24,14 +24,12 @@ class RoundTest {
          * Given
          */
         Study study = AlgorithmStudy.builder()
-            .userStudies(new ArrayList<>())
             .build();
         Round round = Round.builder()
             .study(study)
             .idx(1)
             .startDate(LocalDate.now())
             .endDate(LocalDate.now().plusWeeks(1))
-            .assignments(new ArrayList<>())
             .build();
         List<AlgorithmProblem> unSolvedProblems = new ArrayList<>();
 
@@ -60,7 +58,6 @@ class RoundTest {
             .reliability(10)
             .build();
         Study study = AlgorithmStudy.builder()
-            .userStudies(new ArrayList<>())
             .build();
         UserStudy userStudy = UserStudy.of(user, study, 1000);
         study.getUserStudies().add(userStudy);
@@ -69,7 +66,6 @@ class RoundTest {
             .idx(1)
             .startDate(LocalDate.now())
             .endDate(LocalDate.now().plusWeeks(1))
-            .assignments(new ArrayList<>())
             .build();
         AlgorithmProblem problem = AlgorithmProblem.builder()
             .id(1L)

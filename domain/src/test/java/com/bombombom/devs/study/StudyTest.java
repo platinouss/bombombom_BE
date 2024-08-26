@@ -8,7 +8,6 @@ import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.StudyStatus;
 import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.user.model.User;
-import java.util.ArrayList;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +32,6 @@ class StudyTest {
             .reliabilityLimit(10)
             .penalty(1000)
             .state(StudyStatus.READY)
-            .userStudies(new ArrayList<>())
             .build();
 
 

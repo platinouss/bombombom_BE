@@ -3,7 +3,7 @@ package com.bombombom.devs.study;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
-import com.bombombom.devs.study.model.AlgorithmProblemAssignmentSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.user.model.User;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +28,7 @@ class AlgorithmProblemAssignmentSolveHistoryTest {
         /*
          * When
          */
-        AlgorithmProblemAssignmentSolveHistory history = AlgorithmProblemAssignmentSolveHistory.builder()
+        AlgorithmProblemSolveHistory history = AlgorithmProblemSolveHistory.builder()
             .user(user)
             .problem(problem)
             .solvedAt(LocalDateTime.now())
