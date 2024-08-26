@@ -20,6 +20,7 @@ import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
+import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
@@ -165,8 +166,9 @@ public class StudyService {
 
     @Transactional
     public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
-        round.assignProblems(problems);
-        roundRepository.save(round);
+        algoAssignmentRepository.deleteByRound(round);
+        List<AlgorithmProblemAssignment> newAssignments = round.assignProblems(problems);
+        algoAssignmentRepository.saveAll(newAssignments);
     }
 
     @Transactional

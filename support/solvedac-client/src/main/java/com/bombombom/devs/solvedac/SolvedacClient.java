@@ -42,7 +42,6 @@ public class SolvedacClient {
                 tag,
                 difficultySpread
             );
-            log.debug("problemsByTag.items.size: {}", problemsByTag.items().size());
             unSolvedProblems.items().addAll(problemsByTag.items().subList(0, numberOfProblems));
         }
         return unSolvedProblems;
