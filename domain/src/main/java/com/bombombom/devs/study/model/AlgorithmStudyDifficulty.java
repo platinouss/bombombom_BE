@@ -27,7 +27,7 @@ public class AlgorithmStudyDifficulty extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    private Long id;
 
     @Column(nullable = false, name = "algo_tag")
     @Enumerated(EnumType.STRING)
