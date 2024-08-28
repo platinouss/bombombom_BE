@@ -7,6 +7,7 @@ import static com.bombombom.devs.study.model.Study.MAX_PENALTY;
 import static com.bombombom.devs.study.model.Study.MAX_PROBLEM_COUNT;
 import static com.bombombom.devs.study.model.Study.MAX_RELIABILITY_LIMIT;
 import static com.bombombom.devs.study.model.Study.MAX_WEEKS;
+import static com.bombombom.devs.study.model.Study.MIN_DIFFICULTY_LEVEL;
 
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.study.model.StudyStatus;
@@ -27,8 +28,8 @@ public record RegisterAlgorithmStudyRequest(
     @NotNull LocalDate startDate,
     @NotNull @Range(max = MAX_RELIABILITY_LIMIT) Integer reliabilityLimit,
     @NotNull @Range(max = MAX_PENALTY) Integer penalty,
-    @NotNull @Range(max = MAX_DIFFICULTY_LEVEL) Integer difficultyBegin,
-    @NotNull @Range(max = MAX_DIFFICULTY_LEVEL) Integer difficultyEnd,
+    @NotNull @Range(min = MIN_DIFFICULTY_LEVEL, max = MAX_DIFFICULTY_LEVEL) Integer difficultyBegin,
+    @NotNull @Range(min = MIN_DIFFICULTY_LEVEL, max = MAX_DIFFICULTY_LEVEL) Integer difficultyEnd,
     @NotNull @Range(min = 1, max = MAX_PROBLEM_COUNT) Integer problemCount
 ) {
 

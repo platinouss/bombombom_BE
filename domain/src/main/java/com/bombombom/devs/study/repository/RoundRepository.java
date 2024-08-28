@@ -24,6 +24,7 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
 
     @Query("SELECT r FROM Round r "
         + "WHERE r.study.id = :studyId AND ("
+        + " (r.startDate > :currentDate AND r.idx = 0) OR "
         + " (r.startDate <= :currentDate AND r.endDate >= :currentDate) OR "
         + " (r.endDate < :currentDate AND r.idx = :lastIdx)"
         + ")")

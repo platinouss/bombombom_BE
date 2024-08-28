@@ -14,7 +14,7 @@ public interface AlgorithmProblemAssignmentRepository
 
     @Query("SELECT a FROM AlgorithmProblemAssignment a JOIN FETCH a.problem "
         + "WHERE a.round.id = :roundId")
-    List<AlgorithmProblemAssignment> findProblemWithStudyByRound(Long roundId);
+    List<AlgorithmProblemAssignment> findAssignmentWithProblemByRoundId(Long roundId);
 
     void deleteByRound(Round round);
 }

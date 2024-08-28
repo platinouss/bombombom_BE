@@ -68,4 +68,9 @@ public class Round extends BaseEntity {
             .build();
 
     }
+
+    public void changeDate(LocalDate date) {
+        startDate = date.plusWeeks(idx);
+        endDate = date.plusWeeks(idx + 1);
+    }
 }

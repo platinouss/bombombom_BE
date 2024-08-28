@@ -17,6 +17,7 @@ spring:
         show_sql: true
         format_sql: true
   security:
+    front-server-origin: ${FRONT_SERVER_ORIGIN}
     jwt:
       secret-key: ${JWT_SECRET_KEY}
       access-token:
