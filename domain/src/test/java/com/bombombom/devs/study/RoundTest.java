@@ -1,7 +1,5 @@
 package com.bombombom.devs.study;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmStudy;

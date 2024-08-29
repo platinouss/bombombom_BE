@@ -1,8 +1,7 @@
 package com.bombombom.devs.study.model;
 
-import com.bombombom.devs.algo.model.AlgorithmProblem;
-import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.user.model.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,36 +21,27 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "algorithm_problem_assignment")
-public class AlgorithmProblemAssignment extends BaseEntity {
+@Table(name = "user_assignment")
+public class UserAssignment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "round_id",
+    @JoinColumn(name = "user_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private Round round;
+    User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "problem_id",
+    @JoinColumn(name = "assignment",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private AlgorithmProblem problem;
+    Assignment assignment;
 
-    public AlgorithmProblemSolveHistory createSolveHistory(User user) {
-        return AlgorithmProblemSolveHistory.builder()
-            .problem(problem)
-            .user(user)
-            .tryCount(0)
-            .build();
-    }
+    @Column
+    boolean solved;
 
-    public static AlgorithmProblemAssignment of(Round round, AlgorithmProblem problem) {
+    @Column
+    boolean assigned;
 
-        return AlgorithmProblemAssignment.builder()
-            .problem(problem)
-            .round(round)
-            .build();
-    }
 }

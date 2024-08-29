@@ -22,6 +22,9 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
         Long studyId,
         LocalDate date);
 
+    Optional<Round> findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(Long studyId, LocalDate date);
+
+
     @Query("SELECT r FROM Round r "
         + "WHERE r.study.id = :studyId AND ("
         + " (r.startDate > :currentDate AND r.idx = 0) OR "

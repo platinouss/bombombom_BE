@@ -174,4 +174,22 @@ public abstract class Study extends BaseEntity {
 
         state = StudyStatus.RUNNING;
     }
+
+    public void canEditAssignment(Long userId, Integer roundIdx,
+        Round nextRound) {
+        if (getStudyType() != StudyType.BOOK) {
+            throw new IllegalStateException(
+                "Assignments In " + getStudyType().name() + " Study Can't Be Edited");
+
+        }
+
+        if (!leader.getId().equals(userId)) {
+            throw new IllegalStateException("Only Leader Can Edit Assignments");
+        }
+
+        if (!roundIdx.equals(nextRound.getIdx())) {
+            throw new IllegalStateException("Round Index Must Refer To Next Round");
+        }
+
+    }
 }

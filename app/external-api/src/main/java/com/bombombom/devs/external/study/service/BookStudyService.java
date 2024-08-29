@@ -1,15 +1,43 @@
 package com.bombombom.devs.external.study.service;
 
+import com.bombombom.devs.book.model.Book;
+import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.core.exception.NotFoundException;
+import com.bombombom.devs.core.util.Clock;
+import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
+import com.bombombom.devs.external.study.service.dto.command.AddAssignmentCommand;
+import com.bombombom.devs.external.study.service.dto.command.EditAssignmentCommand;
+import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
+import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.BookStudyProgress;
+import com.bombombom.devs.study.model.Assignment;
+import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.repository.AssignmentRepository;
+import com.bombombom.devs.study.repository.RoundRepository;
+import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.user.model.User;
+import com.bombombom.devs.user.repository.UserRepository;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class BookStudyService implements StudyProgressService {
+
+    private final Clock clock;
+    private final StudyRepository studyRepository;
+    private final BookRepository bookRepository;
+    private final RoundRepository roundRepository;
+    private final UserRepository userRepository;
+    private final AssignmentRepository assignmentRepository;
 
     @Override
     public StudyType getStudyType() {
@@ -18,12 +46,146 @@ public class BookStudyService implements StudyProgressService {
 
     @Override
     public BookStudyProgress findStudyProgress(Round round, List<User> members) {
-        // TODO: 서적 스터디 진행 현황 조회 로직 추가
-        return null;
+        // TODO: 서적 스터디 진행 현황 조회 로직 수정
+
+        return BookStudyProgress.fromEntity(round);
     }
 
     @Override
     public void startRound(Study study, Round round) {
-        
     }
+
+    @Transactional
+    public BookStudyResult createStudy(
+        Long userId, RegisterBookStudyCommand registerBookStudyCommand) {
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException("User Not Found"));
+
+        Book book = bookRepository.findByIsbn(registerBookStudyCommand.isbn())
+            .orElseThrow(() -> new NotFoundException("Book Not Found"));
+
+        BookStudy bookStudy = BookStudy.builder()
+            .name(registerBookStudyCommand.name())
+            .introduce(registerBookStudyCommand.introduce())
+            .capacity(registerBookStudyCommand.capacity())
+            .weeks(registerBookStudyCommand.weeks())
+            .startDate(registerBookStudyCommand.startDate())
+            .reliabilityLimit(registerBookStudyCommand.reliabilityLimit())
+            .penalty(registerBookStudyCommand.penalty())
+            .headCount(registerBookStudyCommand.headCount())
+            .state(registerBookStudyCommand.state())
+            .leader(user)
+            .book(book)
+            .build();
+
+        bookStudy.createRounds();
+
+        bookStudy.admit(user);
+
+        studyRepository.save(bookStudy);
+
+        if (bookStudy.getStartDate().equals(clock.today())) {
+            bookStudy.start(clock, userId);
+
+            startRound(bookStudy, bookStudy.getFirstRound());
+        }
+
+        user.payMoney(bookStudy.calculateDeposit());
+        return BookStudyResult.fromEntity(bookStudy);
+    }
+
+    @Transactional
+    public List<AssignmentResult> addAssignments(Long userId, Long studyId,
+        AddAssignmentCommand addAssignmentCommand) {
+        Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
+                clock.today())
+            .orElseThrow(() -> new NotFoundException("Round Not Found"));
+
+        Study study = studyRepository.findWithLeaderById(
+                studyId)
+            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+
+        study.canEditAssignment(userId,
+            addAssignmentCommand.roundIdx(),
+            nextRound);
+
+        List<Assignment> assignments =
+            addAssignmentCommand.assignments()
+                .stream().map(
+                    assignmentInfo ->
+                        Assignment.builder()
+                            .round(nextRound)
+                            .title(assignmentInfo.title())
+                            .description(assignmentInfo.description())
+                            .pageStart(assignmentInfo.pageStart())
+                            .pageEnd(assignmentInfo.pageEnd())
+                            .build()
+                ).collect(Collectors.toList());
+
+        return assignmentRepository.saveAll(assignments).stream().map(AssignmentResult::fromEntity)
+            .toList();
+    }
+
+    @Transactional
+    public List<AssignmentResult> setAssignments(Long userId, Long studyId,
+        EditAssignmentCommand editAssignmentCommand) {
+
+        Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
+                clock.today())
+            .orElseThrow(() -> new NotFoundException("Round Not Found"));
+
+        Study study = studyRepository.findWithLeaderById(
+                studyId)
+            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+
+        study.canEditAssignment(userId,
+            editAssignmentCommand.roundIdx(),
+            nextRound);
+
+        Set<Long> assignmentIds = editAssignmentCommand.assignments().stream()
+            .map(AssignmentInfo::id).collect(Collectors.toSet());
+
+        if (assignmentIds.size() != editAssignmentCommand.assignments().size()) {
+            throw new IllegalStateException("과제 ID가 중복됩니다.");
+        }
+
+        List<Assignment> assignments = assignmentRepository.findAllById(assignmentIds);
+
+        if (assignments.size() != assignmentIds.size()) {
+            throw new NotFoundException("Assignment Not Found");
+        }
+
+        if (assignments.stream().anyMatch(assignment -> !assignment.getRound().equals(nextRound))) {
+
+            throw new IllegalStateException(
+                "Only The Assignments In Next Round Can Be Edited");
+        }
+
+        assignmentRepository.deleteAllByIdNotInAndRound(assignmentIds, nextRound);
+
+        List<Assignment> updatedAssignments =
+            editAssignmentCommand.assignments()
+                .stream().map(
+                    assignmentInfo ->
+                        Assignment.builder().id(assignmentInfo.id())
+                            .round(nextRound)
+                            .title(assignmentInfo.title())
+                            .description(assignmentInfo.description())
+                            .pageStart(assignmentInfo.pageStart())
+                            .pageEnd(assignmentInfo.pageEnd())
+                            .build()
+                ).collect(Collectors.toList());
+
+        return assignmentRepository.saveAll(updatedAssignments).stream()
+            .map(AssignmentResult::fromEntity)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public void getAssignments(Long studyId,
+        Long roundIdx) {
+
+    }
+
 }

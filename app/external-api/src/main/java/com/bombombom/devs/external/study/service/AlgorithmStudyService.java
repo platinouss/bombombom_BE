@@ -10,6 +10,8 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.solvedac.SolvedacClient;
@@ -28,6 +30,7 @@ import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +56,50 @@ public class AlgorithmStudyService implements StudyProgressService {
     private final AlgorithmProblemService algorithmProblemService;
     private final AlgorithmProblemConverter algorithmProblemConverter;
     private final Clock clock;
+
+
+    @Transactional
+    public AlgorithmStudyResult createStudy(
+        Long userId,
+        RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
+
+        int difficultyGap = registerAlgorithmStudyCommand.difficultyEnd()
+            - registerAlgorithmStudyCommand.difficultyBegin();
+        float db = registerAlgorithmStudyCommand.difficultyBegin();
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException("User Not Found"));
+
+        AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
+            .name(registerAlgorithmStudyCommand.name())
+            .introduce(registerAlgorithmStudyCommand.introduce())
+            .capacity(registerAlgorithmStudyCommand.capacity())
+            .weeks(registerAlgorithmStudyCommand.weeks())
+            .startDate(registerAlgorithmStudyCommand.startDate())
+            .reliabilityLimit(registerAlgorithmStudyCommand.reliabilityLimit())
+            .penalty(registerAlgorithmStudyCommand.penalty())
+            .headCount(registerAlgorithmStudyCommand.headCount())
+            .state(registerAlgorithmStudyCommand.state())
+            .leader(user)
+            .difficultyGap(difficultyGap)
+            .problemCount(registerAlgorithmStudyCommand.problemCount())
+            .build();
+
+        algorithmStudy.createRounds();
+        algorithmStudy.setDifficulty(db);
+
+        algorithmStudy.admit(user);
+        studyRepository.save(algorithmStudy);
+
+        if (algorithmStudy.getStartDate().equals(clock.today())) {
+            algorithmStudy.start(clock, userId);
+
+            startRound(algorithmStudy, algorithmStudy.getFirstRound());
+        }
+
+        user.payMoney(algorithmStudy.calculateDeposit());
+        return AlgorithmStudyResult.fromEntity(algorithmStudy);
+    }
 
     @Override
     public StudyType getStudyType() {
@@ -174,7 +221,12 @@ public class AlgorithmStudyService implements StudyProgressService {
 
     @Transactional
     public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
-        round.assignProblems(problems);
-        roundRepository.save(round);
+        List<AlgorithmProblemAssignment> assignments = new ArrayList<>();
+        for (AlgorithmProblem problem : problems) {
+            assignments.add(AlgorithmProblemAssignment.of(round, problem));
+        }
+        algorithmProblemAssignmentRepository.saveAll(assignments);
     }
+
+
 }

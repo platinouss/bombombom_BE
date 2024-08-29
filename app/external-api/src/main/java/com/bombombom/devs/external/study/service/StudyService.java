@@ -1,21 +1,13 @@
 package com.bombombom.devs.external.study.service;
 
-import com.bombombom.devs.book.model.Book;
-import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
-import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
-import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.StartStudyCommand;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
-import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
-import com.bombombom.devs.study.model.AlgorithmStudy;
-import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.UserStudy;
@@ -39,94 +31,9 @@ public class StudyService {
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
     private final UserStudyRepository userStudyRepository;
-    private final BookRepository bookRepository;
     private final RoundRepository roundRepository;
     private final StudyServiceFactory studyServiceFactory;
 
-    @Transactional
-    public AlgorithmStudyResult createAlgorithmStudy(
-        Long userId,
-        RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
-
-        int difficultyGap = registerAlgorithmStudyCommand.difficultyEnd()
-            - registerAlgorithmStudyCommand.difficultyBegin();
-        float db = registerAlgorithmStudyCommand.difficultyBegin();
-
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundException("User Not Found"));
-
-        AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
-            .name(registerAlgorithmStudyCommand.name())
-            .introduce(registerAlgorithmStudyCommand.introduce())
-            .capacity(registerAlgorithmStudyCommand.capacity())
-            .weeks(registerAlgorithmStudyCommand.weeks())
-            .startDate(registerAlgorithmStudyCommand.startDate())
-            .reliabilityLimit(registerAlgorithmStudyCommand.reliabilityLimit())
-            .penalty(registerAlgorithmStudyCommand.penalty())
-            .headCount(registerAlgorithmStudyCommand.headCount())
-            .state(registerAlgorithmStudyCommand.state())
-            .leader(user)
-            .difficultyGap(difficultyGap)
-            .problemCount(registerAlgorithmStudyCommand.problemCount())
-            .build();
-
-        algorithmStudy.createRounds();
-        algorithmStudy.setDifficulty(db);
-
-        algorithmStudy.admit(user);
-        studyRepository.save(algorithmStudy);
-
-        if (algorithmStudy.getStartDate().equals(clock.today())) {
-            algorithmStudy.start(clock, userId);
-
-            studyServiceFactory.getService(algorithmStudy.getStudyType())
-                .startRound(algorithmStudy, algorithmStudy.getFirstRound());
-        }
-
-        user.payMoney(algorithmStudy.calculateDeposit());
-        return AlgorithmStudyResult.fromEntity(algorithmStudy);
-    }
-
-    @Transactional
-    public BookStudyResult createBookStudy(
-        Long userId, RegisterBookStudyCommand registerBookStudyCommand) {
-
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundException("User Not Found"));
-
-        Book book = bookRepository.findByIsbn(registerBookStudyCommand.isbn())
-            .orElseThrow(() -> new NotFoundException("Book Not Found"));
-
-        BookStudy bookStudy = BookStudy.builder()
-            .name(registerBookStudyCommand.name())
-            .introduce(registerBookStudyCommand.introduce())
-            .capacity(registerBookStudyCommand.capacity())
-            .weeks(registerBookStudyCommand.weeks())
-            .startDate(registerBookStudyCommand.startDate())
-            .reliabilityLimit(registerBookStudyCommand.reliabilityLimit())
-            .penalty(registerBookStudyCommand.penalty())
-            .headCount(registerBookStudyCommand.headCount())
-            .state(registerBookStudyCommand.state())
-            .leader(user)
-            .book(book)
-            .build();
-
-        bookStudy.createRounds();
-
-        bookStudy.admit(user);
-
-        studyRepository.save(bookStudy);
-
-        if (bookStudy.getStartDate().equals(clock.today())) {
-            bookStudy.start(clock, userId);
-
-            studyServiceFactory.getService(bookStudy.getStudyType())
-                .startRound(bookStudy, bookStudy.getFirstRound());
-        }
-
-        user.payMoney(bookStudy.calculateDeposit());
-        return BookStudyResult.fromEntity(bookStudy);
-    }
 
     @Transactional(readOnly = true)
     public Page<StudyResult> readStudy(Pageable pageable) {
@@ -164,6 +71,7 @@ public class StudyService {
     public StudyDetailsResult findStudyDetails(Long studyId) {
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+
         Round currentRound = roundRepository.findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(
                 studyId, study.getWeeks() - 1, clock.today())
             .orElseThrow(() -> new IllegalStateException("Round Not Found"));
@@ -201,5 +109,6 @@ public class StudyService {
             .startRound(study, study.getFirstRound());
 
     }
+
 
 }
