@@ -11,8 +11,8 @@ import io.github.bucket4j.BucketConfiguration;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ public class SolvedacApiRateLimitConfig {
     private final UpdateAlgorithmStudyTaskStatusJob updateAlgorithmStudyTaskStatusJob;
     private final AlgorithmProblemRedisRepository algorithmProblemRedisRepository;
 
-    @After("execution(* com.bombombom.devs.solvedac.SolvedacClient.fetchProblemListFromSolvedacApi(..))")
+    @Before("execution(* com.bombombom.devs.solvedac.SolvedacClient.checkProblemSolved(..))")
     public void beforeJobExecution() throws SchedulerException {
         if (!apiRateLimiter.tryConsume(SOLVEDAC_BUCKET_KEY, this.createBucketConfiguration())) {
             quartzJobScheduler.removeTrigger(UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_NAME,

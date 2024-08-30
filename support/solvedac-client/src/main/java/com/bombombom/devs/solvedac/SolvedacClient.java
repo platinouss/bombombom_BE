@@ -76,7 +76,7 @@ public class SolvedacClient {
         return fetchProblemListFromSolvedacApi(webClient, queryParam);
     }
 
-    public ProblemListResponse fetchProblemListFromSolvedacApi(WebClient webClient,
+    private ProblemListResponse fetchProblemListFromSolvedacApi(WebClient webClient,
         String queryParam) {
         CompletableFuture<ProblemListResponse> completableFuture = new CompletableFuture<>();
         Mono<ProblemListResponse> mono = webClient.get()
