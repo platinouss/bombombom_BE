@@ -1,6 +1,7 @@
 package com.bombombom.devs.external.study.service.dto.result;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.solvedac.dto.ProblemResponse;
 import com.bombombom.devs.user.model.User;

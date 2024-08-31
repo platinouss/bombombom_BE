@@ -98,6 +98,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -124,6 +125,9 @@ public class StudyIntegrationTest {
 
     @Autowired
     Clock clock;
+
+    @Mock
+    Clock mockClock;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -1679,13 +1683,17 @@ public class StudyIntegrationTest {
         tasks1.put(1L, false);
         tasks1.put(2L, true);
         AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
-            .username("username1").tasks(tasks1)
+            .username("username1")
+            .isUpdating(false)
+            .tasks(tasks1)
             .build();
         Map<Long, Boolean> tasks2 = new HashMap<>();
         tasks2.put(1L, false);
         tasks2.put(2L, false);
         AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
-            .username("username2").tasks(tasks2)
+            .username("username2")
+            .isUpdating(false)
+            .tasks(tasks2)
             .build();
         users.put(1L, memberInfo1);
         users.put(2L, memberInfo2);
@@ -1836,13 +1844,17 @@ public class StudyIntegrationTest {
         tasks1.put(1L, false);
         tasks1.put(2L, true);
         AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
-            .username("username1").tasks(tasks1)
+            .username("username1")
+            .isUpdating(false)
+            .tasks(tasks1)
             .build();
         Map<Long, Boolean> tasks2 = new HashMap<>();
         tasks2.put(1L, false);
         tasks2.put(2L, false);
         AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
-            .username("username2").tasks(tasks2)
+            .username("username2")
+            .isUpdating(false)
+            .tasks(tasks2)
             .build();
         users.put(1L, memberInfo1);
         users.put(2L, memberInfo2);

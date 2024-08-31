@@ -4,7 +4,9 @@ import com.bombombom.devs.core.util.Clock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.ZoneOffset;
+import lombok.Builder;
 
+@Builder
 public record AlgorithmTaskUpdateStatus(
     Boolean isUpdating,
     Long statusUpdatedAt
