@@ -274,9 +274,10 @@ public class StudyIntegrationTest {
                     .build();
             study.admit(testuser);
             study.createRounds();
-            study.getRounds().getFirst().assignProblems(List.of(problem));
             study.setDifficulty(difficultyBegin.floatValue());
             studyRepository.save(study);
+            algorithmProblemAssignmentRepository.save(
+                AlgorithmProblemAssignment.of(study.getFirstRound(), problem));
 
             algorithmProblemSolveHistoryRepository.save(AlgorithmProblemSolveHistory.builder()
                 .tryCount(1)

@@ -107,6 +107,8 @@ class StudyServiceTest {
 
     @InjectMocks
     private AlgorithmStudyService algorithmStudyService;
+    @InjectMocks
+    private BookStudyService bookStudyService;
 
     @InjectMocks
     private StudyService studyService;
@@ -280,7 +282,7 @@ class StudyServiceTest {
         /*
         When
          */
-        AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
+        AlgorithmStudyResult algorithmStudyResult = algorithmStudyService.createStudy(
             testuser.getId(),
             registerAlgorithmStudyCommand);
 
@@ -349,7 +351,7 @@ class StudyServiceTest {
         /*
         When
          */
-        BookStudyResult bookStudyResult = studyService.createBookStudy(
+        BookStudyResult bookStudyResult = bookStudyService.createStudy(
             testuser.getId(),
             registerBookStudyCommand);
 

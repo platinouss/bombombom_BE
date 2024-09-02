@@ -1,4 +1,4 @@
-package com.bombombom.devs.external.global.security;
+package com.bombombom.devs.security;
 
 import com.bombombom.devs.user.model.User;
 import java.util.List;

@@ -24,7 +24,7 @@ public class JwtUtils {
 
     @Value("${spring.security.jwt.refresh-token.expire-length}")
     private long refreshTokenExpiration;
-    
+
     private final Clock clock;
 
     public String generateAccessToken(Authentication authentication) {

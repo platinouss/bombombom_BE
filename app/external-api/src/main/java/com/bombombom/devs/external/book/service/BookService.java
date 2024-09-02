@@ -14,7 +14,6 @@ import com.bombombom.devs.external.book.service.dto.IndexBookCommand;
 import com.bombombom.devs.external.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,11 +52,11 @@ public class BookService {
     public void addBook(AddBookCommand addBookCommand) {
         BookDocument indexedBook = bookElasticsearchRepository.findByIsbn(addBookCommand.isbn())
             .orElseThrow(BookNotFoundException::new);
-        if (Objects.nonNull(indexedBook.getBookId())) {
-            return;
-        }
         Book book = bookRepository.findByIsbn(indexedBook.getIsbn())
             .orElseGet(() -> bookRepository.save(Book.fromBookDocument(indexedBook)));
+        if (indexedBook.getBookId().equals(book.getId())) {
+            return;
+        }
         indexedBook.setBookId(book.getId());
         bookElasticsearchRepository.save(indexedBook);
     }

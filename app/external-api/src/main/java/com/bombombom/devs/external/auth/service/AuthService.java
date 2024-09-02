@@ -23,7 +23,8 @@ public class AuthService {
         try {
             authentication = authenticationManager.authenticate(token);
         } catch (AuthenticationException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage(), e.getCause());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage(),
+                e.getCause());
         }
         return AuthenticationResult.builder()
             .accessToken(jwtUtils.generateAccessToken(authentication))

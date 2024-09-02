@@ -1,5 +1,6 @@
 package com.bombombom.devs.external.global.security;
 
+import com.bombombom.devs.security.AppUserDetails;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

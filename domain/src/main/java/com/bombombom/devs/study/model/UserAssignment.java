@@ -1,5 +1,6 @@
 package com.bombombom.devs.study.model;
 
+import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.user.model.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
@@ -22,7 +23,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user_assignment")
-public class UserAssignment {
+public class UserAssignment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

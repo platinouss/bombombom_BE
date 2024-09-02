@@ -1,7 +1,6 @@
 package com.bombombom.devs.external.study.controller;
 
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
-import com.bombombom.devs.external.global.security.AppUserDetails;
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
@@ -23,6 +22,7 @@ import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
+import com.bombombom.devs.security.AppUserDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;

@@ -17,12 +17,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "assignment")
+@DynamicUpdate
 public class Assignment extends BaseEntity {
 
     @Id
@@ -45,5 +47,10 @@ public class Assignment extends BaseEntity {
 
     @Column
     private String description;
+
+    //    @Transient
+    public Long getRoundId() {
+        return round.getId();
+    }
 
 }
