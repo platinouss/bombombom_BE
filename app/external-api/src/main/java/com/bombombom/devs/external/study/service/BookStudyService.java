@@ -2,6 +2,9 @@ package com.bombombom.devs.external.study.service;
 
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.DuplicationException;
+import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
@@ -11,11 +14,11 @@ import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCo
 import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.BookStudyProgress;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.Assignment;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.AssignmentRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
@@ -60,10 +63,10 @@ public class BookStudyService implements StudyProgressService {
         Long userId, RegisterBookStudyCommand registerBookStudyCommand) {
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         Book book = bookRepository.findByIsbn(registerBookStudyCommand.isbn())
-            .orElseThrow(() -> new NotFoundException("Book Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.BOOK_NOT_FOUND));
 
         BookStudy bookStudy = BookStudy.builder()
             .name(registerBookStudyCommand.name())
@@ -100,11 +103,11 @@ public class BookStudyService implements StudyProgressService {
         AddAssignmentCommand addAssignmentCommand) {
         Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
                 clock.today())
-            .orElseThrow(() -> new NotFoundException("Round Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
 
         Study study = studyRepository.findWithLeaderById(
                 studyId)
-            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         study.canEditAssignment(userId,
             addAssignmentCommand.roundIdx(),
@@ -133,11 +136,11 @@ public class BookStudyService implements StudyProgressService {
 
         Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
                 clock.today())
-            .orElseThrow(() -> new NotFoundException("Round Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
 
         Study study = studyRepository.findWithLeaderById(
                 studyId)
-            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         study.canEditAssignment(userId,
             editAssignmentCommand.roundIdx(),
@@ -147,19 +150,18 @@ public class BookStudyService implements StudyProgressService {
             .map(AssignmentInfo::id).collect(Collectors.toSet());
 
         if (assignmentIds.size() != editAssignmentCommand.assignments().size()) {
-            throw new IllegalStateException("과제 ID가 중복됩니다.");
+            throw new DuplicationException(ErrorCode.DUPLICATED_ASSIGNMENT_ID);
         }
 
         List<Assignment> assignments = assignmentRepository.findAllById(assignmentIds);
 
         if (assignments.size() != assignmentIds.size()) {
-            throw new NotFoundException("Assignment Not Found");
+            throw new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND);
         }
 
         if (assignments.stream().anyMatch(assignment -> !assignment.getRound().equals(nextRound))) {
 
-            throw new IllegalStateException(
-                "Only The Assignments In Next Round Can Be Edited");
+            throw new BusinessRuleException(ErrorCode.NOT_NEXT_ROUND_ASSIGNMENT);
         }
 
         assignmentRepository.deleteAllByIdNotInAndRound(assignmentIds, nextRound);
@@ -183,9 +185,16 @@ public class BookStudyService implements StudyProgressService {
     }
 
     @Transactional(readOnly = true)
-    public void getAssignments(Long studyId,
-        Long roundIdx) {
+    public List<AssignmentResult> getAssignments(Long studyId,
+        Integer roundIdx) {
 
+        Round round = roundRepository.findRoundByStudyAndIdx(studyId,
+                roundIdx)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
+
+        return assignmentRepository.findAllByRound(round).stream()
+            .map(AssignmentResult::fromEntity)
+            .toList();
     }
 
 }

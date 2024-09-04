@@ -1,6 +1,8 @@
 package com.bombombom.devs.user.model;
 
 import com.bombombom.devs.common.BaseEntity;
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -52,10 +54,10 @@ public class User extends BaseEntity {
 
     public void payMoney(Integer money) {
         if (money < 0) {
-            throw new IllegalStateException("Money must be positive");
+            throw new BusinessRuleException(ErrorCode.NEGATIVE_AMOUNT);
         }
         if (this.money < money) {
-            throw new IllegalStateException("User have Not enough money");
+            throw new BusinessRuleException(ErrorCode.NOT_ENOUGH_MONEY);
         }
         this.money -= money;
     }

@@ -1,5 +1,7 @@
 package com.bombombom.devs.external.study.service;
 
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
@@ -46,14 +48,14 @@ public class StudyService {
     @Transactional
     public void joinStudy(Long userId, JoinStudyCommand joinStudyCommand) {
         if (userStudyRepository.existsByUserIdAndStudyId(userId, joinStudyCommand.studyId())) {
-            throw new IllegalStateException("Already Joined Study");
+            throw new BusinessRuleException(ErrorCode.ALREADY_JOINED);
         }
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalStateException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         Study study = studyRepository.findByIdForUpdate(joinStudyCommand.studyId())
             .orElseThrow(
-                () -> new IllegalStateException("Study Not Found"));
+                () -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         study.admit(user);
 
@@ -70,20 +72,20 @@ public class StudyService {
     @Transactional(readOnly = true)
     public StudyDetailsResult findStudyDetails(Long studyId) {
         Study study = studyRepository.findById(studyId)
-            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         Round currentRound = roundRepository.findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(
                 studyId, study.getWeeks() - 1, clock.today())
-            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
         return StudyDetailsResult.fromResult(study, findStudyProgress(study, currentRound));
     }
 
     @Transactional(readOnly = true)
     public StudyProgressResult findStudyProgress(Long studyId, Integer roundIdx) {
         Study study = studyRepository.findById(studyId)
-            .orElseThrow(() -> new IllegalStateException("Study Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
         Round round = roundRepository.findRoundByStudyAndIdx(studyId, roundIdx)
-            .orElseThrow(() -> new IllegalStateException("Round Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
         return findStudyProgress(study, round);
     }
 
@@ -101,7 +103,7 @@ public class StudyService {
 
         Study study = studyRepository.findWithLeaderById(
                 startStudyCommand.studyId())
-            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         study.start(clock, userId);
 

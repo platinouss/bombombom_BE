@@ -4,6 +4,7 @@ import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithm
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.GetAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
@@ -160,7 +161,18 @@ public class StudyController {
         List<AssignmentResult> assignmentResults = bookStudyService.setAssignments(
             userDetails.getId(), studyId,
             editAssignmentRequest.toServiceDto());
-        
+
+        return ResponseEntity.ok().body(assignmentResults);
+    }
+
+    @GetMapping("/{id}/assignments")
+    public ResponseEntity<List<AssignmentResult>> getAssignments(
+        @PathVariable("id") Long studyId,
+        @Valid @RequestBody GetAssignmentRequest getAssignmentRequest) {
+
+        List<AssignmentResult> assignmentResults =
+            bookStudyService.getAssignments(studyId, getAssignmentRequest.roundIdx());
+
         return ResponseEntity.ok().body(assignmentResults);
     }
 

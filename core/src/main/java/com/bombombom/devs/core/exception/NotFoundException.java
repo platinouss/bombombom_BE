@@ -1,10 +1,8 @@
 package com.bombombom.devs.core.exception;
 
-public class NotFoundException extends RuntimeException {
+public class NotFoundException extends AbstractException {
 
-    public NotFoundException(String message) {
-        super(message);
+    public NotFoundException(ErrorCode errorCode) {
+        super(errorCode);
     }
-
-
 }

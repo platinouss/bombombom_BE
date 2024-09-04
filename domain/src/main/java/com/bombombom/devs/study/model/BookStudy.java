@@ -2,6 +2,7 @@ package com.bombombom.devs.study.model;
 
 
 import com.bombombom.devs.book.model.Book;
+import com.bombombom.devs.study.enums.StudyType;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;

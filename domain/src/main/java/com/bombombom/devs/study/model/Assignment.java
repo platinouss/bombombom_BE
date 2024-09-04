@@ -48,9 +48,4 @@ public class Assignment extends BaseEntity {
     @Column
     private String description;
 
-    //    @Transient
-    public Long getRoundId() {
-        return round.getId();
-    }
-
 }

@@ -1,13 +1,17 @@
 package com.bombombom.devs.util.converter;
 
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ServerInternalException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public abstract class MultiValueMapConverter {
 
@@ -20,7 +24,8 @@ public abstract class MultiValueMapConverter {
             params.setAll(convertedMap);
             return params;
         } catch (Exception e) {
-            throw new IllegalStateException("URL 파라미터 변환 중 오류가 발생했습니다.");
+            log.error("convert fail: {}", e.getMessage());
+            throw new ServerInternalException(ErrorCode.URL_PARAM_CONVERT_FAIL);
         }
     }
 }

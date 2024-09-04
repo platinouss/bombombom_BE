@@ -1,7 +1,7 @@
 package com.bombombom.devs.external.study.service.factory;
 
 import com.bombombom.devs.external.study.service.StudyProgressService;
-import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.enums.StudyType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

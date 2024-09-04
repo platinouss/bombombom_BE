@@ -1,5 +1,7 @@
-package com.bombombom.devs.study.model;
+package com.bombombom.devs.study.enums;
 
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ServerInternalException;
 import lombok.ToString;
 
 @ToString
@@ -10,7 +12,7 @@ public enum StudyType {
 
     StudyType(String val) {
         if (!this.name().equals(val)) {
-            throw new IllegalArgumentException("Incorrect use of StudyType");
+            throw new ServerInternalException(ErrorCode.INCORRECT_STUDY_TYPE);
         }
     }
 

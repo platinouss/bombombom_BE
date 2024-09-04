@@ -6,6 +6,7 @@ import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
 import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.util.Util;
+import com.bombombom.devs.study.enums.StudyType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;

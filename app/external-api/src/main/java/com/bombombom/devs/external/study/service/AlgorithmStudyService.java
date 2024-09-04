@@ -5,7 +5,9 @@ import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
 import com.bombombom.devs.algo.repository.AlgorithmProblemFeedbackRepository;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
-import com.bombombom.devs.core.exception.NotAcceptableException;
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
@@ -16,12 +18,12 @@ import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmSt
 import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.solvedac.SolvedacClient;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
 import com.bombombom.devs.study.repository.AlgorithmStudyDifficultyRepository;
@@ -68,7 +70,7 @@ public class AlgorithmStudyService implements StudyProgressService {
         float db = registerAlgorithmStudyCommand.difficultyBegin();
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
             .name(registerAlgorithmStudyCommand.name())
@@ -143,43 +145,43 @@ public class AlgorithmStudyService implements StudyProgressService {
 
         Study study = studyRepository.findById(
                 feedbackAlgorithmProblemCommand.studyId())
-            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         if (study.getStudyType() != StudyType.ALGORITHM) {
-            throw new NotAcceptableException("Feedback can only be given to Algorithm Study");
+            throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
         }
 
         AlgorithmStudy algorithmStudy = (AlgorithmStudy) study;
 
         Round round = roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
                 algorithmStudy.getId(), clock.today())
-            .orElseThrow(() -> new NotFoundException("Ongoing Round Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
 
         AlgorithmProblem problem = algoProblemRepository.findById(
                 feedbackAlgorithmProblemCommand.problemId())
-            .orElseThrow(() -> new NotFoundException("Problem Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND));
 
         AlgorithmProblemSolveHistory history = algoSolveHistoryRepository.findByUserIdAndProblemId(
                 userId, problem.getId())
-            .orElseThrow(() -> new NotFoundException("Solve History Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.SOLVE_HISTORY_NOT_FOUND));
 
         if (history.getSolvedAt() == null) {
-            throw new IllegalStateException("Cant Give Feedback On Unsolved Problem");
+            throw new BusinessRuleException(ErrorCode.PROBLEM_NOT_SOLVED);
         }
 
         if (!algoAssignmentRepository.existsByRoundIdAndProblemId(round.getId(),
             problem.getId())) {
-            throw new NotAcceptableException("Problem is not ongoing assignment");
+            throw new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND);
 
         }
 
         if (!userStudyRepository.existsByUserIdAndStudyId(userId,
             algorithmStudy.getId())) {
-            throw new NotAcceptableException("User is not a member");
+            throw new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED);
         }
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         AlgorithmProblemFeedback preFeedback =
             algoFeedbackRepository.findByUserIdAndProblemId(userId, problem.getId())

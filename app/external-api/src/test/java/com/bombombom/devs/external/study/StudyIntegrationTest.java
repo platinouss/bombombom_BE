@@ -19,6 +19,7 @@ import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.core.util.Util;
@@ -40,14 +41,14 @@ import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
+import com.bombombom.devs.study.enums.StudyStatus;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyStatus;
-import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
@@ -209,7 +210,7 @@ public class StudyIntegrationTest {
 
             AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithRoundsById(
                     study1.getId())
-                .orElseThrow(() -> new NotFoundException("Study Not Found"));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
             Assertions.assertThat(algorithmStudy.getState())
                 .isEqualTo(StudyStatus.RUNNING);
@@ -310,7 +311,7 @@ public class StudyIntegrationTest {
 
             AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithDifficultiesById(
                     feedback.studyId())
-                .orElseThrow(() -> new NotFoundException("Study Not Found"));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
             Map<AlgoTag, Spread> difficultyMap =
                 study.getDifficultySpreadMap();
@@ -611,7 +612,7 @@ public class StudyIntegrationTest {
              */
             resultActions.andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Book Not Found"));
+                .andExpect(jsonPath("$.message").value(ErrorCode.BOOK_NOT_FOUND.getMessage()));
 
 
         }

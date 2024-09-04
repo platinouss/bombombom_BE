@@ -1,7 +1,6 @@
 package com.bombombom.devs.external.study.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -16,7 +15,9 @@ import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
-import com.bombombom.devs.core.exception.NotAcceptableException;
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
@@ -35,6 +36,8 @@ import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
+import com.bombombom.devs.study.enums.StudyStatus;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
@@ -42,8 +45,6 @@ import com.bombombom.devs.study.model.AlgorithmStudyDifficulty;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyStatus;
-import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
@@ -217,8 +218,9 @@ class StudyServiceTest {
          */
         assertThatThrownBy(() -> studyService.joinStudy(
             testuser.getId(), joinStudyCommand))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Already Joined Study");
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_JOINED);
+
     }
 
     @Test
@@ -398,7 +400,7 @@ class StudyServiceTest {
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotFoundException.class)
-            .hasMessage("Problem Not Found");
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROBLEM_NOT_FOUND);
 
     }
 
@@ -441,7 +443,7 @@ class StudyServiceTest {
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotFoundException.class)
-            .hasMessage("Study Not Found");
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
 
     }
 
@@ -484,8 +486,8 @@ class StudyServiceTest {
          */
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
-            .isInstanceOf(NotAcceptableException.class)
-            .hasMessage("Feedback can only be given to Algorithm Study");
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.WRONG_STUDY_TYPE);
 
     }
 
@@ -534,7 +536,7 @@ class StudyServiceTest {
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
             .isInstanceOf(NotFoundException.class)
-            .hasMessage("Ongoing Round Not Found");
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROUND_NOT_FOUND);
 
     }
 
@@ -599,8 +601,8 @@ class StudyServiceTest {
          */
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             1L, feedback))
-            .isInstanceOf(NotAcceptableException.class)
-            .hasMessage("Problem is not ongoing assignment");
+            .isInstanceOf(NotFoundException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ASSIGNMENT_NOT_FOUND);
 
     }
 
@@ -675,8 +677,8 @@ class StudyServiceTest {
          */
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             testuser.getId(), feedback))
-            .isInstanceOf(NotAcceptableException.class)
-            .hasMessage("User is not a member");
+            .isInstanceOf(ForbiddenException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ONLY_MEMBER_ALLOWED);
 
     }
 
@@ -752,7 +754,7 @@ class StudyServiceTest {
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             testuser.getId(), feedback))
             .isInstanceOf(NotFoundException.class)
-            .hasMessage("User Not Found");
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
 
 
     }
@@ -809,7 +811,7 @@ class StudyServiceTest {
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             userId, feedback))
             .isInstanceOf(NotFoundException.class)
-            .hasMessage("Solve History Not Found");
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SOLVE_HISTORY_NOT_FOUND);
 
     }
 
@@ -864,8 +866,8 @@ class StudyServiceTest {
          */
         assertThatThrownBy(() -> algorithmStudyService.feedback(
             userId, feedback))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Cant Give Feedback On Unsolved Problem");
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROBLEM_NOT_SOLVED);
 
     }
 
@@ -1030,8 +1032,10 @@ class StudyServiceTest {
         /*
         When & Then
          */
-        assertThrows(IllegalStateException.class,
-            () -> studyService.findStudyProgress(studyId, roundIdx));
+        assertThatThrownBy(
+            () -> studyService.findStudyProgress(studyId, roundIdx))
+            .isInstanceOf(NotFoundException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
     }
 
     @DisplayName("해당 회차 정보가 존재하지 않는 경우 알고리즘 스터디 진행 현황 조회에 실패한다.")
@@ -1070,8 +1074,10 @@ class StudyServiceTest {
         /*
         When & Then
          */
-        assertThrows(IllegalStateException.class,
-            () -> studyService.findStudyProgress(studyId, roundIdx));
+        assertThatThrownBy(() -> studyService.findStudyProgress(studyId, roundIdx))
+            .isInstanceOf(NotFoundException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROUND_NOT_FOUND);
+
     }
 
     @DisplayName("study id로 해당 알고리즘 스터디의 정보 조회 결과를 반환할 수 있다.")
@@ -1248,7 +1254,9 @@ class StudyServiceTest {
         /*
         When & Then
          */
-        assertThrows(IllegalStateException.class, () -> studyService.findStudyDetails(studyId));
+        assertThatThrownBy(() -> studyService.findStudyDetails(studyId))
+            .isInstanceOf(NotFoundException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
     }
 
     @DisplayName("회차 정보가 존재하지 않는 경우 알고리즘 스터디 정보 조회에 실패한다.")
@@ -1287,7 +1295,10 @@ class StudyServiceTest {
         /*
         When & Then
          */
-        assertThrows(IllegalStateException.class, () -> studyService.findStudyDetails(studyId));
+
+        assertThatThrownBy(() -> studyService.findStudyDetails(studyId))
+            .isInstanceOf(NotFoundException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROUND_NOT_FOUND);
     }
 
     @DisplayName("스터디 시작은 스터디를 찾지 못한 경우 실패한다")
@@ -1312,7 +1323,7 @@ class StudyServiceTest {
          */
         assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
             .isInstanceOf(NotFoundException.class)
-            .hasMessage("Study Not Found");
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
 
 
     }
@@ -1344,8 +1355,8 @@ class StudyServiceTest {
         When & Then
          */
         assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Only Leader Can Start Study");
+            .isInstanceOf(ForbiddenException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ONLY_LEADER_ALLOWED);
 
 
     }
@@ -1378,8 +1389,8 @@ class StudyServiceTest {
         When & Then
          */
         assertThatThrownBy(() -> studyService.start(userId, startStudyCommand))
-            .isInstanceOf(NotAcceptableException.class)
-            .hasMessage("Study Already Started");
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_STARTED);
 
 
     }

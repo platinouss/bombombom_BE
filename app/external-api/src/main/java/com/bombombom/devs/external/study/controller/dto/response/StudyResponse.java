@@ -4,8 +4,8 @@ import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.user.controller.dto.UserProfileResponse;
-import com.bombombom.devs.study.model.StudyStatus;
-import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.enums.StudyStatus;
+import com.bombombom.devs.study.enums.StudyType;
 import java.time.LocalDate;
 
 

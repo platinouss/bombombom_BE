@@ -10,7 +10,7 @@ import static com.bombombom.devs.study.model.Study.MAX_WEEKS;
 import static com.bombombom.devs.study.model.Study.MIN_DIFFICULTY_LEVEL;
 
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
-import com.bombombom.devs.study.model.StudyStatus;
+import com.bombombom.devs.study.enums.StudyStatus;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

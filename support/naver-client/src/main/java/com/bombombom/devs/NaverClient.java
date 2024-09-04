@@ -1,10 +1,12 @@
 package com.bombombom.devs;
 
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ExternalApiException;
 import com.bombombom.devs.dto.NaverBookApiQuery;
 import com.bombombom.devs.dto.NaverBookApiResult;
-import com.bombombom.devs.exception.ExternalApiException;
 import com.bombombom.devs.util.converter.MultiValueMapConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -37,7 +39,12 @@ public class NaverClient {
             .retrieve()
             .onStatus(status -> !status.is2xxSuccessful(),
                 clientResponse -> Mono.just(
-                    new ExternalApiException(clientResponse.releaseBody().toString()))
+                    new ExternalApiException(ErrorCode.NAVER_BOOK_API_FAIL,
+                        Map.of(
+                            "StatusCode", clientResponse.statusCode().toString(),
+                            "Body", clientResponse.releaseBody().toString()
+                        )
+                    ))
             )
             .bodyToMono(NaverBookApiResult.class)
             .block();

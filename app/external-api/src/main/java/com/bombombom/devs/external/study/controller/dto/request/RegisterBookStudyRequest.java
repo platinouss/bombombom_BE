@@ -7,7 +7,7 @@ import static com.bombombom.devs.study.model.Study.MAX_RELIABILITY_LIMIT;
 import static com.bombombom.devs.study.model.Study.MAX_WEEKS;
 
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
-import com.bombombom.devs.study.model.StudyStatus;
+import com.bombombom.devs.study.enums.StudyStatus;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

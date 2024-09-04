@@ -2,6 +2,8 @@ package com.bombombom.devs.book.repository;
 
 import com.bombombom.devs.book.model.BookDocument;
 import com.bombombom.devs.book.model.vo.BookInfo;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ServerInternalException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -24,7 +26,7 @@ public class BookElasticsearchCustomRepository {
             try {
                 document = Document.parse(objectMapper.writeValueAsString(bookInfo));
             } catch (JsonProcessingException e) {
-                throw new RuntimeException("JSON 변환에 실패했습니다.");
+                throw new ServerInternalException(ErrorCode.JSON_CONVERSION_FAIL);
             }
             return UpdateQuery.builder(String.valueOf(bookInfo.isbn()))
                 .withDocument(document)
