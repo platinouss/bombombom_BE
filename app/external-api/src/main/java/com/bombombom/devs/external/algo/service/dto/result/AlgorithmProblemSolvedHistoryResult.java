@@ -1,4 +1,4 @@
-package com.bombombom.devs.external.study.service.dto.result;
+package com.bombombom.devs.external.algo.service.dto.result;
 
 import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import java.time.LocalDateTime;

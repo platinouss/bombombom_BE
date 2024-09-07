@@ -25,6 +25,7 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolvedHistoryResult;
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmTaskUpdateStatusResult;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.command.AddAssignmentCommand;
@@ -36,7 +37,6 @@ import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmSt
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.StartStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.VoteAssignmentCommand;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolvedHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;

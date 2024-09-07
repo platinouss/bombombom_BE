@@ -19,5 +19,6 @@ public interface AlgorithmProblemSolvedHistoryRepository extends
 
     @Query("SELECT h FROM AlgorithmProblemSolvedHistory h "
         + "WHERE h.user.id = :userId AND h.problem.id IN :problemIds")
-    List<AlgorithmProblemSolvedHistory> findByUserIdAndRefId(Long userId, List<Long> problemIds);
+    List<AlgorithmProblemSolvedHistory> findByUserIdAndProblemIds(Long userId,
+        List<Long> problemIds);
 }

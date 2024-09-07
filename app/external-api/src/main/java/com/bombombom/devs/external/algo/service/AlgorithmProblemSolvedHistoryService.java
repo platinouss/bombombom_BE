@@ -19,6 +19,8 @@ import com.bombombom.devs.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -68,9 +70,13 @@ public class AlgorithmProblemSolvedHistoryService {
         User user = userRepository.findById(command.userId())
             .orElseThrow(() -> new NotFoundException("User Not Found"));
         List<AlgorithmProblem> problems = algorithmProblemRepository.findAllByRefId(problemRefIds);
-        List<AlgorithmProblemSolvedHistory> histories = problems.stream().map(problem ->
-            AlgorithmProblemSolvedHistory.createAlgorithmProblemSolvedHistory(user, problem,
-                command.requestTime())).toList();
+        Set<Long> solvedProblemIds = algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemIds(
+                user.getId(), problems.stream().map(AlgorithmProblem::getId).toList())
+            .stream().map(history -> history.getProblem().getId()).collect(Collectors.toSet());
+        List<AlgorithmProblemSolvedHistory> histories = problems.stream()
+            .filter(problem -> !solvedProblemIds.contains(problem.getId()))
+            .map(problem -> AlgorithmProblemSolvedHistory.createAlgorithmProblemSolvedHistory(user,
+                problem, command.requestTime())).toList();
         algorithmProblemSolvedHistoryRepository.saveAll(histories);
         algorithmProblemSolvedHistoryRedisRepository.setTaskUpdateCompleted(command.studyId(),
             command.userId());
