@@ -1,4 +1,4 @@
-package com.bombombom.devs.study.repository;
+package com.bombombom.devs.algo.repository;
 
 import static com.bombombom.devs.common.constant.AlgorithmProblemRedisConstant.TASK_STATUS_UPDATE_QUEUE_CONSUMER;
 import static com.bombombom.devs.common.constant.AlgorithmProblemRedisConstant.TASK_STATUS_UPDATE_QUEUE_CONSUMER_GROUP;
@@ -6,16 +6,20 @@ import static com.bombombom.devs.common.constant.AlgorithmProblemRedisConstant.T
 import static com.bombombom.devs.common.constant.AlgorithmProblemRedisConstant.getAlgorithmTaskStatusUpdateKey;
 
 import com.bombombom.devs.algo.model.vo.AlgorithmTaskUpdateStatus;
+import com.bombombom.devs.algo.model.vo.PendingMessageInfo;
+import com.bombombom.devs.algo.model.vo.TaskStatusUpdateMessage;
 import com.bombombom.devs.core.util.Clock;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.stream.Consumer;
 import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.PendingMessages;
 import org.springframework.data.redis.connection.stream.ReadOffset;
 import org.springframework.data.redis.connection.stream.StreamInfo.XInfoGroups;
 import org.springframework.data.redis.connection.stream.StreamOffset;
@@ -89,7 +93,7 @@ public class AlgorithmProblemSolvedHistoryRedisRepository {
             StreamRecords.mapBacked(message).withStreamKey(TASK_STATUS_UPDATE_QUEUE_KEY));
     }
 
-    public Map<String, String> readMessage() {
+    public TaskStatusUpdateMessage readMessage() {
         StreamReadOptions streamReadOptions = StreamReadOptions.empty().count(1);
         StreamOffset<String> streamOffset = StreamOffset.create(TASK_STATUS_UPDATE_QUEUE_KEY,
             ReadOffset.lastConsumed());
@@ -100,10 +104,23 @@ public class AlgorithmProblemSolvedHistoryRedisRepository {
         if (messages == null || messages.isEmpty()) {
             return null;
         }
-        MapRecord<String, String, String> message = messages.getFirst();
-        Map<String, String> result = new HashMap<>(Map.of("recordId", message.getId().toString()));
-        result.putAll(message.getValue());
-        return result;
+        return TaskStatusUpdateMessage.fromResult(messages.getFirst());
+    }
+
+    public PendingMessageInfo getOldestPendingMessageInfo() {
+        PendingMessages pendingMessages = streamOperations.pending(TASK_STATUS_UPDATE_QUEUE_KEY,
+            TASK_STATUS_UPDATE_QUEUE_CONSUMER_GROUP, Range.closed("-", "+"), 1);
+        if (pendingMessages.isEmpty()) {
+            return null;
+        }
+        return PendingMessageInfo.fromResult(pendingMessages.get(0));
+    }
+
+    public TaskStatusUpdateMessage getOldestPendingMessage(PendingMessageInfo messageInfo) {
+        String messageId = messageInfo.recordId();
+        MapRecord<String, String, String> message = Objects.requireNonNull(streamOperations.range(
+            TASK_STATUS_UPDATE_QUEUE_KEY, Range.closed(messageId, messageId))).getFirst();
+        return TaskStatusUpdateMessage.fromResult(message);
     }
 
     public void ackMessage(String recordId) {

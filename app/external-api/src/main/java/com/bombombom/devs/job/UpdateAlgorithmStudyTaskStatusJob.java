@@ -1,10 +1,9 @@
 package com.bombombom.devs.job;
 
+import com.bombombom.devs.algo.model.vo.TaskStatusUpdateMessage;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemSolvedHistoryService;
 import com.bombombom.devs.external.algo.service.dto.command.UpdateAlgorithmTaskStatusCommand;
-import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRedisRepository;
 import jakarta.annotation.PostConstruct;
-import java.util.Map;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,14 +24,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UpdateAlgorithmStudyTaskStatusJob implements Job {
 
-    private Trigger trigger;
-    private JobDetail jobDetail;
-
+    private static final int SCHEDULER_INTERVAL_SECONDS = 2;
     public static final String UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_NAME = "UPDATE_TASK_TRIGGER";
     public static final String UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_GROUP = "UPDATE_TASK_TRIGGER_GROUP";
 
+    private Trigger trigger;
+    private JobDetail jobDetail;
+
     private final AlgorithmProblemSolvedHistoryService algorithmProblemSolvedHistoryService;
-    private final AlgorithmProblemSolvedHistoryRedisRepository algorithmProblemSolveHistoryRedisRepository;
 
     @PostConstruct
     public void init() {
@@ -42,7 +41,13 @@ public class UpdateAlgorithmStudyTaskStatusJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
-        Map<String, String> message = algorithmProblemSolvedHistoryService.getTaskStatusUpdateMessage();
+        TaskStatusUpdateMessage pendingMessage = algorithmProblemSolvedHistoryService.getUnprocessedTaskStatusUpdateMessage();
+        if (pendingMessage != null) {
+            algorithmProblemSolvedHistoryService.updateTaskStatus(
+                UpdateAlgorithmTaskStatusCommand.fromMessage(pendingMessage));
+            return;
+        }
+        TaskStatusUpdateMessage message = algorithmProblemSolvedHistoryService.getTaskStatusUpdateMessage();
         if (message == null) {
             return;
         }
@@ -64,7 +69,7 @@ public class UpdateAlgorithmStudyTaskStatusJob implements Job {
 
     private Trigger buildJobTrigger() {
         SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
-            .withIntervalInSeconds(10).repeatForever();
+            .withIntervalInSeconds(SCHEDULER_INTERVAL_SECONDS).repeatForever();
         return TriggerBuilder.newTrigger().withIdentity(getTriggerKey())
             .withSchedule(scheduleBuilder)
             .build();
