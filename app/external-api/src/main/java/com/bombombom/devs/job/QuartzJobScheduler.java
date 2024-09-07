@@ -40,11 +40,11 @@ public class QuartzJobScheduler {
         }
     }
 
-    public void setScheduleJob(Trigger trigger) throws SchedulerException {
-        scheduler.scheduleJob(trigger);
+    public void setScheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException {
+        scheduler.scheduleJob(jobDetail, trigger);
     }
 
-    public void removeTrigger(String triggerName, String triggerGroup) throws SchedulerException {
-        scheduler.unscheduleJob(new TriggerKey(triggerName, triggerGroup));
+    public void removeTrigger(TriggerKey triggerKey) throws SchedulerException {
+        scheduler.unscheduleJob(triggerKey);
     }
 }

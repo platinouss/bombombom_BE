@@ -1,22 +1,24 @@
 package com.bombombom.devs.ratelimit.config;
 
-import static com.bombombom.devs.job.UpdateAlgorithmStudyTaskStatusJob.UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_GROUP;
-import static com.bombombom.devs.job.UpdateAlgorithmStudyTaskStatusJob.UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_NAME;
-
 import com.bombombom.devs.algo.repository.AlgorithmProblemRedisRepository;
 import com.bombombom.devs.job.QuartzJobScheduler;
 import com.bombombom.devs.job.UpdateAlgorithmStudyTaskStatusJob;
 import com.bombombom.devs.ratelimit.ApiRateLimiter;
+import com.bombombom.devs.ratelimit.exception.RateLimitException;
 import io.github.bucket4j.BucketConfiguration;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -35,12 +37,13 @@ public class SolvedacApiRateLimitConfig {
     @Before("execution(* com.bombombom.devs.solvedac.SolvedacClient.checkProblemSolved(..))")
     public void beforeJobExecution() throws SchedulerException {
         if (!apiRateLimiter.tryConsume(SOLVEDAC_BUCKET_KEY, this.createBucketConfiguration())) {
-            quartzJobScheduler.removeTrigger(UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_NAME,
-                UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_GROUP);
+            TriggerKey triggerKey = updateAlgorithmStudyTaskStatusJob.getTriggerKey();
+            quartzJobScheduler.removeTrigger(triggerKey);
+            JobDetail jobDetail = updateAlgorithmStudyTaskStatusJob.getJobDetail();
             Trigger trigger = updateAlgorithmStudyTaskStatusJob.buildJobTriggerAtTime(
                 getTaskStatusUpdateDelayInSeconds());
-            quartzJobScheduler.setScheduleJob(trigger);
-            throw new RuntimeException("Rate limit exceeded");
+            quartzJobScheduler.setScheduleJob(jobDetail, trigger);
+            throw new RateLimitException();
         }
     }
 
