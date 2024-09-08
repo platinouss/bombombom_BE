@@ -84,9 +84,11 @@ public class AlgorithmStudyService implements StudyProgressService {
 
         List<AlgorithmProblem> problems = algorithmProblemConverter.convert(problemListResponse);
 
-        algorithmProblemService.findProblemsThenSaveWhenNotExist(problems);
+        List<AlgorithmProblem> foundOrSavedProblems =
+            algorithmProblemService.findProblemsThenSaveWhenNotExist(
+                problems);
 
-        assignProblemToRound(round, problems);
+        assignProblemToRound(round, foundOrSavedProblems);
     }
 
 
