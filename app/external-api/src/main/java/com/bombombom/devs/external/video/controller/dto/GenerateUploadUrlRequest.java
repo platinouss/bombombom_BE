@@ -5,8 +5,9 @@ import com.bombombom.devs.dto.GeneratePresignedUrlRequest;
 public record GenerateUploadUrlRequest(
     String uploadId,
     Integer partNumber,
-    String objectName,
-    Long partSize
+    Long partSize,
+    String studyId,
+    String userId
 ) {
 
     public GeneratePresignedUrlRequest toS3ClientDto() {
@@ -14,7 +15,7 @@ public record GenerateUploadUrlRequest(
             .uploadId(uploadId)
             .partNumber(partNumber)
             .contentType("video/*")
-            .objectName(objectName)
+            .objectName("task/" + studyId + "/" + userId)
             .contentLength(partSize)
             .build();
     }

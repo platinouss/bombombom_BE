@@ -8,14 +8,15 @@ import lombok.Builder;
 @Builder
 public record CompleteVideoUploadRequest(
     String uploadId,
-    String objectName,
-    List<Part> parts
+    List<Part> parts,
+    String studyId,
+    String userId
 ) {
 
     public FinishMultipartUploadRequest toS3ClientDto() {
         return FinishMultipartUploadRequest.builder()
             .uploadId(uploadId)
-            .objectName(objectName)
+            .objectName("task/" + studyId + "/" + userId)
             .parts(parts)
             .build();
     }

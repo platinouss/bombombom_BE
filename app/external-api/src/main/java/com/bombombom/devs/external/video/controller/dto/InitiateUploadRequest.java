@@ -3,14 +3,13 @@ package com.bombombom.devs.external.video.controller.dto;
 import com.bombombom.devs.dto.InitiateMultipartUploadRequest;
 
 public record InitiateUploadRequest(
-    String originalFileName,
     String studyId,
     String userId
 ) {
 
     public InitiateMultipartUploadRequest toS3ClientDto() {
         return InitiateMultipartUploadRequest.builder()
-            .originalFileName(originalFileName)
+            .objectName("task/" + studyId + "/" + userId)
             .studyId(studyId)
             .userId(userId)
             .fileType("video/*")

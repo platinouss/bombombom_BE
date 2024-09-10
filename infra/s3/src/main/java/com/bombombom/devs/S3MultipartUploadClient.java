@@ -40,7 +40,7 @@ public class S3MultipartUploadClient {
             request.userId());
         CreateMultipartUploadRequest multipartUploadRequest = CreateMultipartUploadRequest.builder()
             .bucket(bucketName)
-            .key(request.originalFileName())
+            .key(request.objectName())
             .contentType(request.fileType())
             .metadata(metadata)
             .build();

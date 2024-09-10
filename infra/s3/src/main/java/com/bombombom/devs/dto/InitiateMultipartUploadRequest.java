@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record InitiateMultipartUploadRequest(
-    String originalFileName,
+    String objectName,
     String fileType,
     String studyId,
     String userId
