@@ -59,7 +59,6 @@ public class StudyService {
 
         study.admit(user);
 
-        // 유저에 락킹??
         user.payMoney(study.calculateDeposit());
     }
 
@@ -71,13 +70,14 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public StudyDetailsResult findStudyDetails(Long studyId) {
-        Study study = studyRepository.findById(studyId)
+        Study study = studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         Round currentRound = roundRepository.findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(
                 studyId, study.getWeeks() - 1, clock.today())
             .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
-        return StudyDetailsResult.fromResult(study, findStudyProgress(study, currentRound));
+        return new StudyDetailsResult(StudyResult.fromEntity(study),
+            findStudyProgress(study, currentRound));
     }
 
     @Transactional(readOnly = true)

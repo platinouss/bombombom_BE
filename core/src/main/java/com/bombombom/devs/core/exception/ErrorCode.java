@@ -34,6 +34,8 @@ public enum ErrorCode {
     ASSIGNMENT_NOT_FOUND(NOT_FOUND, 40405, "과제정보를 찾을 수 없습니다."),
     PROBLEM_NOT_FOUND(NOT_FOUND, 40406, "문제를 찾을 수 없습니다."),
     SOLVE_HISTORY_NOT_FOUND(NOT_FOUND, 40406, "풀이 여부를 알 수 없습니다."),
+    USER_ASSIGNMENT_NOT_FOUND(NOT_FOUND, 40407, "유저에 과제를 할당한 정보를 찾을 수 없습니다."),
+    NEXT_ROUND_NOT_FOUND(NOT_FOUND, 40408, "다음 회차가 존재하지 않습니다."),
 
     // NOT_ACCEPTABLE 406
     STUDY_STARTED(NOT_ACCEPTABLE, 40600, "스터디가 시작하였습니다."),
@@ -46,6 +48,8 @@ public enum ErrorCode {
     STUDY_IS_FULL(NOT_ACCEPTABLE, 40607, "스터디가 만원입니다."),
     NOT_ENOUGH_RELIABILITY(NOT_ACCEPTABLE, 40608, "신뢰도가 부족합니다."),
     ALREADY_JOINED(NOT_ACCEPTABLE, 40609, "이미 가입한 스터디입니다."),
+    VIDEO_ASSIGNMENT_ID_NOT_MATCH(NOT_ACCEPTABLE, 40610, "영상의 과제 ID가 일치하지 않습니다."),
+    PROBLEM_ASSIGNMENT_ID_NOT_MATCH(NOT_ACCEPTABLE, 40611, "문제의 과제 ID가 일치하지 않습니다."),
 
     // CONFLICT 409
     DUPLICATED_USERNAME(CONFLICT, 40900, "이미 사용중인 유저 이름입니다."),
@@ -54,7 +58,8 @@ public enum ErrorCode {
     URL_PARAM_CONVERT_FAIL(INTERNAL_SERVER_ERROR, 50000, "URL 파라미터 변환 중 에러가 발생했습니다."),
     NAVER_BOOK_API_FAIL(INTERNAL_SERVER_ERROR, 50001, "Naver API 호출 실패"),
     INCORRECT_STUDY_TYPE(INTERNAL_SERVER_ERROR, 50002, "올바르지 않은 스터디 타입"),
-    JSON_CONVERSION_FAIL(INTERNAL_SERVER_ERROR, 50003, "JSON 변환에 실패했습니다.");
+    JSON_CONVERSION_FAIL(INTERNAL_SERVER_ERROR, 50003, "JSON 변환에 실패했습니다."),
+    UNEXPECTED_EXCEPTION(INTERNAL_SERVER_ERROR, 50004, "예기치 못한 에러가 발생했습니다.");
 
 
     private final StatusCode statusCode;

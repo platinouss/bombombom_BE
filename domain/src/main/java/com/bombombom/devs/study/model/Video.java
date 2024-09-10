@@ -1,6 +1,7 @@
 package com.bombombom.devs.study.model;
 
 import com.bombombom.devs.common.BaseEntity;
+import com.bombombom.devs.user.model.User;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,6 +25,11 @@ public class Video extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploader_id",
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private User uploader;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id",

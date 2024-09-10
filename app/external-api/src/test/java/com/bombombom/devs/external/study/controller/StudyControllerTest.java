@@ -24,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.util.SystemClock;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
@@ -34,7 +36,6 @@ import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyP
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
-import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse.StudyDetails;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.AlgorithmStudyService;
@@ -42,8 +43,6 @@ import com.bombombom.devs.external.study.service.BookStudyService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;

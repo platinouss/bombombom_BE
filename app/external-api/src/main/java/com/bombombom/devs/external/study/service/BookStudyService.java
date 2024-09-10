@@ -17,11 +17,17 @@ import com.bombombom.devs.external.study.service.dto.result.progress.BookStudyPr
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.Assignment;
 import com.bombombom.devs.study.model.BookStudy;
+import com.bombombom.devs.study.model.Problem;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.UserAssignment;
+import com.bombombom.devs.study.model.Video;
 import com.bombombom.devs.study.repository.AssignmentRepository;
+import com.bombombom.devs.study.repository.ProblemRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
+import com.bombombom.devs.study.repository.UserAssignmentRepository;
+import com.bombombom.devs.study.repository.VideoRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import java.util.List;
@@ -42,6 +48,10 @@ public class BookStudyService implements StudyProgressService {
     private final UserRepository userRepository;
     private final AssignmentRepository assignmentRepository;
 
+    private final UserAssignmentRepository userAssignmentRepository;
+    private final VideoRepository videoRepository;
+    private final ProblemRepository problemRepository;
+
     @Override
     public StudyType getStudyType() {
         return StudyType.BOOK;
@@ -49,9 +59,19 @@ public class BookStudyService implements StudyProgressService {
 
     @Override
     public BookStudyProgress findStudyProgress(Round round, List<User> members) {
-        // TODO: 서적 스터디 진행 현황 조회 로직 수정
+        List<Long> memberIds = members.stream().map(User::getId).toList();
+        List<Assignment> assignments = assignmentRepository.findAllByRound(round);
 
-        return BookStudyProgress.fromEntity(round);
+        List<UserAssignment> userAssignments = userAssignmentRepository
+            .findAllByAssignmentInAndUserIdInAndAssigned(assignments, memberIds);
+
+        List<Video> videos = videoRepository
+            .findAllByAssignmentInAndUploaderIdIn(assignments, memberIds);
+
+        List<Problem> problems = problemRepository
+            .findAllByAssignmentInAndExaminerIdIn(assignments, memberIds);
+
+        return BookStudyProgress.fromEntity(round, assignments, userAssignments, problems, videos);
     }
 
     @Override
@@ -103,7 +123,7 @@ public class BookStudyService implements StudyProgressService {
         AddAssignmentCommand addAssignmentCommand) {
         Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
                 clock.today())
-            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.NEXT_ROUND_NOT_FOUND));
 
         Study study = studyRepository.findWithLeaderById(
                 studyId)
@@ -136,7 +156,7 @@ public class BookStudyService implements StudyProgressService {
 
         Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
                 clock.today())
-            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.NEXT_ROUND_NOT_FOUND));
 
         Study study = studyRepository.findWithLeaderById(
                 studyId)

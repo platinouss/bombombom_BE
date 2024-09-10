@@ -4,6 +4,7 @@ import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithm
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.controller.dto.request.GetAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
@@ -118,7 +119,8 @@ public class StudyController {
     public ResponseEntity<StudyDetailsResponse> getStudyDetails(@PathVariable("id") Long studyId) {
         StudyDetailsResult studyDetailsResult = studyService.findStudyDetails(studyId);
 
-        return ResponseEntity.ok().body(StudyDetailsResponse.fromResult(studyDetailsResult));
+        return ResponseEntity.ok()
+            .body(StudyDetailsResponse.fromResult(studyDetailsResult));
     }
 
     @GetMapping("/progress/{id}")
@@ -166,14 +168,15 @@ public class StudyController {
     }
 
     @GetMapping("/{id}/assignments")
-    public ResponseEntity<List<AssignmentResult>> getAssignments(
+    public ResponseEntity<List<AssignmentInfo>> getAssignments(
         @PathVariable("id") Long studyId,
         @Valid @RequestBody GetAssignmentRequest getAssignmentRequest) {
 
-        List<AssignmentResult> assignmentResults =
+        List<AssignmentResult> assignments =
             bookStudyService.getAssignments(studyId, getAssignmentRequest.roundIdx());
 
-        return ResponseEntity.ok().body(assignmentResults);
+        return ResponseEntity.ok().body(assignments.stream().map(
+            AssignmentInfo::fromResult).toList());
     }
 
 
