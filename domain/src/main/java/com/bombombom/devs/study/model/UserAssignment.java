@@ -1,13 +1,9 @@
 package com.bombombom.devs.study.model;
 
 import com.bombombom.devs.common.BaseEntity;
-import com.bombombom.devs.study.enums.AssignmentStatus;
 import com.bombombom.devs.user.model.User;
-import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -34,17 +30,16 @@ public class UserAssignment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",
+        nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment",
+    @JoinColumn(name = "assignment_id",
+        nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private Assignment assignment;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private AssignmentStatus state;
 
     public Long getUserId() {
         return user.getId();

@@ -112,5 +112,18 @@ public class StudyService {
 
     }
 
+    @Transactional
+    public void startVoting(Long userId, Long studyId) {
+
+        Study study = studyRepository.findWithLeaderById(
+                studyId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+
+        study.startVoting(userId);
+
+        // 명시적 호출??
+//        studyRepository.save(study);
+    }
+
 
 }

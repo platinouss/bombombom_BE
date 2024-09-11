@@ -4,7 +4,6 @@ import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.core.exception.BusinessRuleException;
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.ForbiddenException;
-import com.bombombom.devs.core.exception.InvalidInputException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
@@ -30,7 +29,6 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -183,21 +181,23 @@ public abstract class Study extends BaseEntity {
         state = StudyStatus.RUNNING;
     }
 
-    public void canEditAssignment(Long userId, Integer roundIdx,
-        Round nextRound) {
-        if (getStudyType() != StudyType.BOOK) {
-            throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
-        }
-
+    public void assertLeader(Long userId) {
         if (!leader.getId().equals(userId)) {
             throw new BusinessRuleException(ErrorCode.ONLY_LEADER_ALLOWED);
         }
+    }
 
-        if (!roundIdx.equals(nextRound.getIdx())) {
-            throw new InvalidInputException(ErrorCode.INVALID_INPUT, Map.of(
-                "roundIdx", "다음 회차의 인덱스가 아닙니다."
-            ));
-        }
 
+    public void startVoting(Long userId) {
+        throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
+    }
+
+    public void canVote() {
+        throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
+    }
+
+    public void canEditAssignment(Long userId, Integer roundIdx,
+        Round nextRound) {
+        throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
     }
 }

@@ -11,29 +11,53 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Problem extends BaseEntity {
+@Table(name = "assignment_vote")
+@DynamicUpdate
+public class AssignmentVote extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "examiner_id",
+    @JoinColumn(name = "first",
         nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private User examiner;
+    private Assignment first;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment_id",
+    @JoinColumn(name = "second",
+        nullable = true,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private Assignment assignment;
+    private Assignment second;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",
+        nullable = false,
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "round_id",
+        nullable = false,
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private Round round;
+
+    public void update(Assignment first, Assignment second) {
+        this.first = first;
+        this.second = second;
+    }
+
 }

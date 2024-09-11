@@ -5,6 +5,7 @@ import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.core.exception.BusinessRuleException;
 import com.bombombom.devs.core.exception.DuplicationException;
 import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
@@ -12,11 +13,15 @@ import com.bombombom.devs.external.study.service.dto.command.AddAssignmentComman
 import com.bombombom.devs.external.study.service.dto.command.DeleteAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.EditAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
+import com.bombombom.devs.external.study.service.dto.command.VoteAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
+import com.bombombom.devs.external.study.service.dto.result.AssignmentVoteResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.BookStudyProgress;
 import com.bombombom.devs.study.enums.StudyType;
+import com.bombombom.devs.study.enums.VotingProcess;
 import com.bombombom.devs.study.model.Assignment;
+import com.bombombom.devs.study.model.AssignmentVote;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Problem;
 import com.bombombom.devs.study.model.Round;
@@ -24,10 +29,12 @@ import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.model.UserAssignment;
 import com.bombombom.devs.study.model.Video;
 import com.bombombom.devs.study.repository.AssignmentRepository;
+import com.bombombom.devs.study.repository.AssignmentVoteRepository;
 import com.bombombom.devs.study.repository.ProblemRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserAssignmentRepository;
+import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.study.repository.VideoRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
@@ -47,11 +54,13 @@ public class BookStudyService implements StudyProgressService {
     private final BookRepository bookRepository;
     private final RoundRepository roundRepository;
     private final UserRepository userRepository;
+    private final UserStudyRepository userStudyRepository;
     private final AssignmentRepository assignmentRepository;
 
     private final UserAssignmentRepository userAssignmentRepository;
     private final VideoRepository videoRepository;
     private final ProblemRepository problemRepository;
+    private final AssignmentVoteRepository assignmentVoteRepository;
 
     @Override
     public StudyType getStudyType() {
@@ -64,7 +73,7 @@ public class BookStudyService implements StudyProgressService {
         List<Assignment> assignments = assignmentRepository.findAllByRound(round);
 
         List<UserAssignment> userAssignments = userAssignmentRepository
-            .findAllByAssignmentInAndUserIdInAndAssigned(assignments, memberIds);
+            .findAllByAssignmentInAndUserIdIn(assignments, memberIds);
 
         List<Video> videos = videoRepository
             .findAllByAssignmentInAndUploaderIdIn(assignments, memberIds);
@@ -101,6 +110,7 @@ public class BookStudyService implements StudyProgressService {
             .state(registerBookStudyCommand.state())
             .leader(user)
             .book(book)
+            .votingProcess(VotingProcess.READY)
             .build();
 
         bookStudy.createRounds();
@@ -239,4 +249,60 @@ public class BookStudyService implements StudyProgressService {
             .toList();
     }
 
+    public AssignmentVoteResult voteAssignment(Long userId, Long studyId,
+        VoteAssignmentCommand voteAssignmentCommand) {
+
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+
+        study.canVote();
+        
+        if (!userStudyRepository.existsByUserIdAndStudyId(userId, studyId)) {
+            throw new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED);
+        }
+
+        Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
+                clock.today())
+            .orElseThrow(() -> new NotFoundException(ErrorCode.NEXT_ROUND_NOT_FOUND));
+
+        Assignment first = assignmentRepository.findById(voteAssignmentCommand.first())
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+
+        if (!nextRound.equals(first.getRound())) {
+            throw new BusinessRuleException(ErrorCode.NOT_NEXT_ROUND_ASSIGNMENT);
+        }
+
+        Assignment second;
+
+        if (voteAssignmentCommand.second() != null) {
+            second = assignmentRepository.findById(voteAssignmentCommand.second())
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+
+            if (!nextRound.equals(second.getRound())) {
+                throw new BusinessRuleException(ErrorCode.NOT_NEXT_ROUND_ASSIGNMENT);
+            }
+        } else {
+            second = null;
+        }
+
+        AssignmentVote vote = assignmentVoteRepository.findByUserIdAndRound(userId,
+                nextRound)
+            .orElseGet(
+                () -> {
+                    User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+                    return AssignmentVote.builder()
+                        .user(user)
+                        .first(first)
+                        .second(second)
+                        .round(nextRound)
+                        .build();
+                });
+
+        vote.update(first, second);
+
+        return AssignmentVoteResult.fromEntity(assignmentVoteRepository.save(vote));
+
+    }
 }

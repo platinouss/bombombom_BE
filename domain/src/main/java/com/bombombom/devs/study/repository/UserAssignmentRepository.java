@@ -10,7 +10,7 @@ public interface UserAssignmentRepository extends JpaRepository<UserAssignment, 
 
 
     @Query("SELECT ua FROM UserAssignment ua "
-        + "WHERE assignment IN :assignments AND ua.user.id IN :memberIds AND state = 'ASSIGNED'")
-    List<UserAssignment> findAllByAssignmentInAndUserIdInAndAssigned(List<Assignment> assignments,
+        + "WHERE assignment IN :assignments AND ua.user.id IN :memberIds")
+    List<UserAssignment> findAllByAssignmentInAndUserIdIn(List<Assignment> assignments,
         List<Long> memberIds);
 }

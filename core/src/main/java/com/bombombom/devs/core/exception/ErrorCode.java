@@ -1,5 +1,6 @@
 package com.bombombom.devs.core.exception;
 
+import static com.bombombom.devs.core.exception.StatusCode.BAD_REQUEST;
 import static com.bombombom.devs.core.exception.StatusCode.CONFLICT;
 import static com.bombombom.devs.core.exception.StatusCode.FORBIDDEN;
 import static com.bombombom.devs.core.exception.StatusCode.INTERNAL_SERVER_ERROR;
@@ -15,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
 
     // BAD_REQUEST 400
-    INVALID_INPUT(StatusCode.BAD_REQUEST, 40000, "잘못된 요청입니다."),
+    INVALID_INPUT(BAD_REQUEST, 40000, "잘못된 요청입니다."),
+    NOT_NEXT_ROUND_IDX(BAD_REQUEST, 40001, "다음 라운드의 인덱스가 아닙니다."),
+
 
     // UNAUTHORIZED 401
     INVALID_USER(UNAUTHORIZED, 40100, "유효하지 않은 유저입니다."),
@@ -50,6 +53,8 @@ public enum ErrorCode {
     ALREADY_JOINED(NOT_ACCEPTABLE, 40609, "이미 가입한 스터디입니다."),
     VIDEO_ASSIGNMENT_ID_NOT_MATCH(NOT_ACCEPTABLE, 40610, "영상의 과제 ID가 일치하지 않습니다."),
     PROBLEM_ASSIGNMENT_ID_NOT_MATCH(NOT_ACCEPTABLE, 40611, "문제의 과제 ID가 일치하지 않습니다."),
+    VOTING_PROCESS_NOT_READY(NOT_ACCEPTABLE, 40612, "투표가 준비 중이 아닙니다."),
+    VOTING_PROCESS_NOT_ONGOING(NOT_ACCEPTABLE, 40613, "투표가 진행 중이 아닙니다."),
 
     // CONFLICT 409
     DUPLICATED_USERNAME(CONFLICT, 40900, "이미 사용중인 유저 이름입니다."),

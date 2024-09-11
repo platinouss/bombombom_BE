@@ -5,6 +5,7 @@ import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.user.controller.dto.UserProfileResponse;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
+import com.bombombom.devs.study.enums.VotingProcess;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import lombok.Builder;
@@ -24,7 +25,8 @@ public record BookStudyResponse(
     StudyStatus state,
     UserProfileResponse leader,
     StudyType studyType,
-    BookInfo bookInfo)
+    BookInfo bookInfo,
+    VotingProcess votingProcess)
     implements StudyResponse {
 
     public static BookStudyResponse fromResult(BookStudyResult res) {
@@ -43,6 +45,7 @@ public record BookStudyResponse(
             .state(res.state())
             .studyType(res.studyType())
             .bookInfo(BookInfo.fromResult(res.bookResult()))
+            .votingProcess(res.votingProcess())
             .build();
 
     }

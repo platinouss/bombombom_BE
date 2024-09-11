@@ -5,6 +5,7 @@ import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
+import com.bombombom.devs.study.enums.VotingProcess;
 import com.bombombom.devs.study.model.BookStudy;
 import java.time.LocalDate;
 import lombok.Builder;
@@ -23,7 +24,8 @@ public record BookStudyResult(
     StudyStatus state,
     UserProfileResult leader,
     StudyType studyType,
-    BookResult bookResult
+    BookResult bookResult,
+    VotingProcess votingProcess
 ) implements StudyResult {
 
     public static BookStudyResult fromEntity(BookStudy bookStudy) {
@@ -42,6 +44,7 @@ public record BookStudyResult(
             .leader(UserProfileResult.fromEntity(bookStudy.getLeader()))
             .bookResult(SearchBooksResult.fromBook(bookStudy.getBook()))
             .studyType(bookStudy.getStudyType())
+            .votingProcess(bookStudy.getVotingProcess())
             .build();
     }
 }

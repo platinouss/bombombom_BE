@@ -11,6 +11,7 @@ import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.StartStudyRequest;
+import com.bombombom.devs.external.study.controller.dto.request.VoteAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.BookStudyResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
@@ -22,6 +23,7 @@ import com.bombombom.devs.external.study.service.BookStudyService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
+import com.bombombom.devs.external.study.service.dto.result.AssignmentVoteResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
@@ -156,6 +158,16 @@ public class StudyController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/{id}/start-voting")
+    public ResponseEntity<Void> startVoting(
+        @LoginUser AppUserDetails userDetails,
+        @PathVariable("id") Long studyId) {
+
+        studyService.startVoting(userDetails.getId(), studyId);
+
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/{id}/assignments")
     public ResponseEntity<List<AssignmentResult>> editAssignments(
         @LoginUser AppUserDetails userDetails,
@@ -165,6 +177,19 @@ public class StudyController {
         List<AssignmentResult> assignmentResults = bookStudyService.setAssignments(
             userDetails.getId(), studyId,
             editAssignmentRequest.toServiceDto());
+
+        return ResponseEntity.ok().body(assignmentResults);
+    }
+
+    @PutMapping("/{id}/vote")
+    public ResponseEntity<AssignmentVoteResult> voteAssignment(
+        @LoginUser AppUserDetails userDetails,
+        @PathVariable("id") Long studyId,
+        @Valid @RequestBody VoteAssignmentRequest voteAssignmentRequest) {
+
+        AssignmentVoteResult assignmentResults = bookStudyService.voteAssignment(
+            userDetails.getId(), studyId,
+            voteAssignmentRequest.toServiceDto());
 
         return ResponseEntity.ok().body(assignmentResults);
     }
