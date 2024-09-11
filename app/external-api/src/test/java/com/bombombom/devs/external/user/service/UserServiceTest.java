@@ -1,12 +1,13 @@
 package com.bombombom.devs.external.user.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
-import com.bombombom.devs.external.user.exception.ExistUsernameException;
+import com.bombombom.devs.core.exception.DuplicationException;
+import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.external.user.service.dto.SignupCommand;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.user.model.Role;
@@ -48,7 +49,10 @@ public class UserServiceTest {
         /*
         When & Then
          */
-        assertThrows(ExistUsernameException.class, () -> userService.addUser(signupCommand));
+        assertThatThrownBy(() -> userService.addUser(signupCommand))
+
+            .isInstanceOf(DuplicationException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATED_USERNAME);
     }
 
     @DisplayName("username을 통해 유저를 조회할 수 있다.")

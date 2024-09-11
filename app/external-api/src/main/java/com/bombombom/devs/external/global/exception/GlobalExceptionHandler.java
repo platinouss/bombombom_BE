@@ -1,9 +1,11 @@
 package com.bombombom.devs.external.global.exception;
 
-import com.bombombom.devs.exception.ExternalApiException;
-import com.bombombom.devs.core.exception.NotFoundException;
-import com.bombombom.devs.external.user.exception.ExistUsernameException;
+import com.bombombom.devs.core.exception.AbstractException;
+import com.bombombom.devs.core.exception.DetailedErrorResponse;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ErrorResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.jsonwebtoken.lang.Assert;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -11,41 +13,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.NotAcceptableStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({
-        ExistUsernameException.class,
-        ExternalApiException.class
-    })
-    protected ResponseEntity<ErrorResponse> handleInvalidData(RuntimeException e) {
-        ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            e.getMessage()
-        );
-        return ResponseEntity.badRequest().body(errorResponse);
-    }
+    @ExceptionHandler(AbstractException.class)
+    protected ResponseEntity<ErrorResponse> handle(AbstractException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        int status = errorCode.getStatusCode().getValue();
 
-    @ExceptionHandler(
-        NotFoundException.class
-    )
-    protected ResponseEntity<ErrorResponse> handleNotFound(NotFoundException e) {
-        ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.NOT_FOUND.value(),
-            e.getMessage()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
+        HttpStatus httpStatus = HttpStatus.resolve(status);
+        Assert.notNull(httpStatus);
 
-    @ExceptionHandler(NotAcceptableStatusException.class)
-    protected ResponseEntity<ErrorResponse> handleNotFound(NotAcceptableStatusException e) {
-        ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.NOT_ACCEPTABLE.value(),
-            e.getMessage()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity<>(e.errorResponse(), httpStatus);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

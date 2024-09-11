@@ -1,9 +1,9 @@
 package com.bombombom.devs.external.study.service;
 
 import com.bombombom.devs.external.study.service.dto.result.progress.StudyProgress;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.user.model.User;
 import java.util.List;
 

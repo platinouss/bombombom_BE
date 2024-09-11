@@ -5,21 +5,25 @@ import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
 import com.bombombom.devs.algo.repository.AlgorithmProblemFeedbackRepository;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
-import com.bombombom.devs.core.exception.NotAcceptableException;
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
+import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.job.AlgorithmProblemConverter;
 import com.bombombom.devs.solvedac.SolvedacClient;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyType;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
 import com.bombombom.devs.study.repository.AlgorithmStudyDifficultyRepository;
@@ -28,6 +32,7 @@ import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +58,50 @@ public class AlgorithmStudyService implements StudyProgressService {
     private final AlgorithmProblemService algorithmProblemService;
     private final AlgorithmProblemConverter algorithmProblemConverter;
     private final Clock clock;
+
+
+    @Transactional
+    public AlgorithmStudyResult createStudy(
+        Long userId,
+        RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
+
+        int difficultyGap = registerAlgorithmStudyCommand.difficultyEnd()
+            - registerAlgorithmStudyCommand.difficultyBegin();
+        float db = registerAlgorithmStudyCommand.difficultyBegin();
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        AlgorithmStudy algorithmStudy = AlgorithmStudy.builder()
+            .name(registerAlgorithmStudyCommand.name())
+            .introduce(registerAlgorithmStudyCommand.introduce())
+            .capacity(registerAlgorithmStudyCommand.capacity())
+            .weeks(registerAlgorithmStudyCommand.weeks())
+            .startDate(registerAlgorithmStudyCommand.startDate())
+            .reliabilityLimit(registerAlgorithmStudyCommand.reliabilityLimit())
+            .penalty(registerAlgorithmStudyCommand.penalty())
+            .headCount(registerAlgorithmStudyCommand.headCount())
+            .state(registerAlgorithmStudyCommand.state())
+            .leader(user)
+            .difficultyGap(difficultyGap)
+            .problemCount(registerAlgorithmStudyCommand.problemCount())
+            .build();
+
+        algorithmStudy.createRounds();
+        algorithmStudy.setDifficulty(db);
+
+        algorithmStudy.admit(user);
+        studyRepository.save(algorithmStudy);
+
+        if (algorithmStudy.getStartDate().equals(clock.today())) {
+            algorithmStudy.start(clock, userId);
+
+            startRound(algorithmStudy, algorithmStudy.getFirstRound());
+        }
+
+        user.payMoney(algorithmStudy.calculateDeposit());
+        return AlgorithmStudyResult.fromEntity(algorithmStudy);
+    }
 
     @Override
     public StudyType getStudyType() {
@@ -98,43 +147,43 @@ public class AlgorithmStudyService implements StudyProgressService {
 
         Study study = studyRepository.findById(
                 feedbackAlgorithmProblemCommand.studyId())
-            .orElseThrow(() -> new NotFoundException("Study Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         if (study.getStudyType() != StudyType.ALGORITHM) {
-            throw new NotAcceptableException("Feedback can only be given to Algorithm Study");
+            throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
         }
 
         AlgorithmStudy algorithmStudy = (AlgorithmStudy) study;
 
         Round round = roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
                 algorithmStudy.getId(), clock.today())
-            .orElseThrow(() -> new NotFoundException("Ongoing Round Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
 
         AlgorithmProblem problem = algoProblemRepository.findById(
                 feedbackAlgorithmProblemCommand.problemId())
-            .orElseThrow(() -> new NotFoundException("Problem Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND));
 
         AlgorithmProblemSolveHistory history = algoSolveHistoryRepository.findByUserIdAndProblemId(
                 userId, problem.getId())
-            .orElseThrow(() -> new NotFoundException("Solve History Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.SOLVE_HISTORY_NOT_FOUND));
 
         if (history.getSolvedAt() == null) {
-            throw new IllegalStateException("Cant Give Feedback On Unsolved Problem");
+            throw new BusinessRuleException(ErrorCode.PROBLEM_NOT_SOLVED);
         }
 
         if (!algoAssignmentRepository.existsByRoundIdAndProblemId(round.getId(),
             problem.getId())) {
-            throw new NotAcceptableException("Problem is not ongoing assignment");
+            throw new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND);
 
         }
 
         if (!userStudyRepository.existsByUserIdAndStudyId(userId,
             algorithmStudy.getId())) {
-            throw new NotAcceptableException("User is not a member");
+            throw new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED);
         }
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         AlgorithmProblemFeedback preFeedback =
             algoFeedbackRepository.findByUserIdAndProblemId(userId, problem.getId())
@@ -176,7 +225,12 @@ public class AlgorithmStudyService implements StudyProgressService {
 
     @Transactional
     public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
-        round.assignProblems(problems);
-        roundRepository.save(round);
+        List<AlgorithmProblemAssignment> assignments = new ArrayList<>();
+        for (AlgorithmProblem problem : problems) {
+            assignments.add(AlgorithmProblemAssignment.of(round, problem));
+        }
+        algorithmProblemAssignmentRepository.saveAll(assignments);
     }
+
+
 }

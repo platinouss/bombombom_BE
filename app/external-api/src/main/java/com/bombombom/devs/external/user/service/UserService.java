@@ -1,6 +1,8 @@
 package com.bombombom.devs.external.user.service;
 
-import com.bombombom.devs.external.user.exception.ExistUsernameException;
+import com.bombombom.devs.core.exception.DuplicationException;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.external.user.service.dto.SignupCommand;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.user.model.User;
@@ -18,7 +20,7 @@ public class UserService {
 
     public void addUser(SignupCommand signupCommand) {
         if (userRepository.existsByUsername(signupCommand.username())) {
-            throw new ExistUsernameException();
+            throw new DuplicationException(ErrorCode.DUPLICATED_USERNAME);
         }
         User user = User.signup(signupCommand.username(),
             passwordEncoder.encode(signupCommand.password()), signupCommand.introduce());
@@ -28,7 +30,7 @@ public class UserService {
 
     public UserProfileResult findById(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalStateException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
         return UserProfileResult.fromEntity(user);
     }
 }

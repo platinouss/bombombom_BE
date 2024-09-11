@@ -3,7 +3,7 @@ package com.bombombom.devs.external.study.service;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
-import com.bombombom.devs.study.model.StudyType;
+import com.bombombom.devs.study.enums.StudyType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

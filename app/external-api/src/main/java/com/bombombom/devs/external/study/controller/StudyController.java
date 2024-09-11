@@ -1,8 +1,10 @@
 package com.bombombom.devs.external.study.controller;
 
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
-import com.bombombom.devs.external.global.security.AppUserDetails;
 import com.bombombom.devs.external.global.web.LoginUser;
+import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.GetAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
@@ -14,13 +16,17 @@ import com.bombombom.devs.external.study.controller.dto.response.StudyPageRespon
 import com.bombombom.devs.external.study.controller.dto.response.StudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.AlgorithmStudyService;
+import com.bombombom.devs.external.study.service.BookStudyService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
+import com.bombombom.devs.security.AppUserDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,10 +37,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 @Slf4j
@@ -46,6 +54,7 @@ public class StudyController {
     public static final String RESOURCE_PATH = "/api/v1/studies";
     private final StudyService studyService;
     private final AlgorithmStudyService algorithmStudyService;
+    private final BookStudyService bookStudyService;
 
 
     @PostMapping("/algo")
@@ -53,7 +62,7 @@ public class StudyController {
         @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest) {
 
-        AlgorithmStudyResult algorithmStudyResult = studyService.createAlgorithmStudy(
+        AlgorithmStudyResult algorithmStudyResult = algorithmStudyService.createStudy(
             userDetails.getId(),
             registerAlgorithmStudyRequest.toServiceDto());
 
@@ -69,7 +78,7 @@ public class StudyController {
         @LoginUser AppUserDetails userDetails,
         @Valid @RequestBody RegisterBookStudyRequest registerBookStudyRequest) {
 
-        BookStudyResult bookStudyResult = studyService.createBookStudy(
+        BookStudyResult bookStudyResult = bookStudyService.createStudy(
             userDetails.getId(),
             registerBookStudyRequest.toServiceDto());
 
@@ -108,6 +117,7 @@ public class StudyController {
     @GetMapping("/{id}")
     public ResponseEntity<StudyDetailsResponse> getStudyDetails(@PathVariable("id") Long studyId) {
         StudyDetailsResult studyDetailsResult = studyService.findStudyDetails(studyId);
+
         return ResponseEntity.ok().body(StudyDetailsResponse.fromResult(studyDetailsResult));
     }
 
@@ -142,4 +152,45 @@ public class StudyController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}/assignments")
+    public ResponseEntity<List<AssignmentResult>> editAssignments(
+        @LoginUser AppUserDetails userDetails,
+        @PathVariable("id") Long studyId,
+        @Valid @RequestBody EditAssignmentRequest editAssignmentRequest) {
+
+        List<AssignmentResult> assignmentResults = bookStudyService.setAssignments(
+            userDetails.getId(), studyId,
+            editAssignmentRequest.toServiceDto());
+
+        return ResponseEntity.ok().body(assignmentResults);
+    }
+
+    @GetMapping("/{id}/assignments")
+    public ResponseEntity<List<AssignmentResult>> getAssignments(
+        @PathVariable("id") Long studyId,
+        @Valid @RequestBody GetAssignmentRequest getAssignmentRequest) {
+
+        List<AssignmentResult> assignmentResults =
+            bookStudyService.getAssignments(studyId, getAssignmentRequest.roundIdx());
+
+        return ResponseEntity.ok().body(assignmentResults);
+    }
+
+
+    @PostMapping("/{id}/assignments")
+    public ResponseEntity<List<AssignmentResult>> createAssignments(
+        @LoginUser AppUserDetails userDetails,
+        @PathVariable("id") Long studyId,
+        @Valid @RequestBody AddAssignmentRequest editAssignmentRequest) {
+
+        List<AssignmentResult> assignmentResults = bookStudyService.addAssignments(
+            userDetails.getId(),
+            studyId,
+            editAssignmentRequest.toServiceDto());
+
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/{id}").buildAndExpand(editAssignmentRequest.roundIdx()).toUri();
+
+        return ResponseEntity.created(location).body(assignmentResults);
+    }
 }

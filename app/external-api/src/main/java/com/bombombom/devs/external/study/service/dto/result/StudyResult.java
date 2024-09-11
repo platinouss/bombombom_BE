@@ -1,11 +1,11 @@
 package com.bombombom.devs.external.study.service.dto.result;
 
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
+import com.bombombom.devs.study.enums.StudyStatus;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.BookStudy;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyStatus;
-import com.bombombom.devs.study.model.StudyType;
 import java.time.LocalDate;
 
 public interface StudyResult {

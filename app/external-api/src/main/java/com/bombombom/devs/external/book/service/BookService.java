@@ -6,15 +6,15 @@ import com.bombombom.devs.book.model.BookDocument;
 import com.bombombom.devs.book.repository.BookElasticsearchCustomRepository;
 import com.bombombom.devs.book.repository.BookElasticsearchRepository;
 import com.bombombom.devs.book.repository.BookRepository;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.dto.NaverBookApiQuery;
 import com.bombombom.devs.external.book.enums.SearchOption;
-import com.bombombom.devs.external.book.exception.BookNotFoundException;
 import com.bombombom.devs.external.book.service.dto.AddBookCommand;
 import com.bombombom.devs.external.book.service.dto.IndexBookCommand;
 import com.bombombom.devs.external.book.service.dto.SearchBookQuery;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,12 +52,12 @@ public class BookService {
     @Transactional
     public void addBook(AddBookCommand addBookCommand) {
         BookDocument indexedBook = bookElasticsearchRepository.findByIsbn(addBookCommand.isbn())
-            .orElseThrow(BookNotFoundException::new);
-        if (Objects.nonNull(indexedBook.getBookId())) {
-            return;
-        }
+            .orElseThrow(() -> new NotFoundException(ErrorCode.BOOK_NOT_FOUND));
         Book book = bookRepository.findByIsbn(indexedBook.getIsbn())
             .orElseGet(() -> bookRepository.save(Book.fromBookDocument(indexedBook)));
+        if (book.getId().equals(indexedBook.getBookId())) {
+            return;
+        }
         indexedBook.setBookId(book.getId());
         bookElasticsearchRepository.save(indexedBook);
     }

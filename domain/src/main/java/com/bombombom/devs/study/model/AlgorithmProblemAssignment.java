@@ -46,4 +46,12 @@ public class AlgorithmProblemAssignment extends BaseEntity {
             .tryCount(0)
             .build();
     }
+
+    public static AlgorithmProblemAssignment of(Round round, AlgorithmProblem problem) {
+
+        return AlgorithmProblemAssignment.builder()
+            .problem(problem)
+            .round(round)
+            .build();
+    }
 }

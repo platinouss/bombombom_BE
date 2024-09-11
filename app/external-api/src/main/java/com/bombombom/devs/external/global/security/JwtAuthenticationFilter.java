@@ -1,5 +1,7 @@
 package com.bombombom.devs.external.global.security;
 
+import com.bombombom.devs.core.exception.AuthenticationException;
+import com.bombombom.devs.core.exception.ErrorCode;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -45,12 +48,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = null;
         try {
             username = jwtUtils.extractUserId(jwt);
-        } catch (JwtException ignored) {
-            log.debug("JwtException = {}", ignored);
+        } catch (JwtException jwtException) {
+            log.debug("JwtException = {}", jwtException.getMessage());
+            throw new AuthenticationException(ErrorCode.INVALID_TOKEN);
         }
 
         if (username != null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails;
+
+            try {
+                userDetails = userDetailsService.loadUserByUsername(username);
+
+            } catch (UsernameNotFoundException e) {
+                throw new AuthenticationException(ErrorCode.INVALID_USER);
+            }
             UsernamePasswordAuthenticationToken authentication =
                 UsernamePasswordAuthenticationToken.authenticated(
                     userDetails,

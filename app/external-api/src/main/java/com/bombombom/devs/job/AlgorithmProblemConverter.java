@@ -2,6 +2,8 @@ package com.bombombom.devs.job;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.solvedac.dto.ProblemResponse;
 import com.bombombom.devs.solvedac.dto.ProblemTag;
@@ -37,7 +39,7 @@ public class AlgorithmProblemConverter {
             tag -> tagValues.contains(tag.key().toUpperCase())
         ).findFirst().orElseThrow(() -> {
             log.error("Tag not found: {}", response.tags());
-            return new IllegalStateException("Tag not found");
+            return new NotFoundException(ErrorCode.TAG_NOT_FOUND);
         });
         return AlgoTag.valueOf(problemTag.key().toUpperCase());
     }

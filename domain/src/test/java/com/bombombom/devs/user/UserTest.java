@@ -3,6 +3,8 @@ package com.bombombom.devs.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.user.model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,8 +50,8 @@ class UserTest {
          * When & Then
          */
         assertThatThrownBy(() -> testuser.payMoney(1500))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("User have Not enough money");
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_ENOUGH_MONEY);
     }
 
 }

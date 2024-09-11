@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.global.web;
 
-import com.bombombom.devs.external.global.security.AppUserDetails;
+import com.bombombom.devs.security.AppUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,15 +18,14 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
     public boolean supportsParameter(MethodParameter parameter) {
         boolean isLoginUserAnnotation = parameter.getParameterAnnotation(LoginUser.class) != null;
         boolean isUserClass = AppUserDetails.class.equals(parameter.getParameterType());
-
         return isLoginUserAnnotation && isUserClass;
     }
 
     @Override
     public Object resolveArgument(MethodParameter parameter,
-                                  ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest,
-                                  WebDataBinderFactory binderFactory) throws Exception {
+        ModelAndViewContainer mavContainer,
+        NativeWebRequest webRequest,
+        WebDataBinderFactory binderFactory) throws Exception {
         return SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

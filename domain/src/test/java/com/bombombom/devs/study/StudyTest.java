@@ -3,9 +3,11 @@ package com.bombombom.devs.study;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.study.model.StudyStatus;
 import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.user.model.User;
 import org.junit.jupiter.api.DisplayName;
@@ -74,7 +76,8 @@ class StudyTest {
          * When & Then
          */
         assertThatThrownBy(() -> study.admit(testuser))
-            .isInstanceOf(IllegalStateException.class);
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_ENDED);
     }
 
     @Test
@@ -101,8 +104,12 @@ class StudyTest {
         /*
          * When & Then
          */
+
         assertThatThrownBy(() -> study.admit(testuser))
-            .isInstanceOf(IllegalStateException.class);
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_IS_FULL);
+
+
     }
 
     @Test
@@ -130,7 +137,8 @@ class StudyTest {
          * When & Then
          */
         assertThatThrownBy(() -> study.admit(testuser))
-            .isInstanceOf(IllegalStateException.class);
+            .isInstanceOf(BusinessRuleException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_ENOUGH_RELIABILITY);
     }
 
 }

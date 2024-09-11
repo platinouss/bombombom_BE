@@ -1,8 +1,13 @@
 package com.bombombom.devs.study.model;
 
 import com.bombombom.devs.common.BaseEntity;
-import com.bombombom.devs.core.exception.NotAcceptableException;
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ForbiddenException;
+import com.bombombom.devs.core.exception.InvalidInputException;
 import com.bombombom.devs.core.util.Clock;
+import com.bombombom.devs.study.enums.StudyStatus;
+import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.user.model.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,6 +30,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -105,13 +111,15 @@ public abstract class Study extends BaseEntity {
 
     public void admit(User user) {
         if (state.equals(StudyStatus.END)) {
-            throw new IllegalStateException("The Study is End");
+
+            throw new BusinessRuleException(ErrorCode.STUDY_ENDED);
         }
         if (headCount >= capacity) {
-            throw new IllegalStateException("The Study is full");
+            throw new BusinessRuleException(ErrorCode.STUDY_IS_FULL);
+
         }
         if (reliabilityLimit != null && user.getReliability() < reliabilityLimit) {
-            throw new IllegalStateException("User reliability is low");
+            throw new BusinessRuleException(ErrorCode.NOT_ENOUGH_RELIABILITY);
         }
         UserStudy userStudy = UserStudy.of(user, this, calculateDeposit());
 
@@ -165,13 +173,31 @@ public abstract class Study extends BaseEntity {
         changeStartDate(clock.today());
 
         if (!leader.getId().equals(userId)) {
-            throw new IllegalStateException("Only Leader Can Start Study");
+            throw new ForbiddenException(ErrorCode.ONLY_LEADER_ALLOWED);
         }
 
         if (state != StudyStatus.READY) {
-            throw new NotAcceptableException("Study Already Started");
+            throw new BusinessRuleException(ErrorCode.STUDY_STARTED);
         }
 
         state = StudyStatus.RUNNING;
+    }
+
+    public void canEditAssignment(Long userId, Integer roundIdx,
+        Round nextRound) {
+        if (getStudyType() != StudyType.BOOK) {
+            throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
+        }
+
+        if (!leader.getId().equals(userId)) {
+            throw new BusinessRuleException(ErrorCode.ONLY_LEADER_ALLOWED);
+        }
+
+        if (!roundIdx.equals(nextRound.getIdx())) {
+            throw new InvalidInputException(ErrorCode.INVALID_INPUT, Map.of(
+                "roundIdx", "다음 회차의 인덱스가 아닙니다."
+            ));
+        }
+
     }
 }

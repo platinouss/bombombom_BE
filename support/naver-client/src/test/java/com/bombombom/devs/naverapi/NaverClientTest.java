@@ -4,8 +4,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.bombombom.devs.NaverClient;
+import com.bombombom.devs.core.exception.ExternalApiException;
 import com.bombombom.devs.dto.NaverBookApiQuery;
-import com.bombombom.devs.exception.ExternalApiException;
 import com.bombombom.devs.util.converter.MultiValueMapConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
