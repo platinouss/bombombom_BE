@@ -9,6 +9,7 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.command.AddAssignmentCommand;
+import com.bombombom.devs.external.study.service.dto.command.DeleteAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.EditAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
@@ -151,6 +152,29 @@ public class BookStudyService implements StudyProgressService {
     }
 
     @Transactional
+    public void removeAssignments(Long userId, Long studyId,
+        DeleteAssignmentCommand deleteAssignmentCommand) {
+        Round nextRound = roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(studyId,
+                clock.today())
+            .orElseThrow(() -> new NotFoundException(ErrorCode.NEXT_ROUND_NOT_FOUND));
+
+        Study study = studyRepository.findWithLeaderById(
+                studyId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+
+        study.canEditAssignment(userId,
+            deleteAssignmentCommand.roundIdx(),
+            nextRound);
+        if (assignmentRepository.existsAllByIdInAndRoundNot(
+            deleteAssignmentCommand.assignmentIds(), nextRound)) {
+            throw new BusinessRuleException(ErrorCode.NOT_NEXT_ROUND_ASSIGNMENT);
+        }
+        assignmentRepository.deleteAllByIdInAndRound(deleteAssignmentCommand.assignmentIds(),
+            nextRound);
+
+    }
+
+    @Transactional
     public List<AssignmentResult> setAssignments(Long userId, Long studyId,
         EditAssignmentCommand editAssignmentCommand) {
 
@@ -183,8 +207,6 @@ public class BookStudyService implements StudyProgressService {
 
             throw new BusinessRuleException(ErrorCode.NOT_NEXT_ROUND_ASSIGNMENT);
         }
-
-        assignmentRepository.deleteAllByIdNotInAndRound(assignmentIds, nextRound);
 
         List<Assignment> updatedAssignments =
             editAssignmentCommand.assignments()

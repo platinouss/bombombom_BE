@@ -3,6 +3,7 @@ package com.bombombom.devs.external.study.controller;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.DeleteAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.controller.dto.request.GetAssignmentRequest;
@@ -35,6 +36,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -165,6 +167,18 @@ public class StudyController {
             editAssignmentRequest.toServiceDto());
 
         return ResponseEntity.ok().body(assignmentResults);
+    }
+
+    @DeleteMapping("/{id}/assignments")
+    public ResponseEntity<List<Long>> deleteAssignments(
+        @LoginUser AppUserDetails userDetails,
+        @PathVariable("id") Long studyId,
+        @Valid @RequestBody DeleteAssignmentRequest deleteAssignmentRequest) {
+
+        bookStudyService.removeAssignments(userDetails.getId(), studyId,
+            deleteAssignmentRequest.toServiceDto());
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/assignments")

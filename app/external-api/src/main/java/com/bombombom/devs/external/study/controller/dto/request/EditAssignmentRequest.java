@@ -13,7 +13,7 @@ import lombok.Builder;
 @Builder
 public record EditAssignmentRequest(
     @NotNull @Min(0) Integer roundIdx,
-    @Valid @Size(max = 20) List<AssignmentInfo> assignments
+    @Valid List<AssignmentInfo> assignments
 ) {
 
     @Builder
