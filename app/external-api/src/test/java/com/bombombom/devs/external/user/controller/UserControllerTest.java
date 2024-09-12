@@ -38,6 +38,7 @@ class UserControllerTest {
 
     private static final String USERNAME = "bombombom";
     private static final String PASSWORD = "1234";
+    private static final String BAEKJOON_ID = "baekjoon";
 
     @MockBean
     private UserService userService;
@@ -58,6 +59,7 @@ class UserControllerTest {
         SignupCommand signupCommand = SignupCommand.builder()
             .username(USERNAME)
             .password(PASSWORD)
+            .baekjoonId(BAEKJOON_ID)
             .build();
 
         doNothing().when(userService).addUser(any(SignupCommand.class));
@@ -87,6 +89,7 @@ class UserControllerTest {
          */
         SignupRequest signupRequest = SignupRequest.builder()
             .password(PASSWORD)
+            .baekjoonId(BAEKJOON_ID)
             .build();
 
         /*
@@ -103,7 +106,7 @@ class UserControllerTest {
         Then
          */
         resultActions.andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
+            .andExpect(jsonPath("$.message").value("username은 공백일 수 없습니다."));
     }
 
     @WithMockUser
@@ -115,6 +118,7 @@ class UserControllerTest {
          */
         SignupRequest signupRequest = SignupRequest.builder()
             .username(USERNAME)
+            .baekjoonId(BAEKJOON_ID)
             .build();
 
         /*
@@ -131,7 +135,7 @@ class UserControllerTest {
         Then
          */
         resultActions.andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("공백일 수 없습니다."));
+            .andExpect(jsonPath("$.message").value("password는 공백일 수 없습니다."));
     }
 
     @WithMockUser
@@ -144,6 +148,7 @@ class UserControllerTest {
         SignupRequest signupRequest = SignupRequest.builder()
             .username(USERNAME)
             .password(PASSWORD)
+            .baekjoonId(BAEKJOON_ID)
             .introduce("봄".repeat(256))
             .build();
 
@@ -181,6 +186,7 @@ class UserControllerTest {
             .role(Role.USER)
             .image("image")
             .introduce("introduce")
+            .baekjoonId("testname")
             .reliability(0)
             .money(0)
             .build());
