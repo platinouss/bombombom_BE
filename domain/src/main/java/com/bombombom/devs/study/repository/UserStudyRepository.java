@@ -11,6 +11,6 @@ public interface UserStudyRepository extends JpaRepository<UserStudy, Long> {
 
     @Query("SELECT us FROM UserStudy us JOIN FETCH us.user "
         + "WHERE us.study.id = :studyId")
-    List<UserStudy> findByStudyId(Long studyId);
+    List<UserStudy> findWithUserByStudyId(Long studyId);
 }
 

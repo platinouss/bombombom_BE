@@ -26,7 +26,8 @@ public record BookStudyResponse(
     UserProfileResponse leader,
     StudyType studyType,
     BookInfo bookInfo,
-    VotingProcess votingProcess)
+    VotingProcess votingProcess,
+    Boolean duplicated)
     implements StudyResponse {
 
     public static BookStudyResponse fromResult(BookStudyResult res) {
@@ -46,6 +47,7 @@ public record BookStudyResponse(
             .studyType(res.studyType())
             .bookInfo(BookInfo.fromResult(res.bookResult()))
             .votingProcess(res.votingProcess())
+            .duplicated(res.duplicated())
             .build();
 
     }

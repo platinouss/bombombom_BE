@@ -3,6 +3,7 @@ package com.bombombom.devs.external.study.controller;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.ConfigureStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.DeleteAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
@@ -27,6 +28,7 @@ import com.bombombom.devs.external.study.service.dto.result.AssignmentVoteResult
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
+import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.security.AppUserDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -40,6 +42,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -180,6 +183,21 @@ public class StudyController {
 
         return ResponseEntity.ok().body(assignmentResults);
     }
+
+    @PatchMapping("/{id}/config")
+    public ResponseEntity<StudyResponse> configureStudy(
+        @LoginUser AppUserDetails userDetails,
+        @PathVariable("id") Long studyId,
+        @Valid @RequestBody ConfigureStudyRequest configureStudyRequest) {
+
+        StudyResult studyResult = studyService.configure(
+            userDetails.getId(),
+            studyId,
+            configureStudyRequest.toServiceDto());
+
+        return ResponseEntity.ok().body(StudyResponse.fromResult(studyResult));
+    }
+
 
     @PutMapping("/{id}/vote")
     public ResponseEntity<AssignmentVoteResult> voteAssignment(

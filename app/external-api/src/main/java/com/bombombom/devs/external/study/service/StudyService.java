@@ -4,6 +4,7 @@ import com.bombombom.devs.core.exception.BusinessRuleException;
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
+import com.bombombom.devs.external.study.service.dto.command.ConfigureStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.StartStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
@@ -80,6 +81,23 @@ public class StudyService {
             findStudyProgress(study, currentRound));
     }
 
+    @Transactional
+    public StudyResult configure(Long userId,
+        Long studyId, ConfigureStudyCommand command) {
+
+        Study study = studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+
+        study.assertLeader(userId);
+
+        if (command.duplicated() != null) {
+
+            study.setDuplicated(command.duplicated());
+        }
+
+        return StudyResult.fromEntity(study);
+    }
+
     @Transactional(readOnly = true)
     public StudyProgressResult findStudyProgress(Long studyId, Integer roundIdx) {
         Study study = studyRepository.findById(studyId)
@@ -91,7 +109,7 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public StudyProgressResult findStudyProgress(Study study, Round round) {
-        List<User> members = userStudyRepository.findByStudyId(study.getId()).stream()
+        List<User> members = userStudyRepository.findWithUserByStudyId(study.getId()).stream()
             .map(UserStudy::getUser).toList();
         return StudyProgressResult.fromEntity(study.getStudyType(), members,
             studyServiceFactory.getService(study.getStudyType()).findStudyProgress(round, members));
@@ -121,8 +139,7 @@ public class StudyService {
 
         study.startVoting(userId);
 
-        // 명시적 호출??
-//        studyRepository.save(study);
+        studyRepository.save(study);
     }
 
 

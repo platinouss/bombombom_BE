@@ -34,7 +34,6 @@ import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyP
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
-import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse.StudyDetails;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;

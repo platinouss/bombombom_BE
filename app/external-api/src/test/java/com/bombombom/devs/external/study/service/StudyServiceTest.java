@@ -1004,7 +1004,7 @@ class StudyServiceTest {
         doReturn(Optional.of(study)).when(studyRepository).findById(anyLong());
         doReturn(Optional.of(round)).when(roundRepository)
             .findRoundByStudyAndIdx(anyLong(), anyInt());
-        doReturn(members).when(userStudyRepository).findByStudyId(anyLong());
+        doReturn(members).when(userStudyRepository).findWithUserByStudyId(anyLong());
         doReturn(algorithmStudyService).when(studyServiceFactory).getService(StudyType.ALGORITHM);
         doReturn(List.of(assignment1, assignment2)).when(algorithmProblemAssignmentRepository)
             .findAssignmentWithProblemByRoundId(anyLong());
@@ -1228,7 +1228,7 @@ class StudyServiceTest {
         doReturn(Optional.of(round)).when(roundRepository)
             .findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(anyLong(), anyInt(),
                 any(LocalDate.class));
-        doReturn(members).when(userStudyRepository).findByStudyId(anyLong());
+        doReturn(members).when(userStudyRepository).findWithUserByStudyId(anyLong());
         doReturn(algorithmStudyService).when(studyServiceFactory).getService(StudyType.ALGORITHM);
         doReturn(List.of(assignment1, assignment2)).when(algorithmProblemAssignmentRepository)
             .findAssignmentWithProblemByRoundId(anyLong());

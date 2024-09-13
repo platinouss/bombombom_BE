@@ -41,7 +41,10 @@ public class BookStudy extends Study {
 
     @Column(nullable = false, name = "voting_process")
     @Enumerated(EnumType.STRING)
-    protected VotingProcess votingProcess;
+    private VotingProcess votingProcess;
+
+    @Column(nullable = false, name = "duplicated")
+    private boolean duplicated;
 
     @Override
     public StudyType getStudyType() {
@@ -80,5 +83,15 @@ public class BookStudy extends Study {
         assertLeader(userId);
 
 
+    }
+
+    @Override
+    public void setDuplicated(Boolean duplicated) {
+
+        if (votingProcess != VotingProcess.READY) {
+            throw new BusinessRuleException(ErrorCode.VOTING_PROCESS_NOT_READY);
+        }
+
+        this.duplicated = duplicated;
     }
 }

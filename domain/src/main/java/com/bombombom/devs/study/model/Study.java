@@ -188,6 +188,11 @@ public abstract class Study extends BaseEntity {
     }
 
 
+    public void setDuplicated(Boolean duplicated) {
+        throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
+    }
+
+
     public void startVoting(Long userId) {
         throw new BusinessRuleException(ErrorCode.WRONG_STUDY_TYPE);
     }

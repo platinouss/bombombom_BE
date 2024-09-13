@@ -25,7 +25,8 @@ public record BookStudyResult(
     UserProfileResult leader,
     StudyType studyType,
     BookResult bookResult,
-    VotingProcess votingProcess
+    VotingProcess votingProcess,
+    Boolean duplicated
 ) implements StudyResult {
 
     public static BookStudyResult fromEntity(BookStudy bookStudy) {
@@ -45,6 +46,7 @@ public record BookStudyResult(
             .bookResult(SearchBooksResult.fromBook(bookStudy.getBook()))
             .studyType(bookStudy.getStudyType())
             .votingProcess(bookStudy.getVotingProcess())
+            .duplicated(bookStudy.isDuplicated())
             .build();
     }
 }
