@@ -10,6 +10,7 @@ public record UserProfileResult(
     String username,
     String image,
     String introduce,
+    String baekjoonId,
     Integer reliability,
     Integer money,
     Role role
@@ -22,6 +23,7 @@ public record UserProfileResult(
             .role(user.getRole())
             .image(user.getImage())
             .introduce(user.getIntroduce())
+            .baekjoonId(user.getBaekjoon())
             .reliability(user.getReliability())
             .money(user.getMoney())
             .build();

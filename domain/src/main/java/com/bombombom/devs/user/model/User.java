@@ -37,20 +37,12 @@ public class User extends BaseEntity {
 
     private String image;
     private String introduce;
+
+    @Column(unique = true)
     private String baekjoon;
+
     private Integer reliability;
     private Integer money;
-
-    public static User signup(String username, String password, String introduce) {
-        return User.builder()
-            .username(username)
-            .password(password)
-            .introduce(introduce)
-            .role(Role.USER)
-            .reliability(0)
-            .money(0)
-            .build();
-    }
 
     public void payMoney(Integer money) {
         if (money < 0) {
