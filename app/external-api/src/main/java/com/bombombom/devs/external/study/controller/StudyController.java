@@ -7,7 +7,6 @@ import com.bombombom.devs.external.study.controller.dto.request.ConfigureStudyRe
 import com.bombombom.devs.external.study.controller.dto.request.DeleteAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
-import com.bombombom.devs.external.study.controller.dto.request.GetAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
@@ -31,6 +30,8 @@ import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.security.AppUserDetails;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -227,10 +228,10 @@ public class StudyController {
     @GetMapping("/{id}/assignments")
     public ResponseEntity<List<AssignmentInfo>> getAssignments(
         @PathVariable("id") Long studyId,
-        @Valid @RequestBody GetAssignmentRequest getAssignmentRequest) {
+        @RequestParam @NotNull @Min(0) Integer roundIdx) {
 
         List<AssignmentResult> assignments =
-            bookStudyService.getAssignments(studyId, getAssignmentRequest.roundIdx());
+            bookStudyService.getAssignments(studyId, roundIdx);
 
         return ResponseEntity.ok().body(assignments.stream().map(
             AssignmentInfo::fromResult).toList());

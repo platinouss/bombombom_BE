@@ -52,12 +52,6 @@ public record BookStudyProgress(
                 throw new BusinessRuleException(ErrorCode.VIDEO_ASSIGNMENT_ID_NOT_MATCH);
             }
 
-            if (!videoIdsMap.containsKey(userId)) {
-                videoIdsMap.put(userId, new ArrayList<>(List.of(video.getId())));
-            } else {
-                videoIdsMap.get(userId).add(video.getId());
-            }
-
             videoIdsMap.merge(userId,
                 new ArrayList<>(List.of(video.getId())),
                 (oldValue, value) -> {

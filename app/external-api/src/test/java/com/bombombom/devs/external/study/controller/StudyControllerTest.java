@@ -1803,7 +1803,7 @@ class StudyControllerTest {
                 .members(List.of(user1, user2))
                 .studyProgress(algorithmStudyProgress)
                 .build();
-            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+            StudyResult studyResult = AlgorithmStudyResult.builder()
                 .studyType(StudyType.ALGORITHM)
                 .name("스터디")
                 .introduce("안녕하세요")
@@ -1813,23 +1813,12 @@ class StudyControllerTest {
                 .reliabilityLimit(0)
                 .startDate(LocalDate.of(2024, 7, 22))
                 .weeks(2)
-                .leaderId(1L)
-                .status(StudyStatus.RUNNING)
-                .currentStudyProgress(studyProgressResult)
-                .build();
+                .leader(user1)
+                .state(StudyStatus.RUNNING).build();
 
-            StudyDetails studyDetails = StudyDetails.builder()
-                .studyType(StudyType.ALGORITHM)
-                .name("스터디")
-                .introduce("안녕하세요")
-                .headCount(1)
-                .capacity(5)
-                .penalty(10000)
-                .reliabilityLimit(0)
-                .startDate(LocalDate.of(2024, 7, 22))
-                .weeks(2)
-                .leaderId(1L)
-                .status(StudyStatus.RUNNING)
+            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+                .studyResult(studyResult)
+                .currentStudyProgress(studyProgressResult)
                 .build();
             Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
             AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
@@ -1869,7 +1858,7 @@ class StudyControllerTest {
                 .users(users)
                 .build();
             StudyDetailsResponse studyDetailsResponse = StudyDetailsResponse.builder()
-                .details(studyDetails)
+                .details(StudyResponse.fromResult(studyResult))
                 .round(progressResponse)
                 .build();
 
@@ -1946,7 +1935,8 @@ class StudyControllerTest {
                 .members(List.of(user1, user2))
                 .studyProgress(algorithmStudyProgress)
                 .build();
-            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+
+            StudyResult studyResult = AlgorithmStudyResult.builder()
                 .studyType(StudyType.ALGORITHM)
                 .name("스터디")
                 .introduce("안녕하세요")
@@ -1956,8 +1946,11 @@ class StudyControllerTest {
                 .reliabilityLimit(0)
                 .startDate(LocalDate.of(2024, 7, 22))
                 .weeks(2)
-                .leaderId(1L)
-                .status(StudyStatus.RUNNING)
+                .leader(user1)
+                .state(StudyStatus.RUNNING)
+                .build();
+            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+                .studyResult(studyResult)
                 .currentStudyProgress(studyProgressResult)
                 .build();
 
@@ -1973,5 +1966,7 @@ class StudyControllerTest {
              */
             resultActions.andExpect(status().isBadRequest());
         }
+
+
     }
 }

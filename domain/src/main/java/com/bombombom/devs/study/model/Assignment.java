@@ -2,6 +2,7 @@ package com.bombombom.devs.study.model;
 
 
 import com.bombombom.devs.common.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -31,6 +32,7 @@ public class Assignment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "round_id",
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))

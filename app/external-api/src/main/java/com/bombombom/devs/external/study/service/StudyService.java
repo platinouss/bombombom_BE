@@ -100,7 +100,7 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public StudyProgressResult findStudyProgress(Long studyId, Integer roundIdx) {
-        Study study = studyRepository.findById(studyId)
+        Study study = studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
         Round round = roundRepository.findRoundByStudyAndIdx(studyId, roundIdx)
             .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
@@ -111,6 +111,7 @@ public class StudyService {
     public StudyProgressResult findStudyProgress(Study study, Round round) {
         List<User> members = userStudyRepository.findWithUserByStudyId(study.getId()).stream()
             .map(UserStudy::getUser).toList();
+
         return StudyProgressResult.fromEntity(study.getStudyType(), members,
             studyServiceFactory.getService(study.getStudyType()).findStudyProgress(round, members));
     }

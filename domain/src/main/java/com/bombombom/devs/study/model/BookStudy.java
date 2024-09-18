@@ -94,4 +94,9 @@ public class BookStudy extends Study {
 
         this.duplicated = duplicated;
     }
+
+    public void endVote() {
+
+        this.votingProcess = VotingProcess.READY;
+    }
 }

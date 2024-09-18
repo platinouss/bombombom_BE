@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,7 +132,6 @@ public class BookStudyService implements StudyProgressService {
                 unassignedAssignment.remove(first);
             }
         );
-        userAssignmentRepository.saveAll(userAssignments);
 
         availableMember.forEach(
             member -> {
@@ -204,26 +204,28 @@ public class BookStudyService implements StudyProgressService {
         // 각 과제별로 1순위,2순위 투표에 대한 추첨 진행
         // 할당되지 않은 과제와 가능한 멤버 집합을 계속 관리
         IntStream.range(0, 2).forEach(
-            priority ->
-                unassignedAssignment.forEach(
-                    assignment -> {
-                        List<User> voters = votersMap.get(assignment.getId()).get(priority)
-                            .stream().filter(availableMember::contains).toList();
+            priority -> {
+                Iterator<Assignment> iterator = unassignedAssignment.iterator();
+                while (iterator.hasNext()) {
+                    Assignment assignment = iterator.next();
+                    List<User> voters = votersMap.get(assignment.getId()).get(priority)
+                        .stream().filter(availableMember::contains).toList();
 
-                        if (voters.isEmpty()) {
-                            return;
-                        }
-                        User winner = Util.getRandom(voters);
-                        unassignedAssignment.remove(assignment);
-                        availableMember.remove(winner);
-
-                        userAssignments.add(UserAssignment.builder()
-                            .assignment(assignment)
-                            .user(winner)
-                            .build()
-                        );
+                    if (voters.isEmpty()) {
+                        continue;
                     }
-                ));
+                    User winner = Util.getRandom(voters);
+                    iterator.remove();
+                    availableMember.remove(winner);
+
+                    userAssignments.add(UserAssignment.builder()
+                        .assignment(assignment)
+                        .user(winner)
+                        .build()
+                    );
+                }
+            }
+        );
 
         // 기권한멤버 및 1순위, 2순위 투표에서 모두 낙첨된 멤버는 우선적으로 미할당과제에 배치하되
         // 모든 과제가 할당 되었다면 1순위로 투표한 과제를 중복할당받게됨
@@ -255,16 +257,15 @@ public class BookStudyService implements StudyProgressService {
     @Override
     public void startRound(Study study, Round round) {
 
+        List<Assignment> assignments = assignmentRepository.findAllByRound(round);
+        if (assignments.isEmpty()) {
+            return;
+        }
+
         BookStudy bookStudy = (BookStudy) study;
 
         List<User> members = userStudyRepository.findWithUserByStudyId(study.getId()).stream()
             .map(UserStudy::getUser).toList();
-
-        List<Assignment> assignments = assignmentRepository.findAllByRound(round);
-
-        if (assignments.isEmpty()) {
-            throw new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND);
-        }
 
         List<AssignmentVote> votes = assignmentVoteRepository.findAllByRound(round);
 
@@ -274,6 +275,7 @@ public class BookStudyService implements StudyProgressService {
         } else {
             userAssignments = countingVote(votes, assignments, members);
         }
+        bookStudy.endVote();
         userAssignmentRepository.saveAll(userAssignments);
 
     }

@@ -183,7 +183,7 @@ public abstract class Study extends BaseEntity {
 
     public void assertLeader(Long userId) {
         if (!leader.getId().equals(userId)) {
-            throw new BusinessRuleException(ErrorCode.ONLY_LEADER_ALLOWED);
+            throw new ForbiddenException(ErrorCode.ONLY_LEADER_ALLOWED);
         }
     }
 

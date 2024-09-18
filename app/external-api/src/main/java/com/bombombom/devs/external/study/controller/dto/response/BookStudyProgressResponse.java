@@ -1,7 +1,5 @@
 package com.bombombom.devs.external.study.controller.dto.response;
 
-import com.bombombom.devs.core.exception.ErrorCode;
-import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
@@ -55,7 +53,10 @@ public record BookStudyProgressResponse(
         studyProgress.members().forEach(member -> {
 
             if (!assignmentIdMap.containsKey(member.id())) {
-                throw new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND);
+                // throw new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND);
+                users.put(member.id(),
+                    MemberAndSubmissionInfo.fromResult(member, null, List.of(), List.of()));
+                return;
             }
             Long assignmentId = assignmentIdMap.get(member.id());
             List<Long> videoIds = videoIdsMap.getOrDefault(member.id(), List.of());
