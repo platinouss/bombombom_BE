@@ -1,0 +1,97 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:381492172680:task-definition/devs-spring-server-task:4",
+    "containerDefinitions": [
+        {
+            "name": "spring-boot",
+            "image": "381492172680.dkr.ecr.ap-northeast-2.amazonaws.com/devs-spring-boot:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "spring-boot-8080-tcp",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [
+                {
+                    "value": "arn:aws:s3:::devs-env-bucket/spring.env",
+                    "type": "s3"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/devs-spring-server-task",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "ap-northeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "devs-spring-server-task",
+    "taskRoleArn": "arn:aws:iam::381492172680:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::381492172680:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 4,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "ecs.capability.env-files.s3"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "3072",
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2024-08-06T14:23:50.112Z",
+    "registeredBy": "arn:aws:iam::381492172680:root",
+    "tags": []
+}
