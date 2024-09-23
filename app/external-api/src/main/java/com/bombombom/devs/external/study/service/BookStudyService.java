@@ -133,6 +133,7 @@ public class BookStudyService implements StudyProgressService {
             }
         );
 
+        // 투표를 안한사람들
         availableMember.forEach(
             member -> {
                 Assignment randomAssignment;
@@ -445,6 +446,9 @@ public class BookStudyService implements StudyProgressService {
     public AssignmentVoteResult voteAssignment(Long userId, Long studyId,
         VoteAssignmentCommand voteAssignmentCommand) {
 
+        // lock
+        // mysql - repeatable read (phantom read) 격리레벨 강제로 상위로 올리기?
+        // unit test에서 쓰레드 여러개 쏴보기
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 

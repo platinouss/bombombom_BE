@@ -84,7 +84,8 @@ public class StudyService {
     @Transactional
     public StudyResult configure(Long userId,
         Long studyId, ConfigureStudyCommand command) {
-
+        //null이면 그냥 오류
+        
         Study study = studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
@@ -134,9 +135,10 @@ public class StudyService {
     @Transactional
     public void startVoting(Long userId, Long studyId) {
 
-        Study study = studyRepository.findWithLeaderById(
+        Study study = studyRepository.findById(
                 studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+        // 에러메세지가 다양해짐, 나중에 스터디원도 투표시작가능?
 
         study.startVoting(userId);
 
