@@ -1,14 +1,16 @@
 name: Deploy to AWS ECS on Fargate
 
 on:
-  push:
+  pull_request:
     branches: [ "develop" ]
+    types:
+      - closed
   workflow_dispatch:
 
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
     env:
       AWS_REGION: ap-northeast-2
       ECR_REPOSITORY: devs-spring-boot
@@ -20,11 +22,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Restore jar
         uses: actions/cache/restore@v4
         with:
           path: app/external-api/build/libs
-          key: ${{ runner.os }}-cached-jar-latest
+          key: ${{ runner.os }}-cached-jar-
           restore-keys: ${{ runner.os }}-cached-jar-
 
       - name: Configure AWS Credentials
@@ -40,13 +45,18 @@ jobs:
 
       - name: Build and Push Image to Amazon ECR
         uses: docker/build-push-action@v3
-        id: build-and-push-image
+        id: build-and-push
+        env:
+          ECR: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
         with:
+          context: .
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          provenance: false
+          tags: ${{ env.ECR }}:${{ github.sha }}
           platforms: linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha, mode=max
+          cache-from: type=registry,ref=${{ env.ECR }}:cache
+          cache-to: type=registry,ref=${{ env.ECR }}:cache,image-manifest=true
+
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -54,7 +64,8 @@ jobs:
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-and-push-image.outputs.imageid }}
+          image: ${{ fromJSON(steps.build-and-push.outputs.metadata)['image.name'] }}
+
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

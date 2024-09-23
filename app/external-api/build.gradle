@@ -29,6 +29,7 @@ dependencies {
 }
 tasks.named('bootJar') {
     preserveFileTimestamps = false
+    reproducibleFileOrder = true
     enabled = true
 }
 
