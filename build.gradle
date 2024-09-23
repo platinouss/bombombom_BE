@@ -39,6 +39,8 @@ subprojects {
 
     tasks.named('jar') {
         enabled = true
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
     }
 
     tasks.named('test') {
