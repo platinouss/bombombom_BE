@@ -9,7 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-
     env:
       AWS_REGION: ap-northeast-2
       ECR_REPOSITORY: devs-spring-boot
@@ -19,14 +18,14 @@ jobs:
       CONTAINER_NAME: spring-boot
 
     steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - uses: actions/checkout@v4
 
       - name: Restore jar
         uses: actions/cache/restore@v4
         with:
           path: app/external-api/build/libs
-          key: ${{ runner.os }}-cached-jar-*
+          key: ${{ runner.os }}-cached-jar-latest
+          restore-keys: ${{ runner.os }}-cached-jar-
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
