@@ -6,7 +6,7 @@ import lombok.Builder;
 @Builder
 public record ProvidePublicKeyResponse(
     int id,
-    Double version,
+    long version,
     String publicKey
 ) {
 

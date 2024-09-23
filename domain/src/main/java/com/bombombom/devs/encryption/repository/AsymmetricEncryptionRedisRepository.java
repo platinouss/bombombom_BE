@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class EncryptionRedisRepository {
+public class AsymmetricEncryptionRedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final HashOperations<String, String, String> hashOperations;
@@ -43,9 +43,9 @@ public class EncryptionRedisRepository {
         redisTemplate.opsForValue().set(redisKey, String.valueOf(version));
     }
 
-    public double getAsymmetricKeyPairLatestVersion(int id) {
+    public long getAsymmetricKeyPairLatestVersion(int id) {
         String redisKey = getRedisKeyForAsymmetricKeyPairVersion(id);
-        return Double.parseDouble(
+        return Long.parseLong(
             Objects.requireNonNull(redisTemplate.opsForValue().get(redisKey)));
     }
 

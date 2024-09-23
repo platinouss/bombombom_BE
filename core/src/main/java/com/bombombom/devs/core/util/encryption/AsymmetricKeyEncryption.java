@@ -21,6 +21,10 @@ public interface AsymmetricKeyEncryption {
     byte[] decrypt(byte[] encryptedData, PrivateKey privateKey)
         throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException;
 
+    String serializePublicKey(PublicKey publicKey);
+
+    String serializePrivateKey(PrivateKey privateKey);
+
     PublicKey deserializePublicKey(String publicKey) throws InvalidKeySpecException;
 
     PrivateKey deserializePrivateKey(String privateKey) throws InvalidKeySpecException;

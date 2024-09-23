@@ -57,6 +57,16 @@ public class ECCEncryption implements AsymmetricKeyEncryption {
     }
 
     @Override
+    public String serializePublicKey(PublicKey publicKey) {
+        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+    }
+
+    @Override
+    public String serializePrivateKey(PrivateKey privateKey) {
+        return Base64.getEncoder().encodeToString(privateKey.getEncoded());
+    }
+
+    @Override
     public PublicKey deserializePublicKey(String publicKey) throws InvalidKeySpecException {
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKey);
         return keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));

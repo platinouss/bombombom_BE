@@ -1,6 +1,6 @@
 package com.bombombom.devs.external.global.decryption;
 
-import com.bombombom.devs.external.encryption.service.EncryptionService;
+import com.bombombom.devs.external.encryption.service.AsymmetricEncryptionService;
 import com.bombombom.devs.external.global.decryption.dto.EncryptedRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.Filter;
@@ -11,6 +11,12 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,7 +27,7 @@ import org.springframework.stereotype.Component;
 public class DecryptionFilter implements Filter {
 
     private final ObjectMapper objectMapper;
-    private final EncryptionService encryptionService;
+    private final AsymmetricEncryptionService asymmetricEncryptionService;
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
@@ -32,14 +38,11 @@ public class DecryptionFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
-        // TODO: 특정 header가 있다면, 해당 header를 복호화 해서, 해당 데이터에 있는 private key로 복호화하는 분기 추가
         DecryptedRequestWrapper requestWrapper = new DecryptedRequestWrapper(httpRequest);
         EncryptedRequest encryptedRequest = objectMapper.readValue(requestWrapper.getRequestBody(),
             EncryptedRequest.class);
         try {
-            String decryptedData = encryptionService.decryptData(encryptedRequest.id(),
-                encryptedRequest.version(), encryptedRequest.encryptedData());
-            requestWrapper.setRequestBody(decryptedData);
+            requestWrapper.setRequestBody(decryptRequestBody(encryptedRequest));
             filterChain.doFilter(requestWrapper, servletResponse);
         } catch (Exception e) {
             log.error("Failed to decrypt request body. Error details: ", e);
@@ -53,5 +56,11 @@ public class DecryptionFilter implements Filter {
 
     @Override
     public void destroy() {
+    }
+
+    private String decryptRequestBody(EncryptedRequest encryptedRequest)
+        throws NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+        return asymmetricEncryptionService.decryptData(encryptedRequest.id(),
+            encryptedRequest.version(), encryptedRequest.encryptedData());
     }
 }

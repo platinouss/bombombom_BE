@@ -5,7 +5,6 @@ import lombok.Builder;
 
 @Builder
 public record PublicKeyInfo(
-    Double version,
     String publicKey
 ) {
 

@@ -31,7 +31,7 @@ public class RSAEncryption implements AsymmetricKeyEncryption {
     @Override
     public KeyPair generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        keyGen.initialize(4096);
+        keyGen.initialize(2048);
         return keyGen.generateKeyPair();
     }
 
@@ -49,6 +49,16 @@ public class RSAEncryption implements AsymmetricKeyEncryption {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         return cipher.doFinal(encryptedData);
+    }
+
+    @Override
+    public String serializePublicKey(PublicKey publicKey) {
+        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+    }
+
+    @Override
+    public String serializePrivateKey(PrivateKey privateKey) {
+        return Base64.getEncoder().encodeToString(privateKey.getEncoded());
     }
 
     @Override
