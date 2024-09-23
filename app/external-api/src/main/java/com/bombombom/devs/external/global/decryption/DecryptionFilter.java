@@ -9,6 +9,7 @@ import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -19,11 +20,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
+@WebFilter(urlPatterns = {"/api/v1/auth"})
 public class DecryptionFilter implements Filter {
 
     private final ObjectMapper objectMapper;
@@ -33,11 +33,6 @@ public class DecryptionFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
         FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
-        // TODO: 더 좋은 방식으로 변경 필요
-        if (!httpRequest.getRequestURI().startsWith("/api/v1/auth")) {
-            filterChain.doFilter(servletRequest, servletResponse);
-            return;
-        }
         DecryptedRequestWrapper requestWrapper = new DecryptedRequestWrapper(httpRequest);
         EncryptedRequest encryptedRequest = objectMapper.readValue(requestWrapper.getRequestBody(),
             EncryptedRequest.class);
