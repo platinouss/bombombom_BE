@@ -9,7 +9,6 @@ import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -23,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-@WebFilter(urlPatterns = {"/api/v1/auth"})
 public class DecryptionFilter implements Filter {
 
     private final ObjectMapper objectMapper;
