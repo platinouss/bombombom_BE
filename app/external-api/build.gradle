@@ -28,6 +28,7 @@ dependencies {
 
 }
 tasks.named('bootJar') {
+    preserveFileTimestamps = false
     enabled = true
 }
 
