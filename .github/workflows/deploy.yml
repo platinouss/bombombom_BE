@@ -94,8 +94,8 @@ jobs:
           provenance: false
           tags: ${{ env.ECR }}:${{ github.sha }}
           platforms: linux/arm64
-          cache-from: type=registry,ref=${{ env.ECR }}:cache
-          cache-to: type=registry,ref=${{ env.ECR }}:cache,image-manifest=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
 
       - name: Fill in the new image ID in the Amazon ECS task definition
