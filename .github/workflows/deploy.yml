@@ -1,15 +1,12 @@
 name: Deploy to AWS ECS on Fargate
 
 on:
-  pull_request:
+  merge_group:
     branches: [ "develop" ]
-    types:
-      - closed
   workflow_dispatch:
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       AWS_REGION: ap-northeast-2
