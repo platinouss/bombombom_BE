@@ -18,7 +18,7 @@ public class DecryptionFilterConfig {
     public FilterRegistrationBean<DecryptionFilter> decryptionFilterRegistration() {
         FilterRegistrationBean<DecryptionFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new DecryptionFilter(objectMapper, asymmetricEncryptionService));
-        registrationBean.addUrlPatterns("/api/v1/auth");
+        registrationBean.addUrlPatterns("/api/v1/auth", "/api/v1/users/signup");
         return registrationBean;
     }
 
