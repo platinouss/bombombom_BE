@@ -9,8 +9,8 @@ import lombok.Builder;
 public record CompleteVideoUploadRequest(
     String uploadId,
     List<Part> parts,
-    String studyId,
-    String userId
+    long studyId,
+    long userId
 ) {
 
     public FinishMultipartUploadRequest toS3ClientDto() {
