@@ -155,7 +155,7 @@ public class AlgorithmStudyService implements StudyProgressService {
             throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
         }
         if (user.getBaekjoon() == null || user.getBaekjoon().isBlank()) {
-            throw new NotFoundException("Baekjoon id does not exist.");
+            throw new NotFoundException(ErrorCode.BAEKJOON_ID_NOT_FOUND);
         }
         List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemIds());
         algorithmProblemSolvedHistoryService.addUpdateTaskStatusRequest(user, problems,

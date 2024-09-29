@@ -34,7 +34,7 @@ public class AlgorithmProblemRedisRepository {
         String bucketCreationTime = (String) Optional.ofNullable(
                 valueOperations.get(SOLVEDAC_BUCKET_CREATION_KEY))
             .orElseThrow(() -> new NoSuchElementException(
-                "No value found for key: " + SOLVEDAC_BUCKET_CREATION_KEY));
+                "No value found for bucket key: " + SOLVEDAC_BUCKET_CREATION_KEY));
         Instant instant = Instant.ofEpochMilli(Long.parseLong(bucketCreationTime));
         return LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
     }

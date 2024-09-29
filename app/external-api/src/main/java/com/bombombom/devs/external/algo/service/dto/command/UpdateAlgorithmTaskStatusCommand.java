@@ -18,27 +18,6 @@ public record UpdateAlgorithmTaskStatusCommand(
     LocalDateTime requestTime
 ) {
 
-//    public static UpdateAlgorithmTaskStatusCommand fromMessage(Map<String, String> message) {
-//        List<Integer> refIds = Arrays.stream(message.get("refId").split(","))
-//            .map(Integer::parseInt).toList();
-//        Set<Integer> problemRefIds = new HashSet<>(refIds);
-//        String recordId = message.get("recordId");
-//        if (recordId.isEmpty()) {
-//            throw new IllegalArgumentException("Invalid Redis Stream record.");
-//        }
-//        long requestTimeMillis = Long.parseLong(message.get("recordId").split("-")[0]);
-//        LocalDateTime requestDateTime = LocalDateTime.ofInstant(
-//            Instant.ofEpochMilli(requestTimeMillis), ZoneId.systemDefault());
-//        return UpdateAlgorithmTaskStatusCommand.builder()
-//            .recordId(recordId)
-//            .studyId(Long.parseLong(message.get("studyId")))
-//            .userId(Long.parseLong(message.get("userId")))
-//            .baekjoonId(message.get("baekjoonId"))
-//            .problemRefIds(problemRefIds)
-//            .requestTime(requestDateTime)
-//            .build();
-//    }
-
     public static UpdateAlgorithmTaskStatusCommand fromMessage(TaskStatusUpdateMessage message) {
         long requestTimeMillis = Long.parseLong(message.recordId().split("-")[0]);
         LocalDateTime requestTime = LocalDateTime.ofInstant(

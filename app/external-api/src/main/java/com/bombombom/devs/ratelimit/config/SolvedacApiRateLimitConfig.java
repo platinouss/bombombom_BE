@@ -1,13 +1,14 @@
 package com.bombombom.devs.ratelimit.config;
 
 import com.bombombom.devs.algo.repository.AlgorithmProblemRedisRepository;
+import com.bombombom.devs.core.exception.RateLimitException;
 import com.bombombom.devs.job.QuartzJobScheduler;
 import com.bombombom.devs.job.UpdateAlgorithmStudyTaskStatusJob;
 import com.bombombom.devs.ratelimit.ApiRateLimiter;
-import com.bombombom.devs.ratelimit.exception.RateLimitException;
 import io.github.bucket4j.BucketConfiguration;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
@@ -40,10 +41,14 @@ public class SolvedacApiRateLimitConfig {
             TriggerKey triggerKey = updateAlgorithmStudyTaskStatusJob.getTriggerKey();
             quartzJobScheduler.removeTrigger(triggerKey);
             JobDetail jobDetail = updateAlgorithmStudyTaskStatusJob.getJobDetail();
-            Trigger trigger = updateAlgorithmStudyTaskStatusJob.buildJobTriggerAtTime(
-                getTaskStatusUpdateDelayInSeconds());
-            quartzJobScheduler.setScheduleJob(jobDetail, trigger);
-            throw new RateLimitException();
+            try {
+                Trigger trigger = updateAlgorithmStudyTaskStatusJob.buildJobTriggerAtTime(
+                    getTaskStatusUpdateDelayInSeconds());
+                quartzJobScheduler.setScheduleJob(jobDetail, trigger);
+            } catch (NoSuchElementException e) {
+                log.info(String.valueOf(e));
+            }
+            throw new RateLimitException(SOLVEDAC_BUCKET_KEY);
         }
     }
 
@@ -55,7 +60,8 @@ public class SolvedacApiRateLimitConfig {
 
     private int getTaskStatusUpdateDelayInSeconds() {
         LocalDateTime creationTime = algorithmProblemRedisRepository.getBucketCreationTime();
-        long secondsDifference = Duration.between(creationTime, LocalDateTime.now()).getSeconds();
+        long secondsDifference = Duration.between(creationTime, LocalDateTime.now())
+            .getSeconds();
         long durationSeconds = secondsDifference % REFILL_DURATION_OF_SECONDS;
         return REFILL_DURATION_OF_SECONDS - (int) durationSeconds + 1;
     }

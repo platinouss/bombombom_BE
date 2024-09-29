@@ -1,5 +1,7 @@
 package com.bombombom.devs.algo.model.vo;
 
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ServerInternalException;
 import com.bombombom.devs.core.util.Clock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,14 +25,9 @@ public record AlgorithmTaskUpdateStatus(
             return new AlgorithmTaskUpdateStatus(false, null);
         }
         try {
-            AlgorithmTaskUpdateStatus status = objectMapper.readValue(taskUpdateStatus,
-                AlgorithmTaskUpdateStatus.class);
-            if (status.isUpdating == null || status.statusUpdatedAt == null) {
-                throw new IllegalArgumentException("Invalid task status update record");
-            }
-            return status;
+            return objectMapper.readValue(taskUpdateStatus, AlgorithmTaskUpdateStatus.class);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Failed to convert JSON string to object");
+            throw new ServerInternalException(ErrorCode.JSON_CONVERSION_FAIL);
         }
     }
 
@@ -38,7 +35,7 @@ public record AlgorithmTaskUpdateStatus(
         try {
             return objectMapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Failed to convert object to JSON string");
+            throw new ServerInternalException(ErrorCode.JSON_CONVERSION_FAIL);
         }
     }
 }

@@ -6,6 +6,8 @@ import com.bombombom.devs.algo.model.vo.PendingMessageInfo;
 import com.bombombom.devs.algo.model.vo.TaskStatusUpdateMessage;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.algo.repository.AlgorithmProblemSolvedHistoryRedisRepository;
+import com.bombombom.devs.core.exception.BusinessRuleException;
+import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.dto.command.UpdateAlgorithmTaskStatusCommand;
@@ -50,8 +52,7 @@ public class AlgorithmProblemSolvedHistoryService {
     public void addUpdateTaskStatusRequest(User user, List<AlgorithmProblem> problems,
         Long studyId) {
         if (hasRecentlyUpdatedTaskStatus(studyId, user.getId())) {
-            throw new IllegalStateException(
-                "task status has been recently updated or is currently in progress");
+            throw new BusinessRuleException(ErrorCode.ALGORITHM_TASK_STATUS_RECENTLY_UPDATED);
         }
         List<Integer> problemRefIds = problems.stream().map(AlgorithmProblem::getRefId)
             .toList();
@@ -68,7 +69,7 @@ public class AlgorithmProblemSolvedHistoryService {
         List<Integer> problemRefIds = solvedProblems.items().stream()
             .map(ProblemResponse::problemId).toList();
         User user = userRepository.findById(command.userId())
-            .orElseThrow(() -> new NotFoundException("User Not Found"));
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
         List<AlgorithmProblem> problems = algorithmProblemRepository.findAllByRefId(problemRefIds);
         Set<Long> solvedProblemIds = algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemIds(
                 user.getId(), problems.stream().map(AlgorithmProblem::getId).toList())

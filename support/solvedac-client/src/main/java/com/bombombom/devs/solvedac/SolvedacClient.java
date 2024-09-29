@@ -2,8 +2,9 @@ package com.bombombom.devs.solvedac;
 
 import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ExternalApiException;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
-import com.bombombom.devs.solvedac.exception.ExternalApiException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -97,8 +99,13 @@ public class SolvedacClient {
             },
             error -> {
                 log.error("Error during getUnSolvedProblems: {}", error.getMessage());
-                completableFuture.completeExceptionally(new ExternalApiException(
-                    "Failed to request solvedac API." + error.getMessage()));
+                WebClientResponseException exception = (WebClientResponseException) error;
+                completableFuture.completeExceptionally(
+                    new ExternalApiException(ErrorCode.SOLVED_AC_API_FAIL, Map.of(
+                        "StatusCode", String.valueOf(exception.getStatusCode().value()),
+                        "Body", error.getMessage()
+                    ))
+                );
             }
         );
         return completableFuture.join();

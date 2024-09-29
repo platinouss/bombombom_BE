@@ -1,9 +1,9 @@
 package com.bombombom.devs.job;
 
 import com.bombombom.devs.algo.model.vo.TaskStatusUpdateMessage;
+import com.bombombom.devs.core.exception.RateLimitException;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemSolvedHistoryService;
 import com.bombombom.devs.external.algo.service.dto.command.UpdateAlgorithmTaskStatusCommand;
-import com.bombombom.devs.ratelimit.exception.RateLimitException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
