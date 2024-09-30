@@ -1,9 +1,7 @@
 package com.bombombom.devs.study.model;
 
-
 import com.bombombom.devs.common.BaseEntity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
+import com.bombombom.devs.user.model.User;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,30 +22,42 @@ import org.hibernate.annotations.DynamicUpdate;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "assignment")
+@Table(name = "assignment_vote")
 @DynamicUpdate
-public class Assignment extends BaseEntity {
+public class AssignmentVote extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "first",
+        nullable = false,
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private Assignment first;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "second",
+        nullable = true,
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private Assignment second;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",
+        nullable = false,
+        foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private User user;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "round_id",
+        nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private Round round;
 
-    @Column
-    private String title;
-
-    @Column(name = "page_start")
-    private Integer pageStart;
-
-    @Column(name = "page_end")
-    private Integer pageEnd;
-
-    @Column
-    private String description;
+    public void update(Assignment first, Assignment second) {
+        this.first = first;
+        this.second = second;
+    }
 
 }

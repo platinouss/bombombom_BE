@@ -4,6 +4,7 @@ import com.bombombom.devs.core.exception.BusinessRuleException;
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
+import com.bombombom.devs.external.study.service.dto.command.ConfigureStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.JoinStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.StartStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
@@ -59,7 +60,6 @@ public class StudyService {
 
         study.admit(user);
 
-        // 유저에 락킹??
         user.payMoney(study.calculateDeposit());
     }
 
@@ -71,18 +71,34 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public StudyDetailsResult findStudyDetails(Long studyId) {
-        Study study = studyRepository.findById(studyId)
+        Study study = studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         Round currentRound = roundRepository.findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(
                 studyId, study.getWeeks() - 1, clock.today())
             .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
-        return StudyDetailsResult.fromResult(study, findStudyProgress(study, currentRound));
+        return new StudyDetailsResult(StudyResult.fromEntity(study),
+            findStudyProgress(study, currentRound));
+    }
+
+    @Transactional
+    public void configure(Long userId,
+        Long studyId, ConfigureStudyCommand command) {
+
+        command.assertAnyNotNull();
+
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+
+        study.assertLeader(userId);
+
+        study.setDuplicated(command.duplicated());
+
     }
 
     @Transactional(readOnly = true)
     public StudyProgressResult findStudyProgress(Long studyId, Integer roundIdx) {
-        Study study = studyRepository.findById(studyId)
+        Study study = studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
         Round round = roundRepository.findRoundByStudyAndIdx(studyId, roundIdx)
             .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
@@ -91,8 +107,9 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public StudyProgressResult findStudyProgress(Study study, Round round) {
-        List<User> members = userStudyRepository.findByStudyId(study.getId()).stream()
+        List<User> members = userStudyRepository.findWithUserByStudyId(study.getId()).stream()
             .map(UserStudy::getUser).toList();
+
         return StudyProgressResult.fromEntity(study.getStudyType(), members,
             studyServiceFactory.getService(study.getStudyType()).findStudyProgress(round, members));
     }
@@ -110,6 +127,18 @@ public class StudyService {
         studyServiceFactory.getService(study.getStudyType())
             .startRound(study, study.getFirstRound());
 
+    }
+
+    @Transactional
+    public void startVoting(Long userId, Long studyId) {
+
+        Study study = studyRepository.findWithLeaderById(
+                studyId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+
+        study.startVoting(userId);
+
+        studyRepository.save(study);
     }
 
 

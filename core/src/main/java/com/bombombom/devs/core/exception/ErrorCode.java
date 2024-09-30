@@ -1,5 +1,6 @@
 package com.bombombom.devs.core.exception;
 
+import static com.bombombom.devs.core.exception.StatusCode.BAD_REQUEST;
 import static com.bombombom.devs.core.exception.StatusCode.CONFLICT;
 import static com.bombombom.devs.core.exception.StatusCode.FORBIDDEN;
 import static com.bombombom.devs.core.exception.StatusCode.INTERNAL_SERVER_ERROR;
@@ -15,7 +16,10 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
 
     // BAD_REQUEST 400
-    INVALID_INPUT(StatusCode.BAD_REQUEST, 40000, "잘못된 요청입니다."),
+    INVALID_INPUT(BAD_REQUEST, 40000, "잘못된 요청입니다."),
+    NOT_NEXT_ROUND_IDX(BAD_REQUEST, 40001, "다음 라운드의 인덱스가 아닙니다."),
+    ALL_IS_NULL(BAD_REQUEST, 40002, "모든 설정 값이 널 입니다."),
+
 
     // UNAUTHORIZED 401
     INVALID_USER(UNAUTHORIZED, 40100, "유효하지 않은 유저입니다."),
@@ -34,6 +38,8 @@ public enum ErrorCode {
     ASSIGNMENT_NOT_FOUND(NOT_FOUND, 40405, "과제정보를 찾을 수 없습니다."),
     PROBLEM_NOT_FOUND(NOT_FOUND, 40406, "문제를 찾을 수 없습니다."),
     SOLVE_HISTORY_NOT_FOUND(NOT_FOUND, 40406, "풀이 여부를 알 수 없습니다."),
+    USER_ASSIGNMENT_NOT_FOUND(NOT_FOUND, 40407, "유저에 과제를 할당한 정보를 찾을 수 없습니다."),
+    NEXT_ROUND_NOT_FOUND(NOT_FOUND, 40408, "다음 회차가 존재하지 않습니다."),
 
     // NOT_ACCEPTABLE 406
     STUDY_STARTED(NOT_ACCEPTABLE, 40600, "스터디가 시작하였습니다."),
@@ -46,6 +52,13 @@ public enum ErrorCode {
     STUDY_IS_FULL(NOT_ACCEPTABLE, 40607, "스터디가 만원입니다."),
     NOT_ENOUGH_RELIABILITY(NOT_ACCEPTABLE, 40608, "신뢰도가 부족합니다."),
     ALREADY_JOINED(NOT_ACCEPTABLE, 40609, "이미 가입한 스터디입니다."),
+    VIDEO_ASSIGNMENT_ID_NOT_MATCH(NOT_ACCEPTABLE, 40610, "영상의 과제 ID가 일치하지 않습니다."),
+    PROBLEM_ASSIGNMENT_ID_NOT_MATCH(NOT_ACCEPTABLE, 40611, "문제의 과제 ID가 일치하지 않습니다."),
+    VOTING_PROCESS_NOT_READY(NOT_ACCEPTABLE, 40612, "투표가 준비 중이 아닙니다."),
+    VOTING_PROCESS_NOT_ONGOING(NOT_ACCEPTABLE, 40613, "투표가 진행 중이 아닙니다."),
+    INVALID_VOTE_FOR_UNKNOWN_ASSIGNMENT(NOT_ACCEPTABLE, 40614, "투표한 과제가 유효하지 않습니다."),
+    MULTIPLE_VOTE(NOT_ACCEPTABLE, 40615, "다중 투표가 존재합니다."),
+    INVALID_VOTE_BY_NOT_MEMBER(NOT_ACCEPTABLE, 40616, "투표한 유저가 멤버가 아닙니다."),
 
     // CONFLICT 409
     DUPLICATED_USERNAME(CONFLICT, 40900, "이미 사용중인 유저 이름입니다."),
@@ -54,7 +67,9 @@ public enum ErrorCode {
     URL_PARAM_CONVERT_FAIL(INTERNAL_SERVER_ERROR, 50000, "URL 파라미터 변환 중 에러가 발생했습니다."),
     NAVER_BOOK_API_FAIL(INTERNAL_SERVER_ERROR, 50001, "Naver API 호출 실패"),
     INCORRECT_STUDY_TYPE(INTERNAL_SERVER_ERROR, 50002, "올바르지 않은 스터디 타입"),
-    JSON_CONVERSION_FAIL(INTERNAL_SERVER_ERROR, 50003, "JSON 변환에 실패했습니다.");
+    JSON_CONVERSION_FAIL(INTERNAL_SERVER_ERROR, 50003, "JSON 변환에 실패했습니다."),
+    UNEXPECTED_EXCEPTION(INTERNAL_SERVER_ERROR, 50004, "예기치 못한 에러가 발생했습니다."),
+    INDEX_OUT_OF_RANGE_IN_GET_RANDOM(INTERNAL_SERVER_ERROR, 50005, "인덱스 범위를 초과하였습니다.");
 
 
     private final StatusCode statusCode;

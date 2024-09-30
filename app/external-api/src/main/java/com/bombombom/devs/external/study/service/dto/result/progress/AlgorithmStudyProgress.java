@@ -1,8 +1,8 @@
 package com.bombombom.devs.external.study.service.dto.result.progress;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolveHistoryResult;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.Round;

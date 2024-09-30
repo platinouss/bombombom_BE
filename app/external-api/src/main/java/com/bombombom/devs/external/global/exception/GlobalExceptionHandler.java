@@ -4,17 +4,21 @@ import com.bombombom.devs.core.exception.AbstractException;
 import com.bombombom.devs.core.exception.DetailedErrorResponse;
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.ErrorResponse;
+import com.bombombom.devs.core.exception.ServerInternalException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.jsonwebtoken.lang.Assert;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AbstractException.class)
@@ -26,6 +30,15 @@ public class GlobalExceptionHandler {
         Assert.notNull(httpStatus);
 
         return new ResponseEntity<>(e.errorResponse(), httpStatus);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    protected ResponseEntity<ErrorResponse> handle(RuntimeException runtimeException) {
+        log.error("Unexpected Error Occur: ", runtimeException);
+
+        ServerInternalException e = new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
+
+        return new ResponseEntity<>(e.errorResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -43,5 +56,16 @@ public class GlobalExceptionHandler {
             errorDetails
         );
         return ResponseEntity.badRequest().body(detailedErrorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<ErrorResponse> handleDtoFieldTypeMismatch(
+        MethodArgumentTypeMismatchException e) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            e.getPropertyName() + " " + e.getErrorCode()
+        );
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 }

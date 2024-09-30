@@ -17,7 +17,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     Optional<Study> findWithLeaderById(Long id);
 
     @Query("SELECT s FROM Study s "
-        + "JOIN FETCH s.difficulties "
+        + "LEFT JOIN FETCH TREAT(s as AlgorithmStudy).difficulties "
         + "WHERE s.id = :id")
     Optional<Study> findWithDifficultiesById(Long id);
 
@@ -28,11 +28,18 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
 
     @Query(value = "SELECT s FROM Study s "
         + "LEFT JOIN FETCH s.leader "
-        + "LEFT JOIN FETCH s.difficulties "
-        + "LEFT JOIN FETCH TREAT(s as BookStudy).book",
+        + "LEFT JOIN FETCH TREAT(s as AlgorithmStudy).difficulties "
+        + "LEFT JOIN FETCH TREAT(s as BookStudy).book ",
         countQuery = "SELECT COUNT(s) FROM Study s")
     Page<Study> findAllWithDifficultiesAndLeaderAndBook(Pageable pageable);
 
+
+    @Query(value = "SELECT s FROM Study s "
+        + "LEFT JOIN FETCH s.leader "
+        + "LEFT JOIN FETCH TREAT(s as AlgorithmStudy).difficulties "
+        + "LEFT JOIN FETCH TREAT(s as BookStudy).book "
+        + "WHERE s.id = :id")
+    Optional<Study> findWithDifficultiesAndLeaderAndBookById(Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Study s WHERE id = :id")

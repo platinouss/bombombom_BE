@@ -24,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.util.SystemClock;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
@@ -34,7 +36,6 @@ import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyP
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
-import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse.StudyDetails;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
 import com.bombombom.devs.external.study.service.AlgorithmStudyService;
@@ -42,8 +43,6 @@ import com.bombombom.devs.external.study.service.BookStudyService;
 import com.bombombom.devs.external.study.service.StudyService;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemResult;
-import com.bombombom.devs.external.study.service.dto.result.AlgorithmProblemSolveHistoryResult;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;
@@ -1804,7 +1803,7 @@ class StudyControllerTest {
                 .members(List.of(user1, user2))
                 .studyProgress(algorithmStudyProgress)
                 .build();
-            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+            StudyResult studyResult = AlgorithmStudyResult.builder()
                 .studyType(StudyType.ALGORITHM)
                 .name("스터디")
                 .introduce("안녕하세요")
@@ -1814,23 +1813,12 @@ class StudyControllerTest {
                 .reliabilityLimit(0)
                 .startDate(LocalDate.of(2024, 7, 22))
                 .weeks(2)
-                .leaderId(1L)
-                .status(StudyStatus.RUNNING)
-                .currentStudyProgress(studyProgressResult)
-                .build();
+                .leader(user1)
+                .state(StudyStatus.RUNNING).build();
 
-            StudyDetails studyDetails = StudyDetails.builder()
-                .studyType(StudyType.ALGORITHM)
-                .name("스터디")
-                .introduce("안녕하세요")
-                .headCount(1)
-                .capacity(5)
-                .penalty(10000)
-                .reliabilityLimit(0)
-                .startDate(LocalDate.of(2024, 7, 22))
-                .weeks(2)
-                .leaderId(1L)
-                .status(StudyStatus.RUNNING)
+            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+                .studyResult(studyResult)
+                .currentStudyProgress(studyProgressResult)
                 .build();
             Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
             AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
@@ -1870,7 +1858,7 @@ class StudyControllerTest {
                 .users(users)
                 .build();
             StudyDetailsResponse studyDetailsResponse = StudyDetailsResponse.builder()
-                .details(studyDetails)
+                .details(StudyResponse.fromResult(studyResult))
                 .round(progressResponse)
                 .build();
 
@@ -1947,7 +1935,8 @@ class StudyControllerTest {
                 .members(List.of(user1, user2))
                 .studyProgress(algorithmStudyProgress)
                 .build();
-            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+
+            StudyResult studyResult = AlgorithmStudyResult.builder()
                 .studyType(StudyType.ALGORITHM)
                 .name("스터디")
                 .introduce("안녕하세요")
@@ -1957,8 +1946,11 @@ class StudyControllerTest {
                 .reliabilityLimit(0)
                 .startDate(LocalDate.of(2024, 7, 22))
                 .weeks(2)
-                .leaderId(1L)
-                .status(StudyStatus.RUNNING)
+                .leader(user1)
+                .state(StudyStatus.RUNNING)
+                .build();
+            StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
+                .studyResult(studyResult)
                 .currentStudyProgress(studyProgressResult)
                 .build();
 
@@ -1974,5 +1966,7 @@ class StudyControllerTest {
              */
             resultActions.andExpect(status().isBadRequest());
         }
+
+
     }
 }

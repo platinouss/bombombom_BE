@@ -2,7 +2,6 @@ package com.bombombom.devs.study.model;
 
 import com.bombombom.devs.common.BaseEntity;
 import com.bombombom.devs.user.model.User;
-import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,22 +26,26 @@ public class UserAssignment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",
+        nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    User user;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment",
+    @JoinColumn(name = "assignment_id",
+        nullable = false,
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    Assignment assignment;
+    private Assignment assignment;
 
-    @Column
-    boolean solved;
 
-    @Column
-    boolean assigned;
+    public Long getUserId() {
+        return user.getId();
+    }
 
+    public Long getAssignmentId() {
+        return assignment.getId();
+    }
 }

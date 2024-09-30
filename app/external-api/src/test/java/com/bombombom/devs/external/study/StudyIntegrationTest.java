@@ -3,9 +3,13 @@ package com.bombombom.devs.external.study;
 
 import static com.bombombom.devs.study.model.Study.MAX_DIFFICULTY_LEVEL;
 import static com.bombombom.devs.study.model.Study.MIN_DIFFICULTY_LEVEL;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +30,11 @@ import com.bombombom.devs.core.util.Util;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
+import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest.NewAssignmentInfo;
+import com.bombombom.devs.external.study.controller.dto.request.DeleteAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.controller.dto.request.JoinStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorithmStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
@@ -34,38 +43,53 @@ import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyP
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
-import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse.StudyDetails;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
+import com.bombombom.devs.external.study.service.dto.command.ConfigureStudyCommand;
+import com.bombombom.devs.external.study.service.dto.command.VoteAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
+import com.bombombom.devs.study.enums.VotingProcess;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
+import com.bombombom.devs.study.model.Assignment;
+import com.bombombom.devs.study.model.AssignmentVote;
 import com.bombombom.devs.study.model.BookStudy;
+import com.bombombom.devs.study.model.Problem;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.UserAssignment;
 import com.bombombom.devs.study.model.UserStudy;
+import com.bombombom.devs.study.model.Video;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
+import com.bombombom.devs.study.repository.AssignmentRepository;
+import com.bombombom.devs.study.repository.AssignmentVoteRepository;
+import com.bombombom.devs.study.repository.ProblemRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
+import com.bombombom.devs.study.repository.UserAssignmentRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
+import com.bombombom.devs.study.repository.VideoRepository;
 import com.bombombom.devs.user.model.Role;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.assertj.core.api.Assertions;
@@ -107,7 +131,8 @@ public class StudyIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private AlgorithmProblemRepository problemRepository;
+    private ProblemRepository problemRepository;
+
 
     @Autowired
     private StudyRepository studyRepository;
@@ -126,12 +151,20 @@ public class StudyIntegrationTest {
 
     @Autowired
     private AlgorithmProblemRepository algorithmProblemRepository;
+    @Autowired
+    private AssignmentRepository assignmentRepository;
+    @Autowired
+    private AssignmentVoteRepository assignmentVoteRepository;
 
     @Autowired
     private AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
 
     @Autowired
     private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    @Autowired
+    private VideoRepository videoRepository;
+    @Autowired
+    private UserAssignmentRepository userAssignmentRepository;
 
     @Nested
     @DisplayName("인증이 필요한 테스트")
@@ -139,6 +172,7 @@ public class StudyIntegrationTest {
     class TestWithAuthentication {
 
         private User testuser;
+        private Book testBook;
 
         @BeforeEach
         public void init() {
@@ -153,84 +187,844 @@ public class StudyIntegrationTest {
                 .build();
 
             userRepository.save(testuser);
+            testBook = Book.builder()
+                .title("테스트용 책")
+                .author("세계최강민석")
+                .isbn(9023948901239L)
+                .publisher("메가스터디")
+                .tableOfContents("1. 2. 3. 4.")
+                .build();
+
+            bookRepository.save(testBook);
+        }
+
+        @Nested
+        @DisplayName("투표 통합 테스트")
+        class VoteTest {
+
+            @Test
+            @DisplayName("중복할당 여부를 변경할 수 있다")
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_set_duplicated() throws Exception {
+                /*
+                 * Given
+                 */
+
+                BookStudy study1 =
+                    BookStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .book(testBook)
+                        .votingProcess(VotingProcess.READY)
+                        .build();
+                studyRepository.save(study1);
+
+                /*
+                 * When
+                 */
+                ConfigureStudyCommand configureStudyCommand = ConfigureStudyCommand.builder()
+                    .duplicated(true)
+                    .build();
+
+                ResultActions resultActions = mockMvc.perform(
+                    patch("/api/v1/studies/" + study1.getId() + "/config")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(configureStudyCommand))
+                );
+
+
+                /*
+                 * Then
+                 */
+                resultActions.andDo(print())
+                    .andExpect(status().isNoContent());
+            }
+
+            @Test
+            @DisplayName("투표를 시작할 수 있다")
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_start_vote() throws Exception {
+                /*
+                 * Given
+                 */
+
+                BookStudy study1 =
+                    BookStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .book(testBook)
+                        .votingProcess(VotingProcess.READY)
+                        .build();
+                studyRepository.save(study1);
+
+                /*
+                 * When
+                 */
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/api/v1/studies/" + study1.getId() + "/start-voting")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                );
+
+
+                /*
+                 * Then
+                 */
+                resultActions.andDo(print())
+                    .andExpect(status().isOk());
+            }
+
+            @Test
+            @DisplayName("투표할 수 있다")
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_vote() throws Exception {
+                /*
+                 * Given
+                 */
+
+                BookStudy study1 =
+                    BookStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .book(testBook)
+                        .votingProcess(VotingProcess.ONGOING)
+                        .build();
+                study1.createRounds();
+
+                List<Assignment> assignments = new ArrayList<>();
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("333")
+                        .round(study1.getFirstRound())
+                        .pageStart(132)
+                        .pageEnd(140).build()
+                );
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("가나다라")
+                        .round(study1.getFirstRound())
+                        .build()
+                );
+
+                studyRepository.save(study1);
+                userStudyRepository.save(UserStudy.builder().user(testuser).study(study1).build());
+                assignmentRepository.saveAll(assignments);
+
+                /*
+                 * When
+                 */
+                VoteAssignmentCommand voteAssignmentCommand = VoteAssignmentCommand.builder()
+                    .first(assignments.getFirst().getId())
+                    .second(assignments.getLast().getId())
+                    .build();
+                ResultActions resultActions = mockMvc.perform(
+                    put("/api/v1/studies/" + study1.getId() + "/vote")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(voteAssignmentCommand))
+                );
+
+                /*
+                 * Then
+                 */
+                resultActions.andDo(print())
+                    .andExpect(status().isOk());
+
+            }
+
 
         }
 
-        @Test
-        @DisplayName("알고리즘 스터디를 시작할 수 있다")
-        @WithUserDetails(value = "testuser",
-            setupBefore = TestExecutionEvent.TEST_EXECUTION)
-        void can_start_algorithm_study()
-            throws Exception {
-            /*
-            Given
-             */
 
-            Integer difficultyGap = 5;
-            Long difficultyBegin = 10L;
-            AlgorithmStudy study1 =
-                AlgorithmStudy.builder()
-                    .reliabilityLimit(37)
-                    .introduce("안녕하세요")
-                    .name("스터디1")
-                    .startDate(clock.today().plusWeeks(1))
-                    .penalty(5000)
-                    .weeks(5)
-                    .state(StudyStatus.READY)
-                    .headCount(0)
-                    .leader(testuser)
-                    .capacity(10)
-                    .difficultyGap(difficultyGap)
-                    .problemCount(5)
+        @Nested
+        @DisplayName("과제 통합 테스트")
+        class AssignmentTest {
+
+            @Test
+            @DisplayName("과제목록을 조회할 수 있다")
+            void can_get_assignments()
+                throws Exception {
+                /*
+                 * Given
+                 */
+
+                BookStudy study1 =
+                    BookStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .book(testBook)
+                        .votingProcess(VotingProcess.READY)
+                        .build();
+                study1.createRounds();
+
+                List<Assignment> assignments = new ArrayList<>();
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("333")
+                        .round(study1.getFirstRound())
+                        .pageStart(132)
+                        .pageEnd(140).build()
+                );
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("가나다라")
+                        .round(study1.getFirstRound())
+                        .build()
+                );
+
+                studyRepository.save(study1);
+                assignmentRepository.saveAll(assignments);
+
+
+                /*
+                 * When
+                 */
+                ResultActions resultActions = mockMvc.perform(
+                    get("/api/v1/studies/" + study1.getId() + "/assignments")
+                        .param("roundIdx", String.valueOf(0))
+                        .contentType(MediaType.APPLICATION_JSON)
+                );
+
+
+                /*
+                 * Then
+                 */
+                String expectedResponse = objectMapper.writeValueAsString(assignments);
+
+                resultActions.andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(expectedResponse));
+
+            }
+
+
+            @Test
+            @DisplayName("과제목록을 추가할 수 있다")
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_add_assignments()
+                throws Exception {
+                /*
+                 * Given
+                 */
+
+                BookStudy study1 =
+                    BookStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .book(testBook)
+                        .votingProcess(VotingProcess.READY)
+                        .build();
+                study1.createRounds();
+
+                studyRepository.save(study1);
+
+
+                /*
+                 * When
+                 */
+
+                List<NewAssignmentInfo> assignments = new ArrayList<>();
+
+                assignments.add(
+                    NewAssignmentInfo.builder()
+                        .title("333")
+                        .pageStart(132)
+                        .pageEnd(140).build()
+                );
+
+                assignments.add(
+                    NewAssignmentInfo.builder()
+                        .title("가나다라")
+                        .build()
+                );
+
+                AddAssignmentRequest addAssignmentRequest = AddAssignmentRequest.builder()
+                    .roundIdx(0)
+                    .assignments(assignments)
                     .build();
-            study1.createRounds();
-            study1.setDifficulty(difficultyBegin.floatValue());
-
-            studyRepository.save(study1);
-
-            StartStudyRequest startStudyRequest = StartStudyRequest.builder()
-                .studyId(study1.getId())
-                .build();
-
-            /*
-            When
-             */
-            ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/studies/start")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(startStudyRequest))
-            );
+                ResultActions resultActions = mockMvc.perform(
+                    post("/api/v1/studies/" + study1.getId() + "/assignments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(addAssignmentRequest))
+                );
 
 
-            /*
-            Then
-             */
-            resultActions.andDo(print())
-                .andExpect(status().isOk());
+                /*
+                 * Then
+                 */
 
-            AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithRoundsById(
-                    study1.getId())
-                .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+                resultActions.andDo(print())
+                    .andExpect(status().isCreated());
 
-            Assertions.assertThat(algorithmStudy.getState())
-                .isEqualTo(StudyStatus.RUNNING);
-            Assertions.assertThat(algorithmStudy.getStartDate())
-                .isEqualTo(clock.today());
+            }
 
-            Assertions.assertThat(
-                    algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId
-                        (algorithmStudy.getFirstRound().getId()).size())
-                .isEqualTo(algorithmStudy.getProblemCount());
 
-            Assertions.assertThat(
-                algorithmStudy.getRounds().stream().map(
-                    round -> round.getStartDate()
-                ).toList()
-            ).isEqualTo(
-                IntStream.range(0, algorithmStudy.getWeeks())
-                    .mapToObj(idx -> clock.today().plusWeeks(idx)).toList()
-            );
+            @Test
+            @DisplayName("과제목록을 수정할 수 있다")
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_edit_assignments()
+                throws Exception {
+                /*
+                 * Given
+                 */
 
+                BookStudy study1 =
+                    BookStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .book(testBook)
+                        .votingProcess(VotingProcess.READY)
+                        .build();
+                study1.createRounds();
+
+                List<Assignment> assignments = new ArrayList<>();
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("333")
+                        .round(study1.getFirstRound())
+                        .pageStart(132)
+                        .pageEnd(140).build()
+                );
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("가나다라")
+                        .round(study1.getFirstRound())
+                        .build()
+                );
+
+                studyRepository.save(study1);
+                assignmentRepository.saveAll(assignments);
+
+
+                /*
+                 * When
+                 */
+
+                Assignment a = assignments.getFirst();
+                List<AssignmentInfo> updatedAssignments = List.of(
+                    AssignmentInfo.builder()
+                        .id(a.getId())
+                        .title(" 수정된타티을")
+                        .description("설명 수정함")
+                        .pageStart(113)
+                        .pageEnd(140)
+                        .build()
+                );
+
+                EditAssignmentRequest editAssignmentRequest = EditAssignmentRequest.builder()
+                    .roundIdx(0)
+                    .assignments(updatedAssignments)
+                    .build();
+                ResultActions resultActions = mockMvc.perform(
+                    put("/api/v1/studies/" + study1.getId() + "/assignments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editAssignmentRequest))
+                );
+
+
+                /*
+                 * Then
+                 */
+                String expectedResponse = objectMapper.writeValueAsString(
+                    updatedAssignments);
+
+                resultActions.andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(expectedResponse));
+
+            }
+
+
+            @Test
+            @DisplayName("과제목록을 삭제할 수 있다")
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_delete_assignments()
+                throws Exception {
+                /*
+                 * Given
+                 */
+
+                BookStudy study1 =
+                    BookStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .book(testBook)
+                        .votingProcess(VotingProcess.READY)
+                        .build();
+                study1.createRounds();
+
+                List<Assignment> assignments = new ArrayList<>();
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("333")
+                        .round(study1.getFirstRound())
+                        .pageStart(132)
+                        .pageEnd(140).build()
+                );
+
+                assignments.add(
+                    Assignment.builder()
+                        .title("가나다라")
+                        .round(study1.getFirstRound())
+                        .build()
+                );
+
+                studyRepository.save(study1);
+                assignmentRepository.saveAll(assignments);
+
+
+                /*
+                 * When
+                 */
+
+                DeleteAssignmentRequest deleteAssignmentRequest = DeleteAssignmentRequest.builder()
+                    .roundIdx(0)
+                    .assignmentIds(List.of(assignments.getFirst().getId()))
+                    .build();
+                ResultActions resultActions = mockMvc.perform(
+                    delete("/api/v1/studies/" + study1.getId() + "/assignments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteAssignmentRequest))
+                );
+
+
+                /*
+                 * Then
+                 */
+                resultActions.andDo(print())
+                    .andExpect(status().isOk());
+
+            }
+        }
+
+        @Nested
+        @DisplayName("스터디 시작테스트")
+        class StartStudyTest {
+
+            @Test
+            @DisplayName("알고리즘 스터디를 시작할 수 있다")
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_start_algorithm_study()
+                throws Exception {
+                /*
+                 * Given
+                 */
+
+                Integer difficultyGap = 5;
+                Long difficultyBegin = 10L;
+                AlgorithmStudy study1 =
+                    AlgorithmStudy.builder()
+                        .reliabilityLimit(37)
+                        .introduce("안녕하세요")
+                        .name("스터디1")
+                        .startDate(clock.today().plusWeeks(1))
+                        .penalty(5000)
+                        .weeks(5)
+                        .state(StudyStatus.READY)
+                        .headCount(0)
+                        .leader(testuser)
+                        .capacity(10)
+                        .difficultyGap(difficultyGap)
+                        .problemCount(5)
+                        .build();
+                study1.createRounds();
+                study1.setDifficulty(difficultyBegin.floatValue());
+
+                studyRepository.save(study1);
+
+                StartStudyRequest startStudyRequest = StartStudyRequest.builder()
+                    .studyId(study1.getId())
+                    .build();
+
+                /*
+                 * When
+                 */
+                ResultActions resultActions = mockMvc.perform(
+                    post("/api/v1/studies/start")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(startStudyRequest))
+                );
+
+
+                /*
+                 *  Then
+                 */
+                resultActions.andDo(print())
+                    .andExpect(status().isOk());
+
+                AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithRoundsById(
+                        study1.getId())
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+
+                Assertions.assertThat(algorithmStudy.getState())
+                    .isEqualTo(StudyStatus.RUNNING);
+                Assertions.assertThat(algorithmStudy.getStartDate())
+                    .isEqualTo(clock.today());
+
+                Assertions.assertThat(
+                        algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId
+                            (algorithmStudy.getFirstRound().getId()).size())
+                    .isEqualTo(algorithmStudy.getProblemCount());
+
+                Assertions.assertThat(
+                    algorithmStudy.getRounds().stream().map(
+                        round -> round.getStartDate()
+                    ).toList()
+                ).isEqualTo(
+                    IntStream.range(0, algorithmStudy.getWeeks())
+                        .mapToObj(idx -> clock.today().plusWeeks(idx)).toList()
+                );
+
+
+            }
+
+            @DisplayName("과제 중복할당 불가인 기술서적 스터디를 시작할 수 있다.")
+            @Test
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_start_book_study_study() throws Exception {
+                /*
+                 * Given
+                 */
+                final int roundIdx = 1;
+                LocalDate roundStartDate = clock.today().plusWeeks(2);
+                LocalDate roundEndDate = clock.today().plusWeeks(3);
+                User user1 = User.builder()
+                    .username("username1")
+                    .password("password")
+                    .role(Role.USER)
+                    .reliability(50)
+                    .build();
+                User user2 = User.builder()
+                    .username("username2")
+                    .password("password")
+                    .role(Role.USER)
+                    .reliability(60)
+                    .build();
+                User user3 = User.builder()
+                    .username("username3")
+                    .password("password")
+                    .role(Role.USER)
+                    .reliability(60)
+                    .build();
+                userRepository.saveAll(List.of(user1, user2, user3));
+                Book book = Book.builder()
+                    .title("테스트용 책")
+                    .author("세계최강민석")
+                    .isbn(123456789L)
+                    .publisher("메가스터디")
+                    .tableOfContents("1. 2. 3. 4.")
+                    .build();
+                bookRepository.save(book);
+                Study study = BookStudy.builder()
+                    .name("스터디")
+                    .introduce("안녕하세요")
+                    .headCount(1)
+                    .capacity(5)
+                    .penalty(10000)
+                    .reliabilityLimit(0)
+                    .startDate(roundStartDate)
+                    .weeks(2)
+                    .leader(testuser)
+                    .book(book)
+                    .votingProcess(VotingProcess.READY)
+                    .duplicated(false)
+                    .state(StudyStatus.READY)
+                    .build();
+                studyRepository.save(study);
+                Round round = Round.builder()
+                    .idx(roundIdx)
+                    .study(study)
+                    .startDate(roundStartDate)
+                    .endDate(roundEndDate)
+                    .build();
+                roundRepository.save(round);
+
+                userStudyRepository.saveAll(List.of(
+                    UserStudy.builder().user(user1).study(study).build(),
+                    UserStudy.builder().user(user2).study(study).build(),
+                    UserStudy.builder().user(user3).study(study).build()));
+
+                List<Assignment> assignments = List.of(Assignment.builder()
+                    .round(round)
+                    .title("가나다")
+                    .description("dldldl")
+                    .build(), Assignment.builder()
+                    .round(round)
+                    .title("문제222")
+                    .description("라일락하일락")
+                    .build(), Assignment.builder()
+                    .round(round)
+                    .title("문3ㅔ33")
+                    .description("통기닥통기닥")
+                    .build());
+                assignmentRepository.saveAll(assignments);
+
+                Set<Assignment> availableAssignment = new HashSet<>(assignments);
+                Assignment firstChoice = Util.getRandom(availableAssignment);
+                availableAssignment.remove(firstChoice);
+                Assignment secondChoice = Util.getRandom(availableAssignment);
+                availableAssignment.remove(secondChoice);
+
+                assignmentVoteRepository.saveAll(List.of(
+                    AssignmentVote.builder().first(firstChoice).second(secondChoice)
+                        .round(round).user(user1).build(),
+                    AssignmentVote.builder().first(firstChoice).second(secondChoice)
+                        .round(round).user(user2).build()
+                ));
+
+
+                /*
+                 * When
+                 */
+
+                StartStudyRequest startStudyRequest = StartStudyRequest.builder()
+                    .studyId(study.getId())
+                    .build();
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/api/v1/studies/start")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(startStudyRequest))
+
+                );
+
+                /*
+                 * Then
+                 */
+
+                resultActions.andDo(print())
+                    .andExpect(status().isOk());
+
+                Long user1Assigned = userAssignmentRepository.findWithAssignmentByUser(user1)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
+                    .getAssignment().getId();
+                Long user2Assigned = userAssignmentRepository.findWithAssignmentByUser(user2)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
+                    .getAssignment().getId();
+                Long user3Assigned = userAssignmentRepository.findWithAssignmentByUser(user3)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
+                    .getAssignment().getId();
+
+                Assertions.assertThat(List.of(user1Assigned, user2Assigned))
+                    .containsExactlyInAnyOrder(firstChoice.getId(), secondChoice.getId());
+
+                Assertions.assertThat(user3Assigned)
+                    .isEqualTo(Util.getRandom(availableAssignment).getId());
+            }
+
+            @DisplayName("과제 중복할당 가능인 기술서적 스터디를 시작할 수 있다.")
+            @Test
+            @WithUserDetails(value = "testuser",
+                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_start_book_study_study_with_duplication() throws Exception {
+                /*
+                 * Given
+                 */
+                final int roundIdx = 1;
+                LocalDate roundStartDate = clock.today().plusWeeks(2);
+                LocalDate roundEndDate = clock.today().plusWeeks(3);
+                User user1 = User.builder()
+                    .username("username1")
+                    .password("password")
+                    .role(Role.USER)
+                    .reliability(50)
+                    .build();
+                User user2 = User.builder()
+                    .username("username2")
+                    .password("password")
+                    .role(Role.USER)
+                    .reliability(60)
+                    .build();
+                User user3 = User.builder()
+                    .username("username3")
+                    .password("password")
+                    .role(Role.USER)
+                    .reliability(60)
+                    .build();
+                userRepository.saveAll(List.of(user1, user2, user3));
+                Book book = Book.builder()
+                    .title("테스트용 책")
+                    .author("세계최강민석")
+                    .isbn(123456789L)
+                    .publisher("메가스터디")
+                    .tableOfContents("1. 2. 3. 4.")
+                    .build();
+                bookRepository.save(book);
+                Study study = BookStudy.builder()
+                    .name("스터디")
+                    .introduce("안녕하세요")
+                    .headCount(1)
+                    .capacity(5)
+                    .penalty(10000)
+                    .reliabilityLimit(0)
+                    .startDate(roundStartDate)
+                    .weeks(2)
+                    .leader(testuser)
+                    .book(book)
+                    .votingProcess(VotingProcess.READY)
+                    .duplicated(true)
+                    .state(StudyStatus.READY)
+                    .build();
+                studyRepository.save(study);
+                Round round = Round.builder()
+                    .idx(roundIdx)
+                    .study(study)
+                    .startDate(roundStartDate)
+                    .endDate(roundEndDate)
+                    .build();
+                roundRepository.save(round);
+
+                userStudyRepository.saveAll(List.of(
+                    UserStudy.builder().user(user1).study(study).build(),
+                    UserStudy.builder().user(user2).study(study).build(),
+                    UserStudy.builder().user(user3).study(study).build()));
+
+                List<Assignment> assignments = List.of(Assignment.builder()
+                    .round(round)
+                    .title("가나다")
+                    .description("dldldl")
+                    .build(), Assignment.builder()
+                    .round(round)
+                    .title("문제222")
+                    .description("라일락하일락")
+                    .build(), Assignment.builder()
+                    .round(round)
+                    .title("문3ㅔ33")
+                    .description("통기닥통기닥")
+                    .build());
+                assignmentRepository.saveAll(assignments);
+
+                Set<Assignment> availableAssignment = new HashSet<>(assignments);
+                Assignment firstChoice = Util.getRandom(availableAssignment);
+                availableAssignment.remove(firstChoice);
+                Assignment secondChoice = Util.getRandom(availableAssignment);
+
+                assignmentVoteRepository.saveAll(List.of(
+                    AssignmentVote.builder().first(firstChoice).second(secondChoice)
+                        .round(round).user(user1).build(),
+                    AssignmentVote.builder().first(firstChoice).second(secondChoice)
+                        .round(round).user(user2).build()
+                ));
+
+
+                /*
+                 * When
+                 */
+
+                StartStudyRequest startStudyRequest = StartStudyRequest.builder()
+                    .studyId(study.getId())
+                    .build();
+
+                ResultActions resultActions = mockMvc.perform(
+                    post("/api/v1/studies/start")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(startStudyRequest))
+
+                );
+
+                /*
+                 * Then
+                 */
+
+                resultActions.andDo(print())
+                    .andExpect(status().isOk());
+
+                Long user1Assigned = userAssignmentRepository.findWithAssignmentByUser(user1)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
+                    .getAssignment().getId();
+                Long user2Assigned = userAssignmentRepository.findWithAssignmentByUser(user2)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
+                    .getAssignment().getId();
+                Long user3Assigned = userAssignmentRepository.findWithAssignmentByUser(user3)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
+                    .getAssignment().getId();
+
+                Assertions.assertThat(user1Assigned)
+                    .isEqualTo(firstChoice.getId());
+                Assertions.assertThat(user2Assigned)
+                    .isEqualTo(firstChoice.getId());
+
+                Assertions.assertThat(user3Assigned)
+                    .isIn(availableAssignment.stream().map(Assignment::getId).toList());
+            }
 
         }
 
@@ -256,7 +1050,7 @@ public class StudyIntegrationTest {
                 .difficulty(difficultyBegin + difficultyGap / 2)
                 .build();
 
-            problemRepository.save(problem);
+            algorithmProblemRepository.save(problem);
 
             AlgorithmStudy study =
                 AlgorithmStudy.builder()
@@ -375,6 +1169,7 @@ public class StudyIntegrationTest {
                     .state(StudyStatus.READY)
                     .headCount(0)
                     .book(book)
+                    .votingProcess(VotingProcess.READY)
                     .build();
             studyRepository.save(study);
             JoinStudyRequest request = JoinStudyRequest.builder()
@@ -545,6 +1340,8 @@ public class StudyIntegrationTest {
                     .leader(profile)
                     .state(StudyStatus.READY)
                     .studyType(StudyType.BOOK)
+                    .votingProcess(VotingProcess.READY)
+                    .duplicated(false)
                     .bookResult(SearchBooksResult.fromBook(book))
                     .build();
 
@@ -674,6 +1471,7 @@ public class StudyIntegrationTest {
                 .book(book)
                 .state(StudyStatus.READY)
                 .headCount(0)
+                .votingProcess(VotingProcess.READY)
                 .build();
 
         studyRepository.save(study1);
@@ -868,7 +1666,7 @@ public class StudyIntegrationTest {
             .reliability(60)
             .build();
         userRepository.saveAll(List.of(user1, user2));
-        Study study = AlgorithmStudy.builder()
+        AlgorithmStudy study = AlgorithmStudy.builder()
             .id(studyId)
             .name("스터디")
             .introduce("안녕하세요")
@@ -931,7 +1729,9 @@ public class StudyIntegrationTest {
         algorithmProblemAssignmentRepository.saveAll(List.of(assignment1, assignment2));
         algorithmProblemSolveHistoryRepository.save(history);
 
-        StudyDetails studyDetails = StudyDetails.builder()
+        StudyResult studyResult = AlgorithmStudyResult.builder()
+            .id(study.getId())
+            .difficultySpreadMap(study.getDifficultySpreadMap())
             .studyType(StudyType.ALGORITHM)
             .name("스터디")
             .introduce("안녕하세요")
@@ -941,8 +1741,8 @@ public class StudyIntegrationTest {
             .reliabilityLimit(0)
             .startDate(LocalDate.of(2024, 7, 22))
             .weeks(2)
-            .leaderId(1L)
-            .status(StudyStatus.RUNNING)
+            .leader(UserProfileResult.fromEntity(user1))
+            .state(StudyStatus.RUNNING)
             .build();
         Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
         AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
@@ -982,7 +1782,7 @@ public class StudyIntegrationTest {
             .users(users)
             .build();
         StudyDetailsResponse studyDetailsResponse = StudyDetailsResponse.builder()
-            .details(studyDetails)
+            .details(StudyResponse.fromResult(studyResult))
             .round(progressResponse)
             .build();
 
@@ -996,6 +1796,287 @@ public class StudyIntegrationTest {
          */
         String expectedResponse = objectMapper.writeValueAsString(studyDetailsResponse);
         resultActions.andExpect(status().isOk()).andExpect(content().json(expectedResponse));
+    }
+
+    @DisplayName("기술서적 스터디의 특정 회차 진행 현황을 조회할 수 있다.")
+    @Test
+    void can_retrieve_book_study_progress() throws Exception {
+        /*
+         * Given
+         */
+        final int roundIdx = 1;
+        LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
+        LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
+        User user1 = User.builder()
+            .username("username1")
+            .password("password")
+            .role(Role.USER)
+            .reliability(50)
+            .build();
+        User user2 = User.builder()
+            .username("username2")
+            .password("password")
+            .role(Role.USER)
+            .reliability(60)
+            .build();
+        userRepository.saveAll(List.of(user1, user2));
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
+        bookRepository.save(book);
+        Study study = BookStudy.builder()
+            .name("스터디")
+            .introduce("안녕하세요")
+            .headCount(1)
+            .capacity(5)
+            .penalty(10000)
+            .reliabilityLimit(0)
+            .startDate(roundStartDate)
+            .weeks(2)
+            .leader(user1)
+            .book(book)
+            .votingProcess(VotingProcess.READY)
+            .state(StudyStatus.RUNNING)
+            .duplicated(false)
+            .build();
+        studyRepository.save(study);
+        Round round = Round.builder()
+            .idx(roundIdx)
+            .study(study)
+            .startDate(roundStartDate)
+            .endDate(roundEndDate)
+            .build();
+        roundRepository.save(round);
+
+        UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
+        UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
+        userStudyRepository.saveAll(List.of(userStudy1, userStudy2));
+
+        Assignment assignment1 = Assignment.builder()
+            .round(round)
+            .title("가나다")
+            .description("dldldl")
+            .build();
+        Assignment assignment2 = Assignment.builder()
+            .round(round)
+            .title("문제222")
+            .description("라일락하일락")
+            .build();
+        Assignment assignment3 = Assignment.builder()
+            .round(round)
+            .title("문3ㅔ33")
+            .description("통기닥통기닥")
+            .build();
+
+        assignmentRepository.saveAll(List.of(assignment1, assignment2, assignment3));
+
+        userAssignmentRepository.saveAll(List.of(
+            UserAssignment.builder().user(user1).assignment(assignment1).build(),
+            UserAssignment.builder().user(user2).assignment(assignment2).build()
+        ));
+
+        Problem problem1 = Problem.builder()
+            .examiner(user1)
+            .assignment(assignment1)
+            .build();
+        Problem problem2 = Problem.builder()
+            .examiner(user2)
+            .assignment(assignment2)
+            .build();
+        problemRepository.saveAll(List.of(problem1, problem2));
+
+        Video video1 = Video.builder()
+            .uploader(user1)
+            .assignment(assignment1)
+            .build();
+        Video video2 = Video.builder()
+            .uploader(user1)
+            .assignment(assignment1)
+            .build();
+        Video video3 = Video.builder()
+            .uploader(user2)
+            .assignment(assignment2)
+            .build();
+
+        videoRepository.saveAll(List.of(video1, video2, video3));
+
+
+        /*
+        When
+         */
+        ResultActions resultActions = mockMvc.perform(
+            get("/api/v1/studies/progress/" + study.getId())
+                .param("idx", String.valueOf(roundIdx))
+        );
+
+        /*
+        Then
+         */
+        String userPath = "$.users.%s";
+
+        String jsonForUser1 = objectMapper.writeValueAsString(
+            Map.of("username", user1.getUsername(),
+                "assignmentId", assignment1.getId(),
+                "videoIds", List.of(video1.getId(), video2.getId()),
+                "problemIds", List.of(problem1.getId())));
+        String jsonForUser2 = objectMapper.writeValueAsString(
+            Map.of("username", user2.getUsername(),
+                "assignmentId", assignment2.getId(),
+                "videoIds", List.of(video3.getId()),
+                "problemIds", List.of(problem2.getId())));
+
+        resultActions.andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath(userPath, user1.getId())
+                    .value(equalTo(JsonPath.read(jsonForUser1, "$"))))
+            .andExpect(
+                jsonPath(userPath, user2.getId())
+                    .value(equalTo(JsonPath.read(jsonForUser2, "$"))));
+    }
+
+    @DisplayName("기술서적 스터디 상세 정보를 조회할 수 있다.")
+    @Test
+    void can_retrieve_book_study_details() throws Exception {
+        /*
+         * Given
+         */
+        final int roundIdx = 1;
+        LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
+        LocalDate roundEndDate = LocalDate.of(2024, 7, 28);
+        User user1 = User.builder()
+            .username("username1")
+            .password("password")
+            .role(Role.USER)
+            .reliability(50)
+            .build();
+        User user2 = User.builder()
+            .username("username2")
+            .password("password")
+            .role(Role.USER)
+            .reliability(60)
+            .build();
+        userRepository.saveAll(List.of(user1, user2));
+        Book book = Book.builder()
+            .title("테스트용 책")
+            .author("세계최강민석")
+            .isbn(123456789L)
+            .publisher("메가스터디")
+            .tableOfContents("1. 2. 3. 4.")
+            .build();
+        bookRepository.save(book);
+        Study study = BookStudy.builder()
+            .name("스터디")
+            .introduce("안녕하세요")
+            .headCount(1)
+            .capacity(5)
+            .penalty(10000)
+            .reliabilityLimit(0)
+            .startDate(roundStartDate)
+            .weeks(2)
+            .leader(user1)
+            .book(book)
+            .votingProcess(VotingProcess.READY)
+            .state(StudyStatus.RUNNING)
+            .duplicated(false)
+            .build();
+        studyRepository.save(study);
+        Round round = Round.builder()
+            .idx(roundIdx)
+            .study(study)
+            .startDate(roundStartDate)
+            .endDate(roundEndDate)
+            .build();
+        roundRepository.save(round);
+
+        UserStudy userStudy1 = UserStudy.builder().user(user1).study(study).build();
+        UserStudy userStudy2 = UserStudy.builder().user(user2).study(study).build();
+        userStudyRepository.saveAll(List.of(userStudy1, userStudy2));
+
+        Assignment assignment1 = Assignment.builder()
+            .round(round)
+            .title("가나다")
+            .description("dldldl")
+            .build();
+        Assignment assignment2 = Assignment.builder()
+            .round(round)
+            .title("문제222")
+            .description("라일락하일락")
+            .build();
+        Assignment assignment3 = Assignment.builder()
+            .round(round)
+            .title("문3ㅔ33")
+            .description("통기닥통기닥")
+            .build();
+
+        assignmentRepository.saveAll(List.of(assignment1, assignment2, assignment3));
+
+        userAssignmentRepository.saveAll(List.of(
+            UserAssignment.builder().user(user1).assignment(assignment1).build(),
+            UserAssignment.builder().user(user2).assignment(assignment2).build()
+        ));
+
+        Problem problem1 = Problem.builder()
+            .examiner(user1)
+            .assignment(assignment1)
+            .build();
+        Problem problem2 = Problem.builder()
+            .examiner(user2)
+            .assignment(assignment2)
+            .build();
+        problemRepository.saveAll(List.of(problem1, problem2));
+
+        Video video1 = Video.builder()
+            .uploader(user1)
+            .assignment(assignment1)
+            .build();
+        Video video2 = Video.builder()
+            .uploader(user1)
+            .assignment(assignment1)
+            .build();
+        Video video3 = Video.builder()
+            .uploader(user2)
+            .assignment(assignment2)
+            .build();
+
+        videoRepository.saveAll(List.of(video1, video2, video3));
+
+
+        /*
+        When
+         */
+        ResultActions resultActions = mockMvc.perform(
+            get("/api/v1/studies/" + study.getId())
+        );
+
+        /*
+        Then
+         */
+        String userPath = "$.round.users.%s";
+
+        String jsonForUser1 = objectMapper.writeValueAsString(
+            Map.of("username", user1.getUsername(),
+                "assignmentId", assignment1.getId(),
+                "videoIds", List.of(video1.getId(), video2.getId()),
+                "problemIds", List.of(problem1.getId())));
+        String jsonForUser2 = objectMapper.writeValueAsString(
+            Map.of("username", user2.getUsername(),
+                "assignmentId", assignment2.getId(),
+                "videoIds", List.of(video3.getId()),
+                "problemIds", List.of(problem2.getId())));
+
+        resultActions.andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath(userPath, user1.getId())
+                    .value(equalTo(JsonPath.read(jsonForUser1, "$"))))
+            .andExpect(
+                jsonPath(userPath, user2.getId())
+                    .value(equalTo(JsonPath.read(jsonForUser2, "$"))));
     }
 
 
