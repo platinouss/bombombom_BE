@@ -18,6 +18,7 @@ public enum ErrorCode {
     // BAD_REQUEST 400
     INVALID_INPUT(BAD_REQUEST, 40000, "잘못된 요청입니다."),
     NOT_NEXT_ROUND_IDX(BAD_REQUEST, 40001, "다음 라운드의 인덱스가 아닙니다."),
+    ALL_IS_NULL(BAD_REQUEST, 40002, "모든 설정 값이 널 입니다."),
 
 
     // UNAUTHORIZED 401

@@ -27,7 +27,6 @@ import com.bombombom.devs.external.study.service.dto.result.AssignmentVoteResult
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
-import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.security.AppUserDetails;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -186,17 +185,17 @@ public class StudyController {
     }
 
     @PatchMapping("/{id}/config")
-    public ResponseEntity<StudyResponse> configureStudy(
+    public ResponseEntity<Void> configureStudy(
         @LoginUser AppUserDetails userDetails,
         @PathVariable("id") Long studyId,
         @Valid @RequestBody ConfigureStudyRequest configureStudyRequest) {
-
-        StudyResult studyResult = studyService.configure(
+        
+        studyService.configure(
             userDetails.getId(),
             studyId,
             configureStudyRequest.toServiceDto());
 
-        return ResponseEntity.ok().body(StudyResponse.fromResult(studyResult));
+        return ResponseEntity.noContent().build();
     }
 
 

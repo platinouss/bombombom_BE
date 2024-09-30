@@ -82,21 +82,18 @@ public class StudyService {
     }
 
     @Transactional
-    public StudyResult configure(Long userId,
+    public void configure(Long userId,
         Long studyId, ConfigureStudyCommand command) {
-        //null이면 그냥 오류
-        
-        Study study = studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId)
+
+        command.assertAnyNotNull();
+
+        Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         study.assertLeader(userId);
 
-        if (command.duplicated() != null) {
+        study.setDuplicated(command.duplicated());
 
-            study.setDuplicated(command.duplicated());
-        }
-
-        return StudyResult.fromEntity(study);
     }
 
     @Transactional(readOnly = true)
@@ -135,10 +132,9 @@ public class StudyService {
     @Transactional
     public void startVoting(Long userId, Long studyId) {
 
-        Study study = studyRepository.findById(
+        Study study = studyRepository.findWithLeaderById(
                 studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
-        // 에러메세지가 다양해짐, 나중에 스터디원도 투표시작가능?
 
         study.startVoting(userId);
 

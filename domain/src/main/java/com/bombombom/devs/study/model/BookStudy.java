@@ -87,6 +87,9 @@ public class BookStudy extends Study {
 
     @Override
     public void setDuplicated(Boolean duplicated) {
+        if (duplicated == null) {
+            return;
+        }
 
         if (votingProcess != VotingProcess.READY) {
             throw new BusinessRuleException(ErrorCode.VOTING_PROCESS_NOT_READY);

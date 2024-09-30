@@ -2317,6 +2317,8 @@ class StudyServiceTest {
             Long studyId = 2L;
             VoteAssignmentCommand voteAssignmentCommand = VoteAssignmentCommand.builder().build();
 
+            when(userRepository.findById(userId))
+                .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
             when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
@@ -2341,8 +2343,11 @@ class StudyServiceTest {
              */
             Long userId = 1L;
             Long studyId = 2L;
-            VoteAssignmentCommand voteAssignmentCommand = VoteAssignmentCommand.builder().build();
+            VoteAssignmentCommand voteAssignmentCommand = VoteAssignmentCommand.builder()
+                .build();
 
+            when(userRepository.findById(userId))
+                .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
             when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
@@ -2375,6 +2380,8 @@ class StudyServiceTest {
                 .second(4L)
                 .build();
 
+            when(userRepository.findById(userId))
+                .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
             when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
@@ -2408,6 +2415,8 @@ class StudyServiceTest {
                 .first(3L)
                 .second(4L)
                 .build();
+            when(userRepository.findById(userId))
+                .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
             when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
@@ -2448,6 +2457,8 @@ class StudyServiceTest {
                 .build();
 
             Round nextRound = mock(Round.class);
+            when(userRepository.findById(userId))
+                .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
             when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
@@ -2491,6 +2502,8 @@ class StudyServiceTest {
                 .build();
 
             Round nextRound = mock(Round.class);
+            when(userRepository.findById(userId))
+                .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
             when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
@@ -2540,30 +2553,6 @@ class StudyServiceTest {
             Round nextRound = mock(Round.class);
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
-                .thenReturn(true);
-
-            when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
-                LocalDate.class)))
-                .thenReturn(Optional.of(nextRound));
-
-            when(assignmentRepository.findById(voteAssignmentCommand.first()))
-                .thenReturn(Optional.of(
-                    Assignment.builder()
-                        .round(nextRound)
-                        .build()
-                ));
-
-            when(assignmentRepository.findById(voteAssignmentCommand.second()))
-                .thenReturn(Optional.of(
-                        Assignment.builder()
-                            .round(nextRound)
-                            .build()
-                    )
-                );
-
-            when(userRepository.findById(userId))
-                .thenReturn(Optional.empty());
             /*
              * When & Then
              */
@@ -2614,9 +2603,10 @@ class StudyServiceTest {
              */
             Long userId = 1L;
             Long studyId = 2L;
-            ConfigureStudyCommand configureStudyCommand = ConfigureStudyCommand.builder().build();
-            when(studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId))
-                .thenReturn(Optional.empty());
+            ConfigureStudyCommand configureStudyCommand = ConfigureStudyCommand.builder()
+                .duplicated(true)
+                .build();
+
             /*
              * When & Then
              */

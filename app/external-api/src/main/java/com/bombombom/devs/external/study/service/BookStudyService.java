@@ -446,13 +446,13 @@ public class BookStudyService implements StudyProgressService {
     public AssignmentVoteResult voteAssignment(Long userId, Long studyId,
         VoteAssignmentCommand voteAssignmentCommand) {
 
-        // lock
-        // mysql - repeatable read (phantom read) 격리레벨 강제로 상위로 올리기?
-        // unit test에서 쓰레드 여러개 쏴보기
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
         study.canVote();
+
+        final User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if (!userStudyRepository.existsByUserIdAndStudyId(userId, studyId)) {
             throw new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED);
@@ -485,17 +485,13 @@ public class BookStudyService implements StudyProgressService {
         AssignmentVote vote = assignmentVoteRepository.findByUserIdAndRound(userId,
                 nextRound)
             .orElseGet(
-                () -> {
-                    User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-                    return AssignmentVote.builder()
-                        .user(user)
-                        .first(first)
-                        .second(second)
-                        .round(nextRound)
-                        .build();
-                });
+                () -> AssignmentVote.builder()
+                    .user(user)
+                    .first(first)
+                    .second(second)
+                    .round(nextRound)
+                    .build()
+            );
 
         vote.update(first, second);
 

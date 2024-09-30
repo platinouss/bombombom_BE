@@ -247,8 +247,7 @@ public class StudyIntegrationTest {
                  * Then
                  */
                 resultActions.andDo(print())
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("duplicated").value(true));
+                    .andExpect(status().isNoContent());
             }
 
             @Test
