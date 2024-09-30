@@ -17,14 +17,14 @@ import org.springframework.stereotype.Component;
 public class QuartzJobScheduler {
 
     private final Scheduler scheduler;
-    private final UpdateAlgorithmStudyTaskStatusJob updateAlgorithmStudyTaskStatusJob;
+    private final AlgorithmStudyAssignmentJob algorithmStudyAssignmentJob;
 
     @PostConstruct
     public void scheduleJob() {
         JobDetail jobDetail = RoundStartJob.buildJobDetail();
         Trigger trigger = RoundStartJob.buildJobTrigger();
-        JobDetail updateAlgoStudyTaskStatusDetail = updateAlgorithmStudyTaskStatusJob.getJobDetail();
-        Trigger updateAlgoStudyTaskStatusTrigger = updateAlgorithmStudyTaskStatusJob.getTrigger();
+        JobDetail updateAlgoStudyTaskStatusDetail = algorithmStudyAssignmentJob.getJobDetail();
+        Trigger updateAlgoStudyTaskStatusTrigger = algorithmStudyAssignmentJob.getTrigger();
         try {
             JobKey jobKey = jobDetail.getKey();
             if (!scheduler.checkExists(jobKey)) {

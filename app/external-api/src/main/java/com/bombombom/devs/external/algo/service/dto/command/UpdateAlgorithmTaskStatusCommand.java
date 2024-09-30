@@ -1,34 +1,35 @@
 package com.bombombom.devs.external.algo.service.dto.command;
 
-import com.bombombom.devs.algo.model.vo.TaskStatusUpdateMessage;
-import java.time.Instant;
+import com.bombombom.devs.algo.model.vo.AlgorithmProblemQueueMessage;
+import com.bombombom.devs.algo.model.vo.UpdateAlgorithmTaskStatus;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.HashSet;
 import java.util.Set;
 import lombok.Builder;
 
 @Builder
 public record UpdateAlgorithmTaskStatusCommand(
     String recordId,
+    LocalDateTime requestTime,
     Long studyId,
     Long userId,
     String baekjoonId,
-    Set<Integer> problemRefIds,
-    LocalDateTime requestTime
+    Set<Integer> problemRefIds
 ) {
 
-    public static UpdateAlgorithmTaskStatusCommand fromMessage(TaskStatusUpdateMessage message) {
-        long requestTimeMillis = Long.parseLong(message.recordId().split("-")[0]);
-        LocalDateTime requestTime = LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(requestTimeMillis), ZoneId.systemDefault());
+    public static UpdateAlgorithmTaskStatusCommand fromMessage(
+        AlgorithmProblemQueueMessage message, ObjectMapper objectMapper)
+        throws JsonProcessingException {
+        UpdateAlgorithmTaskStatus updateAlgorithmTaskStatus = objectMapper.readValue(
+            message.fields(), UpdateAlgorithmTaskStatus.class);
         return UpdateAlgorithmTaskStatusCommand.builder()
             .recordId(message.recordId())
-            .studyId(message.studyId())
-            .userId(message.userId())
-            .baekjoonId(message.baekjoonId())
-            .problemRefIds(new HashSet<>(message.redIds()))
-            .requestTime(requestTime)
+            .requestTime(message.requestTime())
+            .studyId(updateAlgorithmTaskStatus.studyId())
+            .userId(updateAlgorithmTaskStatus.userId())
+            .baekjoonId(updateAlgorithmTaskStatus.baekjoonId())
+            .problemRefIds(updateAlgorithmTaskStatus.problemRefIds())
             .build();
     }
 

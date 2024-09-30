@@ -6,7 +6,6 @@ import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.ExternalApiException;
 import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -38,25 +37,19 @@ public class SolvedacClient {
     private static final String SPACE = " ";
 
     public ProblemListResponse getUnSolvedProblems(
-        List<String> baekjoonIds,
-        Map<AlgoTag, Integer> problemCountForEachTag,
-        Map<AlgoTag, Spread> difficultySpreadForEachTag
+        Set<String> baekjoonIds,
+        Map<AlgoTag, Spread> difficultySpreadForEachTag,
+        Map<AlgoTag, Integer> problemCountForEachTag
     ) {
         ProblemListResponse unSolvedProblems = new ProblemListResponse(new ArrayList<>());
         WebClient webClient = WebClient.builder().baseUrl(BASE_URL).build();
         for (AlgoTag tag : problemCountForEachTag.keySet()) {
             Integer numberOfProblems = problemCountForEachTag.get(tag);
             Spread difficultySpread = difficultySpreadForEachTag.get(tag);
-            ProblemListResponse problemsByTag = getUnSolvedProblemsByTag(
-                webClient,
-                baekjoonIds,
-                tag,
-                difficultySpread
-            );
-            log.debug("problemsByTag.items.size: {}", problemsByTag.items().size());
-            log.debug("numberOfProblems: {}", numberOfProblems);
-            unSolvedProblems.items().addAll(problemsByTag.items().subList(0,
-                Math.min(numberOfProblems, problemsByTag.items().size())));
+            ProblemListResponse problemsByTag = getUnSolvedProblemsByTag(webClient, baekjoonIds,
+                tag, difficultySpread);
+            unSolvedProblems.items().addAll(problemsByTag.items()
+                .subList(0, Math.min(numberOfProblems, problemsByTag.items().size())));
         }
         return unSolvedProblems;
     }
@@ -67,14 +60,9 @@ public class SolvedacClient {
         return fetchProblemListFromSolvedacApi(webClient, queryParam);
     }
 
-    private ProblemListResponse getUnSolvedProblemsByTag(
-        WebClient webClient,
-        List<String> baekjoonIds,
-        AlgoTag tag,
-        Spread difficultySpread
-    ) {
+    private ProblemListResponse getUnSolvedProblemsByTag(WebClient webClient,
+        Set<String> baekjoonIds, AlgoTag tag, Spread difficultySpread) {
         String queryParam = makeGetUnSolvedProblemsQueryParams(baekjoonIds, tag, difficultySpread);
-        log.debug("getUnSolvedProblemsByTag() Query: {}", queryParam);
         return fetchProblemListFromSolvedacApi(webClient, queryParam);
     }
 
@@ -111,17 +99,12 @@ public class SolvedacClient {
         return completableFuture.join();
     }
 
-    private String makeGetUnSolvedProblemsQueryParams(
-        List<String> baekjoonIds,
-        AlgoTag tag,
-        Spread difficultySpread
-    ) {
+    private String makeGetUnSolvedProblemsQueryParams(Set<String> baekjoonIds, AlgoTag tag,
+        Spread difficultySpread) {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("s");
         for (String id : baekjoonIds) {
-            queryBuilder
-                .append(USER_PREFIX)
-                .append(id);
+            queryBuilder.append(USER_PREFIX).append(id);
         }
         queryBuilder
             .append(SPACE)
@@ -139,7 +122,8 @@ public class SolvedacClient {
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append(USER_SOLVED_PREFIX).append(baekjoonId);
         queryBuilder.append(AND_OPERATION);
-        queryBuilder.append(PROBLEM_ID_PREFIX).append(LEFT_ROUND_BRACKETS).append(
+        queryBuilder.append(PROBLEM_ID_PREFIX)
+            .append(LEFT_ROUND_BRACKETS).append(
                 problemIds.stream().map(String::valueOf).collect(Collectors.joining(OR_OPERATION)))
             .append(RIGHT_ROUND_BRACKETS);
         return queryBuilder.toString();

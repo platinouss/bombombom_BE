@@ -12,8 +12,8 @@ import static org.mockito.Mockito.when;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.algo.model.vo.AlgorithmTaskUpdateStatus;
+import com.bombombom.devs.algo.repository.AlgorithmProblemRedisQueueRepository;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
-import com.bombombom.devs.algo.repository.AlgorithmProblemSolvedHistoryRedisRepository;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
@@ -128,13 +128,14 @@ class StudyServiceTest {
     private AlgorithmProblemSolvedHistoryRepository algorithmProblemSolvedHistoryRepository;
 
     @Mock
-    private AlgorithmProblemSolvedHistoryRedisRepository algorithmProblemSolvedHistoryRedisRepository;
+    private AlgorithmProblemRedisQueueRepository algorithmProblemRedisQueueRepository;
 
     @Mock
     private AssignmentVoteRepository assignmentVoteRepository;
 
     @InjectMocks
     private AlgorithmStudyService algorithmStudyService;
+
     @InjectMocks
     private BookStudyService bookStudyService;
 
@@ -1074,7 +1075,7 @@ class StudyServiceTest {
                     .findAssignmentWithProblemByRoundId(anyLong());
                 doReturn(List.of(history)).when(algorithmProblemSolvedHistoryRepository)
                     .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
-                doReturn(taskUpdateStatuses).when(algorithmProblemSolvedHistoryRedisRepository)
+                doReturn(taskUpdateStatuses).when(algorithmProblemRedisQueueRepository)
                     .getTaskUpdateStatuses(anyLong(), anyList());
 
                 /*
@@ -1333,7 +1334,7 @@ class StudyServiceTest {
                     .findAssignmentWithProblemByRoundId(anyLong());
                 doReturn(List.of(history)).when(algorithmProblemSolvedHistoryRepository)
                     .findSolvedHistoryWithUserAndProblem(anyList(), anyList());
-                doReturn(taskUpdateStatuses).when(algorithmProblemSolvedHistoryRedisRepository)
+                doReturn(taskUpdateStatuses).when(algorithmProblemRedisQueueRepository)
                     .getTaskUpdateStatuses(anyLong(), anyList());
 
                 /*

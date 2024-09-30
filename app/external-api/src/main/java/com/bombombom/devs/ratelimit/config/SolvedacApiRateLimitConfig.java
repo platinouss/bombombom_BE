@@ -1,13 +1,15 @@
 package com.bombombom.devs.ratelimit.config;
 
 import com.bombombom.devs.algo.repository.AlgorithmProblemRedisRepository;
+import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.exception.RateLimitException;
+import com.bombombom.devs.job.AlgorithmStudyAssignmentJob;
 import com.bombombom.devs.job.QuartzJobScheduler;
-import com.bombombom.devs.job.UpdateAlgorithmStudyTaskStatusJob;
 import com.bombombom.devs.ratelimit.ApiRateLimiter;
 import io.github.bucket4j.BucketConfiguration;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,22 +34,32 @@ public class SolvedacApiRateLimitConfig {
 
     private final ApiRateLimiter apiRateLimiter;
     private final QuartzJobScheduler quartzJobScheduler;
-    private final UpdateAlgorithmStudyTaskStatusJob updateAlgorithmStudyTaskStatusJob;
+    private final AlgorithmStudyAssignmentJob algorithmStudyAssignmentJob;
     private final AlgorithmProblemRedisRepository algorithmProblemRedisRepository;
 
     @Before("execution(* com.bombombom.devs.solvedac.SolvedacClient.checkProblemSolved(..))")
     public void beforeJobExecution() throws SchedulerException {
-        if (!apiRateLimiter.tryConsume(SOLVEDAC_BUCKET_KEY, this.createBucketConfiguration())) {
-            TriggerKey triggerKey = updateAlgorithmStudyTaskStatusJob.getTriggerKey();
+        if (!apiRateLimiter.tryConsume(SOLVEDAC_BUCKET_KEY, createBucketConfiguration())) {
+            TriggerKey triggerKey = algorithmStudyAssignmentJob.getTriggerKey();
             quartzJobScheduler.removeTrigger(triggerKey);
-            JobDetail jobDetail = updateAlgorithmStudyTaskStatusJob.getJobDetail();
+            JobDetail jobDetail = algorithmStudyAssignmentJob.getJobDetail();
             try {
-                Trigger trigger = updateAlgorithmStudyTaskStatusJob.buildJobTriggerAtTime(
+                Trigger trigger = algorithmStudyAssignmentJob.buildJobTriggerAtTime(
                     getTaskStatusUpdateDelayInSeconds());
                 quartzJobScheduler.setScheduleJob(jobDetail, trigger);
             } catch (NoSuchElementException e) {
                 log.info(String.valueOf(e));
             }
+            throw new RateLimitException(SOLVEDAC_BUCKET_KEY);
+        }
+    }
+
+    @Before("execution(* com.bombombom.devs.solvedac.SolvedacClient.getUnSolvedProblems(..)) && "
+        + "args(.., problemCountForEachTag)")
+    public void beforeJobExecution(Map<AlgoTag, Integer> problemCountForEachTag) {
+        int algorithmTagCount = problemCountForEachTag.keySet().size();
+        if (!apiRateLimiter.tryConsume(SOLVEDAC_BUCKET_KEY, createBucketConfiguration(),
+            algorithmTagCount)) {
             throw new RateLimitException(SOLVEDAC_BUCKET_KEY);
         }
     }

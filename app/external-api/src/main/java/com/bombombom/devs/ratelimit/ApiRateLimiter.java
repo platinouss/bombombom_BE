@@ -25,6 +25,11 @@ public class ApiRateLimiter {
         return bucket.tryConsume(1);
     }
 
+    public boolean tryConsume(String apiKey, BucketConfiguration configuration, int count) {
+        Bucket bucket = createOrGetBucket(apiKey, configuration);
+        return bucket.tryConsume(count);
+    }
+
     private Bucket createOrGetBucket(String apiKey, BucketConfiguration configuration) {
         return buckets.computeIfAbsent(apiKey,
             key -> {

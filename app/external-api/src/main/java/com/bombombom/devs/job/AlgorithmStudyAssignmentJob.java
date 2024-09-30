@@ -1,9 +1,11 @@
 package com.bombombom.devs.job;
 
-import com.bombombom.devs.algo.model.vo.TaskStatusUpdateMessage;
-import com.bombombom.devs.core.exception.RateLimitException;
-import com.bombombom.devs.external.algo.service.AlgorithmProblemSolvedHistoryService;
+import com.bombombom.devs.algo.model.vo.AlgorithmProblemQueueMessage;
+import com.bombombom.devs.external.algo.service.AlgorithmProblemQueueService;
+import com.bombombom.devs.external.algo.service.dto.command.AssignAlgorithmProblemCommand;
 import com.bombombom.devs.external.algo.service.dto.command.UpdateAlgorithmTaskStatusCommand;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +25,14 @@ import org.springframework.stereotype.Component;
 @Getter
 @Component
 @RequiredArgsConstructor
-public class UpdateAlgorithmStudyTaskStatusJob implements Job {
+public class AlgorithmStudyAssignmentJob implements Job {
 
     private static final int SCHEDULER_INTERVAL_SECONDS = 2;
-    private static final String UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_NAME = "UPDATE_TASK_TRIGGER";
-    private static final String UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_GROUP = "UPDATE_TASK_TRIGGER_GROUP";
+    private static final String ALGORITHM_ASSIGNMENT_TRIGGER_NAME = "ALGORITHM_ASSIGNMENT_TRIGGER";
+    private static final String ALGORITHM_ASSIGNMENT_TRIGGER_GROUP = "ALGORITHM_ASSIGNMENT_TRIGGER_GROUP";
 
-    private final AlgorithmProblemSolvedHistoryService algorithmProblemSolvedHistoryService;
+    private final ObjectMapper objectMapper;
+    private final AlgorithmProblemQueueService algorithmProblemQueueService;
 
     private Trigger trigger;
     private JobDetail jobDetail;
@@ -47,19 +50,14 @@ public class UpdateAlgorithmStudyTaskStatusJob implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
         try {
-            TaskStatusUpdateMessage pendingMessage = algorithmProblemSolvedHistoryService.getUnprocessedTaskStatusUpdateMessage();
-            if (pendingMessage != null) {
-                algorithmProblemSolvedHistoryService.updateTaskStatus(
-                    UpdateAlgorithmTaskStatusCommand.fromMessage(pendingMessage));
-                return;
-            }
-            TaskStatusUpdateMessage message = algorithmProblemSolvedHistoryService.getTaskStatusUpdateMessage();
+            AlgorithmProblemQueueMessage message = algorithmProblemQueueService.getUnprocessedAssignOrTaskStatusUpdateMessage();
             if (message == null) {
-                return;
+                message = algorithmProblemQueueService.getAssignOrTaskStatusUpdateMessage();
             }
-            algorithmProblemSolvedHistoryService.updateTaskStatus(
-                UpdateAlgorithmTaskStatusCommand.fromMessage(message));
-        } catch (RateLimitException e) {
+            if (message != null) {
+                executeMessage(message);
+            }
+        } catch (Exception e) {
             log.info(e.getMessage());
         }
     }
@@ -73,9 +71,19 @@ public class UpdateAlgorithmStudyTaskStatusJob implements Job {
             .build();
     }
 
+    private void executeMessage(AlgorithmProblemQueueMessage message)
+        throws JsonProcessingException {
+        switch (message.requestType()) {
+            case ASSIGN -> algorithmProblemQueueService.assignProblems(
+                AssignAlgorithmProblemCommand.fromMessage(message, objectMapper));
+            case UPDATE -> algorithmProblemQueueService.updateTaskStatus(
+                UpdateAlgorithmTaskStatusCommand.fromMessage(message, objectMapper));
+        }
+    }
+
     private TriggerKey buildTriggerKey() {
-        return new TriggerKey(UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_NAME,
-            UPDATE_ALGORITHM_TASK_STATUS_TRIGGER_GROUP);
+        return new TriggerKey(ALGORITHM_ASSIGNMENT_TRIGGER_NAME,
+            ALGORITHM_ASSIGNMENT_TRIGGER_GROUP);
     }
 
     private Trigger buildJobTrigger() {
@@ -85,7 +93,7 @@ public class UpdateAlgorithmStudyTaskStatusJob implements Job {
     }
 
     private JobDetail buildJobDetail() {
-        return JobBuilder.newJob(UpdateAlgorithmStudyTaskStatusJob.class).build();
+        return JobBuilder.newJob(AlgorithmStudyAssignmentJob.class).build();
     }
 
     private SimpleScheduleBuilder buildSchedule() {
