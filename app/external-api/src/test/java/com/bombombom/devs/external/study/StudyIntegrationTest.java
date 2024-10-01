@@ -3,6 +3,7 @@ package com.bombombom.devs.external.study;
 
 import static com.bombombom.devs.study.model.Study.MAX_DIFFICULTY_LEVEL;
 import static com.bombombom.devs.study.model.Study.MIN_DIFFICULTY_LEVEL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -196,6 +197,70 @@ public class StudyIntegrationTest {
                 .build();
 
             bookRepository.save(testBook);
+        }
+
+
+        @Test
+        @DisplayName("자신이 개설한 스터디 목록을 조회할 수 있다.")
+        @WithUserDetails(value = "testuser",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        void can_get_my_studies() throws Exception {
+            /*
+             * Given
+             */
+            LocalDate roundStartDate = LocalDate.of(2024, 7, 22);
+            Study study = BookStudy.builder()
+                .name("스터디")
+                .introduce("안녕하세요")
+                .headCount(1)
+                .capacity(5)
+                .penalty(10000)
+                .reliabilityLimit(0)
+                .startDate(roundStartDate)
+                .weeks(2)
+                .leader(testuser)
+                .book(testBook)
+                .votingProcess(VotingProcess.READY)
+                .state(StudyStatus.RUNNING)
+                .duplicated(false)
+                .build();
+            studyRepository.save(study);
+
+            Study study2 = BookStudy.builder()
+                .name("스터디")
+                .introduce("안녕하세요")
+                .headCount(1)
+                .capacity(5)
+                .penalty(10000)
+                .reliabilityLimit(0)
+                .startDate(roundStartDate)
+                .weeks(2)
+                .leader(testuser)
+                .book(testBook)
+                .votingProcess(VotingProcess.READY)
+                .state(StudyStatus.RUNNING)
+                .duplicated(false)
+                .build();
+            studyRepository.save(study2);
+            /*
+             * When
+             */
+            ResultActions resultActions = mockMvc.perform(
+                get("/api/v1/studies/owned")
+            );
+
+            /*
+             * Then
+             */
+
+            resultActions.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(
+                    jsonPath("$.length()")
+                        .value(equalTo(2)))
+                .andExpect(
+                    jsonPath("$[*].id",
+                        containsInAnyOrder(study.getId().intValue(), study2.getId().intValue())));
         }
 
         @Nested

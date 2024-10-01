@@ -141,5 +141,8 @@ public class StudyService {
         studyRepository.save(study);
     }
 
-
+    public List<StudyResult> getOwnedStudies(Long userId) {
+        List<Study> studies = studyRepository.findAllByLeader(userId);
+        return studies.stream().map(StudyResult::fromEntity).toList();
+    }
 }
