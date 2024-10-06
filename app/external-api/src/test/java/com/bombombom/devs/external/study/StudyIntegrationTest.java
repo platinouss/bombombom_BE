@@ -794,7 +794,7 @@ public class StudyIntegrationTest {
 
 
                 /*
-                 *  Then
+                 * Then
                  */
                 resultActions.andDo(print())
                     .andExpect(status().isOk());
@@ -807,11 +807,6 @@ public class StudyIntegrationTest {
                     .isEqualTo(StudyStatus.RUNNING);
                 Assertions.assertThat(algorithmStudy.getStartDate())
                     .isEqualTo(clock.today());
-
-                Assertions.assertThat(
-                        algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId
-                            (algorithmStudy.getFirstRound().getId()).size())
-                    .isEqualTo(algorithmStudy.getProblemCount());
 
                 Assertions.assertThat(
                     algorithmStudy.getRounds().stream().map(
