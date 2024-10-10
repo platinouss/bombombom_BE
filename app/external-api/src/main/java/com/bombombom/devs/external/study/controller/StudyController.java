@@ -189,7 +189,7 @@ public class StudyController {
         @LoginUser AppUserDetails userDetails,
         @PathVariable("id") Long studyId,
         @Valid @RequestBody ConfigureStudyRequest configureStudyRequest) {
-        
+
         studyService.configure(
             userDetails.getId(),
             studyId,
@@ -253,4 +253,15 @@ public class StudyController {
 
         return ResponseEntity.created(location).body(assignmentResults);
     }
+
+    @GetMapping("/owned")
+    public ResponseEntity<List<StudyResponse>> ownedStudies(
+        @LoginUser AppUserDetails userDetails
+    ) {
+
+        return ResponseEntity.ok(studyService.getOwnedStudies(userDetails.getId()).stream().map(
+            StudyResponse::fromResult
+        ).toList());
+    }
+
 }
