@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class AlgorithmProblemRedisRepository {
+public class AlgorithmAssignmentRateLimitRepository {
 
     static final String SOLVEDAC_BUCKET_CREATION_KEY = "bucket:solvedac:created_at";
 

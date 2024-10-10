@@ -1,6 +1,6 @@
 package com.bombombom.devs.ratelimit;
 
-import com.bombombom.devs.algo.repository.AlgorithmProblemRedisRepository;
+import com.bombombom.devs.algo.repository.AlgorithmAssignmentRateLimitRepository;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.distributed.BucketProxy;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class ApiRateLimiter {
 
     private final ProxyManager<String> proxyManager;
-    private final AlgorithmProblemRedisRepository algorithmProblemRedisRepository;
+    private final AlgorithmAssignmentRateLimitRepository algorithmAssignmentRateLimitRepository;
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     public boolean tryConsume(String apiKey, BucketConfiguration configuration) {
@@ -34,7 +34,7 @@ public class ApiRateLimiter {
         return buckets.computeIfAbsent(apiKey,
             key -> {
                 BucketProxy bucketProxy = proxyManager.getProxy(key, () -> configuration);
-                algorithmProblemRedisRepository.setBucketCreationTimeIfAbsent();
+                algorithmAssignmentRateLimitRepository.setBucketCreationTimeIfAbsent();
                 return bucketProxy;
             });
     }

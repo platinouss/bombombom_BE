@@ -1,6 +1,6 @@
 package com.bombombom.devs.ratelimit.config;
 
-import com.bombombom.devs.algo.repository.AlgorithmProblemRedisRepository;
+import com.bombombom.devs.algo.repository.AlgorithmAssignmentRateLimitRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.exception.RateLimitException;
 import com.bombombom.devs.job.AlgorithmStudyAssignmentJob;
@@ -50,7 +50,7 @@ public class SolvedacApiRateLimitConfig {
     private final ApiRateLimiter apiRateLimiter;
     private final QuartzJobScheduler quartzJobScheduler;
     private final AlgorithmStudyAssignmentJob algorithmStudyAssignmentJob;
-    private final AlgorithmProblemRedisRepository algorithmProblemRedisRepository;
+    private final AlgorithmAssignmentRateLimitRepository algorithmAssignmentRateLimitRepository;
 
     /**
      * 특정 유저의 알고리즘 과제 해결 여부를 갱신하기 위해, 외부 API(solved.ac API)를 호출하기 전 수행된다. Bucket에 Token이 1개 이상 존재하는
@@ -97,7 +97,7 @@ public class SolvedacApiRateLimitConfig {
     }
 
     private int getTaskStatusUpdateDelayInSeconds() {
-        LocalDateTime creationTime = algorithmProblemRedisRepository.getBucketCreationTime();
+        LocalDateTime creationTime = algorithmAssignmentRateLimitRepository.getBucketCreationTime();
         long secondsDifference = Duration.between(creationTime, LocalDateTime.now())
             .getSeconds();
         long durationSeconds = secondsDifference % REFILL_DURATION_OF_SECONDS;
