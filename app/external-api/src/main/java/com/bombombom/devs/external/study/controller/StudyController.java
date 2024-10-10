@@ -253,4 +253,15 @@ public class StudyController {
 
         return ResponseEntity.created(location).body(assignmentResults);
     }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<StudyResponse>> myStudies(
+        @LoginUser AppUserDetails userDetails
+    ) {
+
+        return ResponseEntity.ok(studyService.getMyStudies(userDetails.getId()).stream().map(
+            StudyResponse::fromResult
+        ).toList());
+    }
+
 }
