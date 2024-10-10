@@ -238,7 +238,7 @@ class StudyServiceTest {
             .build();
         JoinStudyCommand joinStudyCommand = JoinStudyCommand.builder().studyId(study.getId())
             .build();
-        when(userStudyRepository.existsByUserIdAndStudyId(testuser.getId(), study.getId()))
+        when(userStudyRepository.existsByStudyIdAndUserId(study.getId(), testuser.getId()))
             .thenReturn(true);
 
         /*
@@ -702,8 +702,8 @@ class StudyServiceTest {
                 testuser.getId(), algorithmProblem.getId()
             )).thenReturn(Optional.of(history));
 
-            when(userStudyRepository.existsByUserIdAndStudyId(
-                testuser.getId(), study.getId()
+            when(userStudyRepository.existsByStudyIdAndUserId(
+                study.getId(), testuser.getId()
             )).thenReturn(false);
             /*
              * When & Then
@@ -765,8 +765,8 @@ class StudyServiceTest {
                 round.getId(),
                 algorithmProblem.getId())).thenReturn(true);
 
-            when(userStudyRepository.existsByUserIdAndStudyId(
-                testuser.getId(), study.getId()
+            when(userStudyRepository.existsByStudyIdAndUserId(
+                study.getId(), testuser.getId()
             )).thenReturn(true);
 
             when(userRepository.findById(
@@ -2373,7 +2373,7 @@ class StudyServiceTest {
                 .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
                 .thenReturn(false);
 
 
@@ -2402,7 +2402,7 @@ class StudyServiceTest {
                 .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
                 .thenReturn(true);
 
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
@@ -2436,7 +2436,7 @@ class StudyServiceTest {
                 .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
                 .thenReturn(true);
 
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
@@ -2471,7 +2471,7 @@ class StudyServiceTest {
                 .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
                 .thenReturn(true);
 
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
@@ -2513,7 +2513,7 @@ class StudyServiceTest {
                 .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
                 .thenReturn(true);
 
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
@@ -2558,7 +2558,7 @@ class StudyServiceTest {
                 .thenReturn(Optional.of(mock(User.class)));
             when(studyRepository.findById(studyId))
                 .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByUserIdAndStudyId(userId, studyId))
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
                 .thenReturn(true);
 
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(

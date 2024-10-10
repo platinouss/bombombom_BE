@@ -49,7 +49,7 @@ public class StudyService {
 
     @Transactional
     public void joinStudy(Long userId, JoinStudyCommand joinStudyCommand) {
-        if (userStudyRepository.existsByUserIdAndStudyId(userId, joinStudyCommand.studyId())) {
+        if (userStudyRepository.existsByStudyIdAndUserId(joinStudyCommand.studyId(), userId)) {
             throw new BusinessRuleException(ErrorCode.ALREADY_JOINED);
         }
         User user = userRepository.findById(userId)

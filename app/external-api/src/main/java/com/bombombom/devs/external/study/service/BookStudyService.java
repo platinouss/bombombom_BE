@@ -454,7 +454,7 @@ public class BookStudyService implements StudyProgressService {
         final User user = userRepository.findById(userId)
             .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (!userStudyRepository.existsByUserIdAndStudyId(userId, studyId)) {
+        if (!userStudyRepository.existsByStudyIdAndUserId(studyId, userId)) {
             throw new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED);
         }
 
@@ -482,8 +482,8 @@ public class BookStudyService implements StudyProgressService {
             second = null;
         }
 
-        AssignmentVote vote = assignmentVoteRepository.findByUserIdAndRound(userId,
-                nextRound)
+        AssignmentVote vote = assignmentVoteRepository.findByRoundAndUserId(nextRound,
+                userId)
             .orElseGet(
                 () -> AssignmentVote.builder()
                     .user(user)

@@ -10,8 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 public interface AssignmentVoteRepository extends JpaRepository<AssignmentVote, Long> {
 
 
-    @Query("SELECT av FROM AssignmentVote av WHERE av.user.id = :userId AND round = :round")
-    Optional<AssignmentVote> findByUserIdAndRound(Long userId, Round round);
+    @Query("SELECT av FROM AssignmentVote av WHERE round = :round AND av.user.id = :userId ")
+    Optional<AssignmentVote> findByRoundAndUserId(Round round, Long userId);
 
     @Query("SELECT av FROM AssignmentVote av WHERE round = :round")
     List<AssignmentVote> findAllByRound(Round round);

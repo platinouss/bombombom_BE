@@ -184,8 +184,8 @@ public class AlgorithmStudyService implements StudyProgressService {
 
         }
 
-        if (!userStudyRepository.existsByUserIdAndStudyId(userId,
-            algorithmStudy.getId())) {
+        if (!userStudyRepository.existsByStudyIdAndUserId(algorithmStudy.getId(),
+            userId)) {
             throw new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED);
         }
 
