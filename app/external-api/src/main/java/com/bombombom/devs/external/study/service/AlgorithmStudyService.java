@@ -134,13 +134,16 @@ public class AlgorithmStudyService implements StudyProgressService {
     public void updateAlgorithmTaskStatus(CheckAlgorithmProblemSolvedCommand command) {
         User user = userRepository.findById(command.userId())
             .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-        if (command.problemIds().isEmpty()) {
-            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
-        }
         if (user.getBaekjoon() == null || user.getBaekjoon().isBlank()) {
             throw new NotFoundException(ErrorCode.BAEKJOON_ID_NOT_FOUND);
         }
+        if (command.problemIds().isEmpty()) {
+            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
         List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemIds());
+        if (problems.size() != command.problemIds().size()) {
+            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
         algorithmProblemQueueService.addUpdateTaskStatusRequest(user, problems,
             command.studyId());
     }
