@@ -25,7 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.util.SystemClock;
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
-import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolveHistoryResult;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolvedHistoryResult;
+import com.bombombom.devs.external.algo.service.dto.result.AlgorithmTaskUpdateStatusResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
 import com.bombombom.devs.external.config.TestUserDetailsServiceConfig;
 import com.bombombom.devs.external.global.security.JwtUtils;
@@ -34,7 +35,7 @@ import com.bombombom.devs.external.study.controller.dto.request.RegisterAlgorith
 import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
-import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyTaskStatusResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
@@ -92,8 +93,10 @@ class StudyControllerTest {
 
     @MockBean
     private StudyService studyService;
+
     @MockBean
     private BookStudyService bookStudyService;
+
     @MockBean
     private AlgorithmStudyService algorithmStudyService;
 
@@ -1488,15 +1491,17 @@ class StudyControllerTest {
              */
             Long studyId = 1L;
             Integer roundIdx = 1;
+            String username1 = "username1";
+            String username2 = "username2";
             UserProfileResult user1 = UserProfileResult.builder()
                 .id(1L)
-                .username("username1")
+                .username(username1)
                 .role(Role.USER)
                 .reliability(50)
                 .build();
             UserProfileResult user2 = UserProfileResult.builder()
                 .id(2L)
-                .username("username2")
+                .username(username2)
                 .role(Role.USER)
                 .reliability(60)
                 .build();
@@ -1521,16 +1526,27 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
                 .tryCount(2)
                 .build();
+            AlgorithmTaskUpdateStatusResult taskUpdateStatusResult1 = AlgorithmTaskUpdateStatusResult.builder()
+                .isUpdating(false)
+                .updatedAt(null)
+                .build();
+            AlgorithmTaskUpdateStatusResult taskUpdateStatusResult2 = AlgorithmTaskUpdateStatusResult.builder()
+                .isUpdating(false)
+                .updatedAt(null)
+                .build();
+            Map<Long, AlgorithmTaskUpdateStatusResult> taskUpdateStatusResults = Map.of(1L,
+                taskUpdateStatusResult1, 2L, taskUpdateStatusResult2);
             AlgorithmStudyProgress algorithmStudyProgress = AlgorithmStudyProgress.builder()
                 .round(round)
                 .algorithmProblems(List.of(problem1, problem2))
                 .histories(List.of(history))
+                .taskUpdateStatuses(taskUpdateStatusResults)
                 .build();
             StudyProgressResult studyProgressResult = StudyProgressResult.builder()
                 .studyType(StudyType.ALGORITHM)
@@ -1555,16 +1571,24 @@ class StudyControllerTest {
                 .build();
             problems.put(1L, algorithmProblemInfo1);
             problems.put(2L, algorithmProblemInfo2);
-            Map<Long, MemberInfo> users = new HashMap<>();
+            Map<Long, AlgorithmStudyTaskStatusResponse> users = new HashMap<>();
             Map<Long, Boolean> tasks1 = new HashMap<>();
             tasks1.put(1L, false);
             tasks1.put(2L, true);
-            MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+            AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
+                .username(username1)
+                .isUpdating(false)
+                .taskStatusUpdatedAt(null)
+                .tasks(tasks1)
                 .build();
             Map<Long, Boolean> tasks2 = new HashMap<>();
             tasks2.put(1L, false);
             tasks2.put(2L, false);
-            MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+            AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
+                .username(username2)
+                .isUpdating(false)
+                .taskStatusUpdatedAt(null)
+                .tasks(tasks2)
                 .build();
             users.put(1L, memberInfo1);
             users.put(2L, memberInfo2);
@@ -1634,7 +1658,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1708,7 +1732,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1754,15 +1778,17 @@ class StudyControllerTest {
              */
             Long studyId = 1L;
             Integer roundIdx = 1;
+            String username1 = "username1";
+            String username2 = "username2";
             UserProfileResult user1 = UserProfileResult.builder()
                 .id(1L)
-                .username("username1")
+                .username(username1)
                 .role(Role.USER)
                 .reliability(50)
                 .build();
             UserProfileResult user2 = UserProfileResult.builder()
                 .id(2L)
-                .username("username2")
+                .username(username2)
                 .role(Role.USER)
                 .reliability(60)
                 .build();
@@ -1787,17 +1813,29 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
                 .tryCount(2)
                 .build();
+            AlgorithmTaskUpdateStatusResult taskUpdateStatusResult1 = AlgorithmTaskUpdateStatusResult.builder()
+                .isUpdating(false)
+                .updatedAt(null)
+                .build();
+            AlgorithmTaskUpdateStatusResult taskUpdateStatusResult2 = AlgorithmTaskUpdateStatusResult.builder()
+                .isUpdating(false)
+                .updatedAt(null)
+                .build();
+            Map<Long, AlgorithmTaskUpdateStatusResult> taskUpdateStatusResults = Map.of(1L,
+                taskUpdateStatusResult1, 2L, taskUpdateStatusResult2);
             AlgorithmStudyProgress algorithmStudyProgress = AlgorithmStudyProgress.builder()
                 .round(round)
                 .algorithmProblems(List.of(problem1, problem2))
                 .histories(List.of(history))
+                .taskUpdateStatuses(taskUpdateStatusResults)
                 .build();
+
             StudyProgressResult studyProgressResult = StudyProgressResult.builder()
                 .studyType(StudyType.ALGORITHM)
                 .members(List.of(user1, user2))
@@ -1837,16 +1875,24 @@ class StudyControllerTest {
                 .build();
             problems.put(1L, algorithmProblemInfo1);
             problems.put(2L, algorithmProblemInfo2);
-            Map<Long, MemberInfo> users = new HashMap<>();
+            Map<Long, AlgorithmStudyTaskStatusResponse> users = new HashMap<>();
             Map<Long, Boolean> tasks1 = new HashMap<>();
             tasks1.put(1L, false);
             tasks1.put(2L, true);
-            MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+            AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
+                .username(username1)
+                .isUpdating(false)
+                .taskStatusUpdatedAt(null)
+                .tasks(tasks1)
                 .build();
             Map<Long, Boolean> tasks2 = new HashMap<>();
             tasks2.put(1L, false);
             tasks2.put(2L, false);
-            MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+            AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
+                .username(username2)
+                .isUpdating(false)
+                .taskStatusUpdatedAt(null)
+                .tasks(tasks2)
                 .build();
             users.put(1L, memberInfo1);
             users.put(2L, memberInfo2);
@@ -1919,7 +1965,7 @@ class StudyControllerTest {
                 .link("https://www.test.com/2000")
                 .difficulty(5)
                 .build();
-            AlgorithmProblemSolveHistoryResult history = AlgorithmProblemSolveHistoryResult.builder()
+            AlgorithmProblemSolvedHistoryResult history = AlgorithmProblemSolvedHistoryResult.builder()
                 .problemId(problem2.id())
                 .userId(user1.id())
                 .solvedAt(LocalDateTime.of(2024, 7, 23, 11, 0))
@@ -1966,7 +2012,5 @@ class StudyControllerTest {
              */
             resultActions.andExpect(status().isBadRequest());
         }
-
-
     }
 }

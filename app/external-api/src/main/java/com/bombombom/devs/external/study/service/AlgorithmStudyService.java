@@ -2,7 +2,9 @@ package com.bombombom.devs.external.study.service;
 
 import com.bombombom.devs.algo.model.AlgorithmProblem;
 import com.bombombom.devs.algo.model.AlgorithmProblemFeedback;
+import com.bombombom.devs.algo.model.vo.AlgorithmTaskUpdateStatus;
 import com.bombombom.devs.algo.repository.AlgorithmProblemFeedbackRepository;
+import com.bombombom.devs.algo.repository.AlgorithmProblemRedisQueueRepository;
 import com.bombombom.devs.algo.repository.AlgorithmProblemRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.exception.BusinessRuleException;
@@ -10,29 +12,27 @@ import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
+import com.bombombom.devs.external.algo.service.AlgorithmProblemQueueService;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.external.study.service.dto.command.CheckAlgorithmProblemSolvedCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
-import com.bombombom.devs.job.AlgorithmProblemConverter;
-import com.bombombom.devs.solvedac.SolvedacClient;
-import com.bombombom.devs.solvedac.dto.ProblemListResponse;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
-import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
-import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRepository;
 import com.bombombom.devs.study.repository.AlgorithmStudyDifficultyRepository;
 import com.bombombom.devs.study.repository.RoundRepository;
 import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -43,22 +43,26 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AlgorithmStudyService implements StudyProgressService {
 
+    private final Clock clock;
+    private final UserRepository userRepository;
     private final StudyRepository studyRepository;
     private final RoundRepository roundRepository;
-    private final UserRepository userRepository;
     private final UserStudyRepository userStudyRepository;
     private final AlgorithmProblemRepository algoProblemRepository;
     private final AlgorithmProblemAssignmentRepository algoAssignmentRepository;
-    private final AlgorithmProblemSolveHistoryRepository algoSolveHistoryRepository;
+    private final AlgorithmProblemSolvedHistoryRepository algoSolvedHistoryRepository;
     private final AlgorithmProblemFeedbackRepository algoFeedbackRepository;
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
-    private final AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    private final AlgorithmProblemQueueService algorithmProblemQueueService;
+    private final AlgorithmProblemSolvedHistoryRepository algorithmProblemSolvedHistoryRepository;
     private final AlgorithmStudyDifficultyRepository algorithmStudyDifficultyRepository;
-    private final SolvedacClient solvedacClient;
     private final AlgorithmProblemService algorithmProblemService;
-    private final AlgorithmProblemConverter algorithmProblemConverter;
-    private final Clock clock;
+    private final AlgorithmProblemRedisQueueRepository algorithmProblemRedisQueueRepository;
 
+    @Override
+    public StudyType getStudyType() {
+        return StudyType.ALGORITHM;
+    }
 
     @Transactional
     public AlgorithmStudyResult createStudy(
@@ -104,42 +108,45 @@ public class AlgorithmStudyService implements StudyProgressService {
     }
 
     @Override
-    public StudyType getStudyType() {
-        return StudyType.ALGORITHM;
-    }
-
-    @Override
     public AlgorithmStudyProgress findStudyProgress(Round round, List<User> members) {
-        List<Long> membersId = members.stream().map(User::getId).toList();
+        List<Long> memberIds = members.stream().map(User::getId).toList();
         List<AlgorithmProblem> problems = algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId(
             round.getId()).stream().map(AlgorithmProblemAssignment::getProblem).toList();
-        List<Long> problemsId = problems.stream().map(AlgorithmProblem::getId).toList();
-        List<AlgorithmProblemSolveHistory> histories = algorithmProblemSolveHistoryRepository
-            .findSolvedHistoryWithUserAndProblem(membersId, problemsId);
-        return AlgorithmStudyProgress.fromEntity(round, problems, histories);
+        List<Long> problemIds = problems.stream().map(AlgorithmProblem::getId).toList();
+        List<AlgorithmProblemSolvedHistory> histories = algorithmProblemSolvedHistoryRepository
+            .findSolvedHistoryWithUserAndProblem(memberIds, problemIds);
+        Map<Long, AlgorithmTaskUpdateStatus> taskUpdateStatuses = algorithmProblemRedisQueueRepository.getTaskUpdateStatuses(
+            round.getStudy().getId(), memberIds);
+        return AlgorithmStudyProgress.fromEntity(round, problems, histories, taskUpdateStatuses);
     }
 
     @Override
     @Transactional
     public void startRound(Study study, Round round) {
-
         AlgorithmStudy algorithmStudy = (AlgorithmStudy) study;
-        Map<AlgoTag, Integer> problemCountForEachTag =
-            algorithmProblemService.getProblemCountForEachTag(algorithmStudy.getProblemCount());
-
-        ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
-            study.getBaekjoonIds(), problemCountForEachTag,
-            algorithmStudy.getDifficultySpreadMap());
-
-        List<AlgorithmProblem> problems = algorithmProblemConverter.convert(problemListResponse);
-
-        List<AlgorithmProblem> foundOrSavedProblems =
-            algorithmProblemService.findProblemsThenSaveWhenNotExist(
-                problems);
-
-        assignProblemToRound(round, foundOrSavedProblems);
+        Map<AlgoTag, Integer> problemCountForEachTag = algorithmProblemService.getProblemCountForEachTag(
+            algorithmStudy.getProblemCount());
+        algorithmProblemQueueService.addAssignProblemRequest(study, algorithmStudy, round,
+            problemCountForEachTag);
     }
 
+    @Transactional
+    public void updateAlgorithmTaskStatus(CheckAlgorithmProblemSolvedCommand command) {
+        User user = userRepository.findById(command.userId())
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+        if (user.getBaekjoon() == null || user.getBaekjoon().isBlank()) {
+            throw new NotFoundException(ErrorCode.BAEKJOON_ID_NOT_FOUND);
+        }
+        if (command.problemIds().isEmpty()) {
+            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+        List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemIds());
+        if (problems.size() != command.problemIds().size()) {
+            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+        algorithmProblemQueueService.addUpdateTaskStatusRequest(user, problems,
+            command.studyId());
+    }
 
     @Transactional
     public void feedback(Long userId,
@@ -163,7 +170,7 @@ public class AlgorithmStudyService implements StudyProgressService {
                 feedbackAlgorithmProblemCommand.problemId())
             .orElseThrow(() -> new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND));
 
-        AlgorithmProblemSolveHistory history = algoSolveHistoryRepository.findByUserIdAndProblemId(
+        AlgorithmProblemSolvedHistory history = algoSolvedHistoryRepository.findByUserIdAndProblemId(
                 userId, problem.getId())
             .orElseThrow(() -> new NotFoundException(ErrorCode.SOLVE_HISTORY_NOT_FOUND));
 
@@ -222,15 +229,4 @@ public class AlgorithmStudyService implements StudyProgressService {
         algorithmStudyDifficultyRepository.increaseDifficultyByStudyIdAndAlgoTag(studyId, tag,
             variance);
     }
-
-    @Transactional
-    public void assignProblemToRound(Round round, List<AlgorithmProblem> problems) {
-        List<AlgorithmProblemAssignment> assignments = new ArrayList<>();
-        for (AlgorithmProblem problem : problems) {
-            assignments.add(AlgorithmProblemAssignment.of(round, problem));
-        }
-        algorithmProblemAssignmentRepository.saveAll(assignments);
-    }
-
-
 }

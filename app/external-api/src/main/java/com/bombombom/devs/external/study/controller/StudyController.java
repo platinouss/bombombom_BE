@@ -3,6 +3,7 @@ package com.bombombom.devs.external.study.controller;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
+import com.bombombom.devs.external.study.controller.dto.request.CheckAlgorithmProblemSolvedRequest;
 import com.bombombom.devs.external.study.controller.dto.request.ConfigureStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.DeleteAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
@@ -60,10 +61,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class StudyController {
 
     public static final String RESOURCE_PATH = "/api/v1/studies";
+
     private final StudyService studyService;
     private final AlgorithmStudyService algorithmStudyService;
     private final BookStudyService bookStudyService;
-
 
     @PostMapping("/algo")
     public ResponseEntity<AlgorithmStudyResponse> registerAlgorithmStudy(
@@ -126,8 +127,7 @@ public class StudyController {
     public ResponseEntity<StudyDetailsResponse> getStudyDetails(@PathVariable("id") Long studyId) {
         StudyDetailsResult studyDetailsResult = studyService.findStudyDetails(studyId);
 
-        return ResponseEntity.ok()
-            .body(StudyDetailsResponse.fromResult(studyDetailsResult));
+        return ResponseEntity.ok().body(StudyDetailsResponse.fromResult(studyDetailsResult));
     }
 
     @GetMapping("/progress/{id}")
@@ -158,6 +158,14 @@ public class StudyController {
         studyService.start(userDetails.getId(),
             startStudyRequest.toServiceDto());
 
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/algo/status")
+    public ResponseEntity<Void> checkAlgorithmProblemSolved(
+        @Valid @RequestBody CheckAlgorithmProblemSolvedRequest checkAlgorithmProblemSolvedRequest) {
+        algorithmStudyService.updateAlgorithmTaskStatus(
+            checkAlgorithmProblemSolvedRequest.toServiceDto());
         return ResponseEntity.ok().build();
     }
 
@@ -198,7 +206,6 @@ public class StudyController {
         return ResponseEntity.noContent().build();
     }
 
-
     @PutMapping("/{id}/vote")
     public ResponseEntity<AssignmentVoteResult> voteAssignment(
         @LoginUser AppUserDetails userDetails,
@@ -235,7 +242,6 @@ public class StudyController {
         return ResponseEntity.ok().body(assignments.stream().map(
             AssignmentInfo::fromResult).toList());
     }
-
 
     @PostMapping("/{id}/assignments")
     public ResponseEntity<List<AssignmentResult>> createAssignments(

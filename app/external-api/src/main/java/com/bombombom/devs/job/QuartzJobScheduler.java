@@ -8,6 +8,7 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -16,11 +17,14 @@ import org.springframework.stereotype.Component;
 public class QuartzJobScheduler {
 
     private final Scheduler scheduler;
+    private final AlgorithmStudyAssignmentJob algorithmStudyAssignmentJob;
 
     @PostConstruct
     public void scheduleJob() {
         JobDetail jobDetail = RoundStartJob.buildJobDetail();
         Trigger trigger = RoundStartJob.buildJobTrigger();
+        JobDetail updateAlgoStudyTaskStatusDetail = algorithmStudyAssignmentJob.getJobDetail();
+        Trigger updateAlgoStudyTaskStatusTrigger = algorithmStudyAssignmentJob.getTrigger();
         try {
             JobKey jobKey = jobDetail.getKey();
             if (!scheduler.checkExists(jobKey)) {
@@ -29,9 +33,18 @@ public class QuartzJobScheduler {
             } else {
                 log.warn("Job already exists with key: {}", jobKey);
             }
+            scheduler.scheduleJob(updateAlgoStudyTaskStatusDetail,
+                updateAlgoStudyTaskStatusTrigger);
         } catch (SchedulerException e) {
             log.error(e.getMessage());
         }
     }
 
+    public void setScheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException {
+        scheduler.scheduleJob(jobDetail, trigger);
+    }
+
+    public void removeTrigger(TriggerKey triggerKey) throws SchedulerException {
+        scheduler.unscheduleJob(triggerKey);
+    }
 }

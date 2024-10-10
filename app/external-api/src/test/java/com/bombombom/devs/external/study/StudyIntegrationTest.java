@@ -42,7 +42,7 @@ import com.bombombom.devs.external.study.controller.dto.request.RegisterBookStud
 import com.bombombom.devs.external.study.controller.dto.request.StartStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse;
 import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.AlgorithmProblemInfo;
-import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyProgressResponse.MemberInfo;
+import com.bombombom.devs.external.study.controller.dto.response.AlgorithmStudyTaskStatusResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyDetailsResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyPageResponse;
 import com.bombombom.devs.external.study.controller.dto.response.StudyResponse;
@@ -56,7 +56,7 @@ import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.enums.VotingProcess;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
-import com.bombombom.devs.study.model.AlgorithmProblemSolveHistory;
+import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Assignment;
 import com.bombombom.devs.study.model.AssignmentVote;
@@ -68,7 +68,7 @@ import com.bombombom.devs.study.model.UserAssignment;
 import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.study.model.Video;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
-import com.bombombom.devs.study.repository.AlgorithmProblemSolveHistoryRepository;
+import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRepository;
 import com.bombombom.devs.study.repository.AssignmentRepository;
 import com.bombombom.devs.study.repository.AssignmentVoteRepository;
 import com.bombombom.devs.study.repository.ProblemRepository;
@@ -98,6 +98,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -125,6 +126,9 @@ public class StudyIntegrationTest {
     @Autowired
     Clock clock;
 
+    @Mock
+    Clock mockClock;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -133,7 +137,6 @@ public class StudyIntegrationTest {
 
     @Autowired
     private ProblemRepository problemRepository;
-
 
     @Autowired
     private StudyRepository studyRepository;
@@ -152,8 +155,10 @@ public class StudyIntegrationTest {
 
     @Autowired
     private AlgorithmProblemRepository algorithmProblemRepository;
+
     @Autowired
     private AssignmentRepository assignmentRepository;
+
     @Autowired
     private AssignmentVoteRepository assignmentVoteRepository;
 
@@ -161,9 +166,11 @@ public class StudyIntegrationTest {
     private AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
 
     @Autowired
-    private AlgorithmProblemSolveHistoryRepository algorithmProblemSolveHistoryRepository;
+    private AlgorithmProblemSolvedHistoryRepository algorithmProblemSolvedHistoryRepository;
+
     @Autowired
     private VideoRepository videoRepository;
+
     @Autowired
     private UserAssignmentRepository userAssignmentRepository;
 
@@ -787,7 +794,7 @@ public class StudyIntegrationTest {
 
 
                 /*
-                 *  Then
+                 * Then
                  */
                 resultActions.andDo(print())
                     .andExpect(status().isOk());
@@ -800,11 +807,6 @@ public class StudyIntegrationTest {
                     .isEqualTo(StudyStatus.RUNNING);
                 Assertions.assertThat(algorithmStudy.getStartDate())
                     .isEqualTo(clock.today());
-
-                Assertions.assertThat(
-                        algorithmProblemAssignmentRepository.findAssignmentWithProblemByRoundId
-                            (algorithmStudy.getFirstRound().getId()).size())
-                    .isEqualTo(algorithmStudy.getProblemCount());
 
                 Assertions.assertThat(
                     algorithmStudy.getRounds().stream().map(
@@ -1139,7 +1141,7 @@ public class StudyIntegrationTest {
             algorithmProblemAssignmentRepository.save(
                 AlgorithmProblemAssignment.of(study.getFirstRound(), problem));
 
-            algorithmProblemSolveHistoryRepository.save(AlgorithmProblemSolveHistory.builder()
+            algorithmProblemSolvedHistoryRepository.save(AlgorithmProblemSolvedHistory.builder()
                 .tryCount(1)
                 .solvedAt(clock.now())
                 .problem(problem)
@@ -1644,7 +1646,7 @@ public class StudyIntegrationTest {
             .round(round)
             .problem(problem2)
             .build();
-        AlgorithmProblemSolveHistory history = AlgorithmProblemSolveHistory.builder()
+        AlgorithmProblemSolvedHistory history = AlgorithmProblemSolvedHistory.builder()
             .id(1L)
             .problem(problem2)
             .user(user1)
@@ -1652,7 +1654,7 @@ public class StudyIntegrationTest {
             .tryCount(2)
             .build();
         algorithmProblemAssignmentRepository.saveAll(List.of(assignment1, assignment2));
-        algorithmProblemSolveHistoryRepository.save(history);
+        algorithmProblemSolvedHistoryRepository.save(history);
 
         Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
         AlgorithmProblemInfo algorithmProblemInfo1 = AlgorithmProblemInfo.builder()
@@ -1671,16 +1673,22 @@ public class StudyIntegrationTest {
             .build();
         problems.put(1L, algorithmProblemInfo1);
         problems.put(2L, algorithmProblemInfo2);
-        Map<Long, MemberInfo> users = new HashMap<>();
+        Map<Long, AlgorithmStudyTaskStatusResponse> users = new HashMap<>();
         Map<Long, Boolean> tasks1 = new HashMap<>();
         tasks1.put(1L, false);
         tasks1.put(2L, true);
-        MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+        AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
+            .username("username1")
+            .isUpdating(false)
+            .tasks(tasks1)
             .build();
         Map<Long, Boolean> tasks2 = new HashMap<>();
         tasks2.put(1L, false);
         tasks2.put(2L, false);
-        MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+        AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
+            .username("username2")
+            .isUpdating(false)
+            .tasks(tasks2)
             .build();
         users.put(1L, memberInfo1);
         users.put(2L, memberInfo2);
@@ -1784,7 +1792,7 @@ public class StudyIntegrationTest {
             .round(round)
             .problem(problem2)
             .build();
-        AlgorithmProblemSolveHistory history = AlgorithmProblemSolveHistory.builder()
+        AlgorithmProblemSolvedHistory history = AlgorithmProblemSolvedHistory.builder()
             .id(1L)
             .problem(problem2)
             .user(user1)
@@ -1792,7 +1800,7 @@ public class StudyIntegrationTest {
             .tryCount(2)
             .build();
         algorithmProblemAssignmentRepository.saveAll(List.of(assignment1, assignment2));
-        algorithmProblemSolveHistoryRepository.save(history);
+        algorithmProblemSolvedHistoryRepository.save(history);
 
         StudyResult studyResult = AlgorithmStudyResult.builder()
             .id(study.getId())
@@ -1826,16 +1834,22 @@ public class StudyIntegrationTest {
             .build();
         problems.put(1L, algorithmProblemInfo1);
         problems.put(2L, algorithmProblemInfo2);
-        Map<Long, MemberInfo> users = new HashMap<>();
+        Map<Long, AlgorithmStudyTaskStatusResponse> users = new HashMap<>();
         Map<Long, Boolean> tasks1 = new HashMap<>();
         tasks1.put(1L, false);
         tasks1.put(2L, true);
-        MemberInfo memberInfo1 = MemberInfo.builder().username("username1").tasks(tasks1)
+        AlgorithmStudyTaskStatusResponse memberInfo1 = AlgorithmStudyTaskStatusResponse.builder()
+            .username("username1")
+            .isUpdating(false)
+            .tasks(tasks1)
             .build();
         Map<Long, Boolean> tasks2 = new HashMap<>();
         tasks2.put(1L, false);
         tasks2.put(2L, false);
-        MemberInfo memberInfo2 = MemberInfo.builder().username("username2").tasks(tasks2)
+        AlgorithmStudyTaskStatusResponse memberInfo2 = AlgorithmStudyTaskStatusResponse.builder()
+            .username("username2")
+            .isUpdating(false)
+            .tasks(tasks2)
             .build();
         users.put(1L, memberInfo1);
         users.put(2L, memberInfo2);
@@ -2143,6 +2157,4 @@ public class StudyIntegrationTest {
                 jsonPath(userPath, user2.getId())
                     .value(equalTo(JsonPath.read(jsonForUser2, "$"))));
     }
-
-
 }
