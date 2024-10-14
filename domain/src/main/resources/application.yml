@@ -35,6 +35,8 @@ naver:
   client:
     id: ${NAVER_CLIENT_ID}
     secret: ${NAVER_CLIENT_SECRET}
+redis:
+  ssl-enabled: ${REDIS_SSL_ENABLED}
 
 # 로컬 프로파일 설정
 ---
