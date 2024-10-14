@@ -21,6 +21,7 @@ import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,9 +42,14 @@ public class StudyService {
 
     @Transactional(readOnly = true)
     public Page<StudyResult> readStudy(Pageable pageable) {
-        Page<Study> studyPage = studyRepository.findAllWithDifficultiesAndLeaderAndBook(pageable);
+        Page<Long> studyPage = studyRepository.findIdsAll(pageable);
 
-        return studyPage.map(StudyResult::fromEntity);
+        List<Study> studies = studyRepository.findWithDifficultiesAndLeaderAndBookByIds(
+            studyPage.getContent());
+        AtomicInteger index = new AtomicInteger();
+        
+        return studyPage.map(i -> studies.get(index.getAndIncrement()))
+            .map(StudyResult::fromEntity);
 
     }
 

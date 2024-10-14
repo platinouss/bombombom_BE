@@ -197,9 +197,13 @@ class StudyServiceTest {
         repositoryResponses.add(study2);
 
         Page<Study> studies = new PageImpl<>(repositoryResponses);
-        when(studyRepository.findAllWithDifficultiesAndLeaderAndBook(
-            any(Pageable.class))).thenReturn(studies);
+        Page<Long> studyIds = studies.map(Study::getId);
+        when(studyRepository.findIdsAll(
+            any(Pageable.class))).thenReturn(studyIds);
 
+        when(studyRepository.findWithDifficultiesAndLeaderAndBookByIds(
+            studyIds.getContent()
+        )).thenReturn(studies.getContent());
         /*
         When
          */
