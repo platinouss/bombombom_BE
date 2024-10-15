@@ -20,6 +20,8 @@ spring:
     redis:
       repositories:
         enabled: false
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED}
   security:
     front-server-origin: ${FRONT_SERVER_ORIGIN}
     jwt:
