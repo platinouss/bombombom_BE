@@ -71,7 +71,6 @@ jobs:
           sleep 10
           curl -X GET http://localhost:9200/
 
-
       - name: Test And Build with Gradle Wrapper
         run: |
           ACCESS_TOKEN_EXPIRE=300000000 JWT_SECRET_KEY=abcadsadsaqwdwqdfasdasd3r3214t4tk4ninifnewfokncknwfnopefw MYSQL_DATABASE=bombombom MYSQL_HOST=localhost MYSQL_PASSWORD=root MYSQL_USERNAME=root REFRESH_TOKEN_EXPIRE=7120000 TEST_MYSQL_DATABASE=test PORT=8080 LOG_LEVEL=DEBUG NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} ELASTICSEARCH_URI=localhost:9200 TEST_ELASTICSEARCH_URI=localhost:9200 FRONT_SERVER_ORIGIN=http://localhost:3000 REDIS_HOST=localhost REDIS_PORT=6379 TEST_REDIS_HOST=localhost TEST_REDIS_PORT=6379 REDIS_SSL_ENABLED=false ./gradlew build
