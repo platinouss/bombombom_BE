@@ -6,8 +6,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'com.bucket4j:bucket4j-redis:8.10.1'
-    
+
+    // Token Bucket
+    implementation 'com.bucket4j:bucket4j_jdk17-lettuce:8.14.0'
+    implementation 'com.bucket4j:bucket4j_jdk17-redis-common:8.14.0'
+
     implementation project(':core')
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

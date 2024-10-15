@@ -1,7 +1,7 @@
 package com.bombombom.devs.config;
 
 import io.github.bucket4j.distributed.proxy.ProxyManager;
-import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
+import io.github.bucket4j.redis.lettuce.Bucket4jLettuce;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.codec.ByteArrayCodec;
@@ -17,6 +17,6 @@ public class TokenBucketConfig {
     public ProxyManager<String> proxyManager(RedisClient redisClient) {
         StatefulRedisConnection<String, byte[]> connection = redisClient.connect(
             RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE));
-        return LettuceBasedProxyManager.builderFor(connection).build();
+        return Bucket4jLettuce.casBasedBuilder(connection).build();
     }
 }
