@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UserStudyRepository extends JpaRepository<UserStudy, Long> {
 
-    boolean existsByUserIdAndStudyId(Long userId, Long studyId);
+    boolean existsByStudyIdAndUserId(Long studyId, Long userId);
 
     @Query("SELECT us FROM UserStudy us JOIN FETCH us.user "
         + "WHERE us.study.id = :studyId")

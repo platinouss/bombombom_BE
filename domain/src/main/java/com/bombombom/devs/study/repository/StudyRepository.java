@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.NonNull;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
 
@@ -35,12 +36,10 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
         + "WHERE s.id = :id")
     Optional<Study> findWithRoundsById(Long id);
 
-    @Query(value = "SELECT s FROM Study s "
-        + "LEFT JOIN FETCH s.leader "
-        + "LEFT JOIN FETCH TREAT(s as AlgorithmStudy).difficulties "
-        + "LEFT JOIN FETCH TREAT(s as BookStudy).book ",
+    @NonNull
+    @Query(value = "SELECT s.id FROM Study s ",
         countQuery = "SELECT COUNT(s) FROM Study s")
-    Page<Study> findAllWithDifficultiesAndLeaderAndBook(Pageable pageable);
+    Page<Long> findIdsAll(@NonNull Pageable pageable);
 
 
     @Query(value = "SELECT s FROM Study s "
@@ -49,6 +48,14 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
         + "LEFT JOIN FETCH TREAT(s as BookStudy).book "
         + "WHERE s.id = :id")
     Optional<Study> findWithDifficultiesAndLeaderAndBookById(Long id);
+
+
+    @Query(value = "SELECT s FROM Study s "
+        + "LEFT JOIN FETCH s.leader "
+        + "LEFT JOIN FETCH TREAT(s as AlgorithmStudy).difficulties "
+        + "LEFT JOIN FETCH TREAT(s as BookStudy).book "
+        + "WHERE s.id IN :ids")
+    List<Study> findWithDifficultiesAndLeaderAndBookByIds(List<Long> ids);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Study s WHERE id = :id")
