@@ -2,8 +2,6 @@ package com.bombombom.devs.core.util.encryption;
 
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.ServerInternalException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -16,10 +14,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 public class ECCEncryption implements AsymmetricKeyEncryption {
 
@@ -34,28 +29,37 @@ public class ECCEncryption implements AsymmetricKeyEncryption {
     }
 
     @Override
-    public KeyPair generateKeyPair()
-        throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
-        ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
-        keyGen.initialize(ecSpec, new SecureRandom());
-        return keyGen.generateKeyPair();
+    public KeyPair generateKeyPair() {
+        try {
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
+            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+            keyGen.initialize(ecSpec, new SecureRandom());
+            return keyGen.generateKeyPair();
+        } catch (Exception e) {
+            throw new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
+        }
     }
 
     @Override
-    public byte[] encrypt(byte[] data, PublicKey publicKey)
-        throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("ECIES");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return cipher.doFinal(data);
+    public byte[] encrypt(byte[] data, PublicKey publicKey) {
+        try {
+            Cipher cipher = Cipher.getInstance("ECIES");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            return cipher.doFinal(data);
+        } catch (Exception e) {
+            throw new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
+        }
     }
 
     @Override
-    public byte[] decrypt(byte[] encryptedData, PrivateKey privateKey)
-        throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("ECIES");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return cipher.doFinal(encryptedData);
+    public byte[] decrypt(byte[] encryptedData, PrivateKey privateKey) {
+        try {
+            Cipher cipher = Cipher.getInstance("ECIES");
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            return cipher.doFinal(encryptedData);
+        } catch (Exception e) {
+            throw new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
+        }
     }
 
     @Override
@@ -69,25 +73,29 @@ public class ECCEncryption implements AsymmetricKeyEncryption {
     }
 
     @Override
-    public PublicKey deserializePublicKey(String publicKey) throws InvalidKeySpecException {
-        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKey);
-        return keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+    public PublicKey deserializePublicKey(String publicKey) {
+        try {
+            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKey);
+            return keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+        } catch (InvalidKeySpecException e) {
+            throw new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
+        }
     }
 
     @Override
-    public PrivateKey deserializePrivateKey(String privateKey) throws InvalidKeySpecException {
-        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKey);
-        return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+    public PrivateKey deserializePrivateKey(String privateKey) {
+        try {
+            byte[] privateKeyBytes = Base64.getDecoder().decode(privateKey);
+            return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+        } catch (InvalidKeySpecException e) {
+            throw new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
+        }
     }
 
     @Override
     public KeyPair toKeyPair(String serializedPublicKey, String serializedPrivateKey) {
-        try {
-            PublicKey publicKey = deserializePublicKey(serializedPublicKey);
-            PrivateKey privateKey = deserializePrivateKey(serializedPrivateKey);
-            return new KeyPair(publicKey, privateKey);
-        } catch (InvalidKeySpecException e) {
-            throw new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
-        }
+        PublicKey publicKey = deserializePublicKey(serializedPublicKey);
+        PrivateKey privateKey = deserializePrivateKey(serializedPrivateKey);
+        return new KeyPair(publicKey, privateKey);
     }
 }

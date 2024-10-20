@@ -72,24 +72,13 @@ public class InMemoryAsymmetricKeyManager {
     }
 
     private void initAsymmetricKey() {
-        KeyPair keyPair = generateAsymmetricKeyPair();
+        KeyPair keyPair = asymmetricKeyEncryption.generateKeyPair();
         String serializedPublicKey = asymmetricKeyEncryption.serializePublicKey(
             keyPair.getPublic());
         String serializedPrivateKey = asymmetricKeyEncryption.serializePrivateKey(
             keyPair.getPrivate());
         asymmetricKeyRepository.save(
             AsymmetricKey.generate(serializedPublicKey, serializedPrivateKey));
-    }
-
-    private KeyPair generateAsymmetricKeyPair() {
-        KeyPair keyPair;
-        try {
-            keyPair = asymmetricKeyEncryption.generateKeyPair();
-        } catch (Exception e) {
-            log.error("Failed to generate asymmetric key pair. Error details: ", e);
-            throw new RuntimeException();
-        }
-        return keyPair;
     }
 
     private List<AsymmetricKeyResult> getFallbackAsymmetricKeys() {

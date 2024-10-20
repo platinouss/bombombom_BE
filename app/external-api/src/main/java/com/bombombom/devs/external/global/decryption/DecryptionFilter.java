@@ -12,12 +12,6 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,8 +60,7 @@ public class DecryptionFilter implements Filter {
     public void destroy() {
     }
 
-    private String decryptRequestBody(EncryptedRequest encryptedRequest)
-        throws NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    private String decryptRequestBody(EncryptedRequest encryptedRequest) {
         return asymmetricEncryptionService.decryptData(encryptedRequest.id(),
             encryptedRequest.version(), encryptedRequest.encryptedData());
     }

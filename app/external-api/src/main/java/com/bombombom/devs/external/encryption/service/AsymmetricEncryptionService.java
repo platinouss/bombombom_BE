@@ -11,16 +11,10 @@ import com.bombombom.devs.external.global.decryption.InMemoryAsymmetricKeyManage
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.annotation.PostConstruct;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -71,8 +65,7 @@ public class AsymmetricEncryptionService {
      * @param encryptedData 특정 id와 version에 매핑되는 public key로 암호화된 데이터
      * @return encryptedData를 복호화 한 데이터
      */
-    public String decryptData(int id, long version, byte[] encryptedData)
-        throws InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    public String decryptData(int id, long version, byte[] encryptedData) {
         if (id == 0) {
             PrivateKey privateKey = inMemoryAsymmetricKeyManager.getAsymmetricKeyByVersion(version)
                 .getPrivate();
@@ -117,14 +110,7 @@ public class AsymmetricEncryptionService {
     }
 
     private KeyPair generateAsymmetricKeyPair() {
-        KeyPair keyPair;
-        try {
-            keyPair = asymmetricKeyEncryption.generateKeyPair();
-        } catch (Exception e) {
-            log.error("Failed to generate asymmetric key pair. Error details: ", e);
-            throw new RuntimeException();
-        }
-        return keyPair;
+        return asymmetricKeyEncryption.generateKeyPair();
     }
 
     private void addNewAsymmetricKey(int id, long version) {
