@@ -59,7 +59,7 @@ public class InMemoryAsymmetricKeyManager {
     }
 
     public void addAsymmetricKeysInMemory() {
-        List<AsymmetricKeyResult> asymmetricKeyResults = getFallbackAsymmetricKeys();
+        List<AsymmetricKeyResult> asymmetricKeyResults = getAsymmetricKeysFromDb();
         asymmetricKeyResults.forEach(
             result -> asymmetricKeys.put(result.version(), result.keyPair()));
         long currentVersion = asymmetricKeyResults.stream().map(AsymmetricKeyResult::version)
@@ -88,7 +88,7 @@ public class InMemoryAsymmetricKeyManager {
             AsymmetricKey.generate(serializedPublicKey, serializedPrivateKey));
     }
 
-    private List<AsymmetricKeyResult> getFallbackAsymmetricKeys() {
+    private List<AsymmetricKeyResult> getAsymmetricKeysFromDb() {
         List<AsymmetricKey> asymmetricKeys = asymmetricKeyRepository.findAll();
         return asymmetricKeys.stream().map(
             asymmetricKey -> {

@@ -109,12 +109,8 @@ public class AsymmetricEncryptionService {
         return PublicKeyResult.fromEntry(0, currentSymmetricKeyVersion, serializedPublicKey);
     }
 
-    private KeyPair generateAsymmetricKeyPair() {
-        return asymmetricKeyEncryption.generateKeyPair();
-    }
-
     private void addNewAsymmetricKey(int id, long version) {
-        KeyPair keyPair = generateAsymmetricKeyPair();
+        KeyPair keyPair = asymmetricKeyEncryption.generateKeyPair();
         String serializedPublicKey = asymmetricKeyEncryption.serializePublicKey(
             keyPair.getPublic());
         String serializedPrivateKey = asymmetricKeyEncryption.serializePrivateKey(
@@ -122,10 +118,10 @@ public class AsymmetricEncryptionService {
         asymmetricEncryptionRedisRepository.addAsymmetricKeyPair(id, version, serializedPublicKey,
             serializedPrivateKey);
         asymmetricEncryptionRedisRepository.updateAsymmetricKeyPairVersion(id, version);
-        setExpirationForPreviousAsymmetricKeyPair(id, version);
+        setExpirationForPreviousAsymmetricKey(id, version);
     }
 
-    private void setExpirationForPreviousAsymmetricKeyPair(int id, long version) {
+    private void setExpirationForPreviousAsymmetricKey(int id, long version) {
         if (version == 1) {
             return;
         }
