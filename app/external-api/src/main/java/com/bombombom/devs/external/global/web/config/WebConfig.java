@@ -25,6 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
             .allowedMethods("*")
             .allowCredentials(true)
             .allowedHeaders("*")
+            .exposedHeaders("bombombom-token-iv", "bombombom-token-key-version", "bombombom-token")
             .maxAge(3000);
     }
 
