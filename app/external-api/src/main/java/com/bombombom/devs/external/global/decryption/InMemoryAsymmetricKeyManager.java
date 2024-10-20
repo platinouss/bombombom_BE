@@ -5,6 +5,8 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.encryption.AsymmetricKeyEncryption;
 import com.bombombom.devs.encryption.model.AsymmetricKey;
 import com.bombombom.devs.encryption.repository.AsymmetricKeyRepository;
+import com.bombombom.devs.external.encryption.controller.EncryptionController;
+import com.bombombom.devs.external.encryption.controller.dto.AddInMemoryAsymmetricKeyRequest;
 import com.bombombom.devs.external.encryption.service.dto.AsymmetricKeyResult;
 import jakarta.annotation.PostConstruct;
 import java.security.KeyPair;
@@ -18,8 +20,13 @@ import org.springframework.stereotype.Component;
 /**
  * 인메모리에서 비대칭 키를 관리하기 위한 매니저이다.
  * <p>
- * DB에서 인메모리에 추가 할 비대칭 키 정보를 가져온 후, {@code asymmetricKeys}에 비대칭 키를 version 값에 매핑되도록 저장하고,
+ * DB에서 인메모리에 추가 할 비대칭 키 정보를 가져온 후, {@code asymmetricKeys}에 version 값과 비대칭 키를 저장한다.
  * {@code currentAsymmetricVersion}에는 최신 version 값을 저장한다. </p>
+ * <p>
+ * 인메모리 저장용 비대칭 키가 새로운 버전으로 업데이트된 경우, 최신 version 값과 함께
+ * {@link EncryptionController#addAsymmetricKey(AddInMemoryAsymmetricKeyRequest) API}를 호출하면 된다. 해당
+ * API 호출 시, 해당 version에 맞는 비대칭 키를 DB에서 읽어와 {@code asymmetricKeys}에 추가하고,
+ * {@code currentAsymmetricVersion}값을 업데이트한다. </p>
  *
  * @see <a href="https://github.com/Team-BomBomBom/Server/pull/57">Feat: #BBB-136 로그인 및 회원가입 시
  * 클라이언트와 서버 간 종단간 암호화 적용</a>
