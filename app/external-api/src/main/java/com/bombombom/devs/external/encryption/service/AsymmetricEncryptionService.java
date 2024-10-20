@@ -25,6 +25,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+/**
+ * HTTPS 환경에서도 중간자 공격 등의 위협에 대비하여 민감한 데이터를 안전하게 전송하기 위해 클라이언트와 서버 간 종단간 암호화를 적용한다.
+ * <p>
+ * {@link AsymmetricEncryptionService#getRandomPublicKeyInfo()}메서드가 호출되면, Redis에 저장된
+ * {@code PUBLIC_KEY_MAX_COUNT} 개의 비대칭 키 중 무작위로 하나를 선택하여, 해당 키의 정보(version, public Key)를 가져와
+ * 응답한다.</p>
+ * <p>
+ * 만약 Redis에 장애가 발생한 경우(Circuit Breaker가 OPEN된 경우), Fallback Method로 설정된
+ * {@link AsymmetricEncryptionService#getFallbackPublicKeyInfo(Throwable)}가 호출되고,
+ * {@link InMemoryAsymmetricKeyManager}를 통해 인메모리에 저장된 비대칭 키 정보(version, public key)를 응답하여 Redis에 장애가
+ * 발생한 경우에도 종단간 암호화가 적용되도록 보장한다. </p>
+ *
+ * @see <a href="https://github.com/Team-BomBomBom/Server/pull/57">Feat: #BBB-136 로그인 및 회원가입 시
+ * 클라이언트와 서버 간 종단간 암호화 적용</a>
+ */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,6 +62,15 @@ public class AsymmetricEncryptionService {
         }
     }
 
+    /**
+     * id와 version 정보에 매핑되는 private key를 Redis에서(id가 0인 경우는 인메모리에서)찾고, 해당 private key로
+     * {@code encryptedData}를 복호화한 후 응답한다.
+     *
+     * @param id            비대칭 키를 식별하기 위한 값 (0인 경우는 인메모리에 저장된 비대칭 키를 의미)
+     * @param version       특정 id를 가진 비대칭 키의 버전 정보
+     * @param encryptedData 특정 id와 version에 매핑되는 public key로 암호화된 데이터
+     * @return encryptedData를 복호화 한 데이터
+     */
     public String decryptData(int id, long version, byte[] encryptedData)
         throws InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         if (id == 0) {
@@ -60,6 +85,12 @@ public class AsymmetricEncryptionService {
         return new String(asymmetricKeyEncryption.decrypt(encryptedData, privateKey));
     }
 
+    /**
+     * Redis에서 특정 id의 비대칭 키에 대한 최신 version 값을 가져온 후, 해당 id와 version에 매핑되는 public key를 가져온다. 이후 id,
+     * version, public key를 응답한다.
+     *
+     * @return PublicKeyResult
+     */
     @Retry(name = RetryProvider.RETRY_REDIS)
     @CircuitBreaker(name = CircuitBreakerProvider.CIRCUIT_REDIS, fallbackMethod = "getFallbackPublicKeyInfo")
     public PublicKeyResult getRandomPublicKeyInfo() {
@@ -71,6 +102,12 @@ public class AsymmetricEncryptionService {
         return PublicKeyResult.fromEntry(id, latestVersion, publicKeyInfo.publicKey());
     }
 
+    /**
+     * Redis에 장애가 발생한 경우(Circuit Breaker가 OPEN된 경우) 호출되는 메서드로, 인메모리에 저장된 비대칭 키 정보에서 현재 최신 version 값과
+     * public key를 가져온다. 이때 id는 0으로 고정되고, version, public key를 응답한다.
+     *
+     * @return PublicKeyResult
+     */
     public PublicKeyResult getFallbackPublicKeyInfo(Throwable e) {
         long currentSymmetricKeyVersion = inMemoryAsymmetricKeyManager.getLatestSymmetricKeyVersion();
         PublicKey publicKey = inMemoryAsymmetricKeyManager.getAsymmetricKeyByVersion(

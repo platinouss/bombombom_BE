@@ -10,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -19,6 +20,20 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+/**
+ * 공개 키로 암호화된 Request Body를 복호화 하는 Filter이다. {@link DecryptionFilterConfig}에서 설정된 URI 경로로 클라이언트 요청이
+ * 온 경우에 해당 Filter를 거치게 된다.
+ * <p>
+ * Request Body는 {@link EncryptedRequest}형태로 구성되어 있다. Request Body를 복호화 하기 위해, 기존 요청을
+ * {@link HttpServletRequestWrapper}로 래핑하고,
+ * {@link AsymmetricEncryptionService#decryptData(int, long, byte[])}를 호출하여 기존 Request Body를 복호화한다.
+ * 이후, 복호화 된 데이터로 Request Body를 재구성하고, 다음 Filter에게 요청을 위임한다.
+ * </p>
+ *
+ * @see <a href="https://github.com/Team-BomBomBom/Server/pull/57">Feat: #BBB-136 로그인 및 회원가입 시
+ * 클라이언트와 서버 간 종단간 암호화 적용</a>
+ */
 
 @Slf4j
 @RequiredArgsConstructor

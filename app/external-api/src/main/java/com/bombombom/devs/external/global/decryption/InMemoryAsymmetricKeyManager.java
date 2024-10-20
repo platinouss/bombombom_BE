@@ -16,6 +16,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+/**
+ * 인메모리에서 비대칭 키를 관리하기 위한 매니저이다.
+ * <p>
+ * DB에서 인메모리에 추가 할 비대칭 키 정보를 가져온 후, {@code asymmetricKeys}에 비대칭 키를 version 값에 매핑되도록 저장하고,
+ * {@code currentAsymmetricVersion}에는 최신 version 값을 저장한다. </p>
+ *
+ * @see <a href="https://github.com/Team-BomBomBom/Server/pull/57">Feat: #BBB-136 로그인 및 회원가입 시
+ * 클라이언트와 서버 간 종단간 암호화 적용</a>
+ */
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -54,7 +64,7 @@ public class InMemoryAsymmetricKeyManager {
             .max(Long::compareTo).orElse(0L);
         currentAsymmetricVersion.set(currentVersion);
     }
-    
+
     private void addNewAsymmetricKey() {
         KeyPair keyPair = generateAsymmetricKeyPair();
         String serializedPublicKey = asymmetricKeyEncryption.serializePublicKey(
