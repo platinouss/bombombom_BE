@@ -1,5 +1,7 @@
 package com.bombombom.devs.core.util.encryption;
 
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.ServerInternalException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -71,5 +73,16 @@ public class RSAEncryption implements AsymmetricKeyEncryption {
     public PrivateKey deserializePrivateKey(String privateKey) throws InvalidKeySpecException {
         byte[] privateBytes = Base64.getDecoder().decode(privateKey);
         return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateBytes));
+    }
+
+    @Override
+    public KeyPair toKeyPair(String serializedPublicKey, String serializedPrivateKey) {
+        try {
+            PublicKey publicKey = deserializePublicKey(serializedPublicKey);
+            PrivateKey privateKey = deserializePrivateKey(serializedPrivateKey);
+            return new KeyPair(publicKey, privateKey);
+        } catch (InvalidKeySpecException e) {
+            throw new ServerInternalException(ErrorCode.UNEXPECTED_EXCEPTION);
+        }
     }
 }

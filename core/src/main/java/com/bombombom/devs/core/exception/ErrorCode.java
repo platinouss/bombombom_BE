@@ -40,6 +40,7 @@ public enum ErrorCode {
     BAEKJOON_ID_NOT_FOUND(NOT_FOUND, 40407, "Baekjoon ID가 존재하지 않습니다."),
     USER_ASSIGNMENT_NOT_FOUND(NOT_FOUND, 40407, "유저에 과제를 할당한 정보를 찾을 수 없습니다."),
     NEXT_ROUND_NOT_FOUND(NOT_FOUND, 40408, "다음 회차가 존재하지 않습니다."),
+    ASYMMETRIC_KEY_NOT_FOUND(NOT_FOUND, 40409, "해당 version의 비대칭 키가 존재하지 않습니다."),
 
     // NOT_ACCEPTABLE 406
     STUDY_STARTED(NOT_ACCEPTABLE, 40600, "스터디가 시작하였습니다."),

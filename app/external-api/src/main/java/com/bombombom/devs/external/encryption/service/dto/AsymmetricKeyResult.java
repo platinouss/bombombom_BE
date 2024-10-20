@@ -1,8 +1,6 @@
 package com.bombombom.devs.external.encryption.service.dto;
 
 import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import lombok.Builder;
 
 @Builder
@@ -11,12 +9,10 @@ public record AsymmetricKeyResult(
     KeyPair keyPair
 ) {
 
-    public static AsymmetricKeyResult fromEntity(long version, PublicKey publicKey,
-        PrivateKey privateKey) {
-        KeyPair asymmetricKeyPair = new KeyPair(publicKey, privateKey);
+    public static AsymmetricKeyResult fromEntity(long version, KeyPair keyPair) {
         return AsymmetricKeyResult.builder()
             .version(version)
-            .keyPair(asymmetricKeyPair)
+            .keyPair(keyPair)
             .build();
     }
 

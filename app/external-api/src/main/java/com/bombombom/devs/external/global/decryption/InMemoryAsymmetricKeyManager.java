@@ -1,14 +1,13 @@
 package com.bombombom.devs.external.global.decryption;
 
+import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.encryption.AsymmetricKeyEncryption;
 import com.bombombom.devs.encryption.model.AsymmetricKey;
 import com.bombombom.devs.encryption.repository.AsymmetricKeyRepository;
 import com.bombombom.devs.external.encryption.service.dto.AsymmetricKeyResult;
 import jakarta.annotation.PostConstruct;
 import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,16 +38,12 @@ public class InMemoryAsymmetricKeyManager {
     @PostConstruct
     public void init() {
         if (asymmetricKeyRepository.count() == 0) {
-            addNewAsymmetricKey();
+            initAsymmetricKey();
         }
-        saveAsymmetricKeys();
+        addAsymmetricKeysInMemory();
     }
 
-    public Long getLatestSymmetricKeyVersion() {
-        long currentVersion = currentAsymmetricVersion.get();
-        if (currentVersion == 0) {
-            throw new RuntimeException("비대칭키가 존재하지 않습니다.");
-        }
+    public Long getLatestAsymmetricKeyVersion() {
         return currentAsymmetricVersion.get();
     }
 
@@ -56,7 +51,7 @@ public class InMemoryAsymmetricKeyManager {
         return asymmetricKeys.get(version);
     }
 
-    public void saveAsymmetricKeys() {
+    public void addAsymmetricKeysInMemory() {
         List<AsymmetricKeyResult> asymmetricKeyResults = getFallbackAsymmetricKeys();
         asymmetricKeyResults.forEach(
             result -> asymmetricKeys.put(result.version(), result.keyPair()));
@@ -65,7 +60,18 @@ public class InMemoryAsymmetricKeyManager {
         currentAsymmetricVersion.set(currentVersion);
     }
 
-    private void addNewAsymmetricKey() {
+    public void addAsymmetricKeyInMemory(Long version) {
+        if (asymmetricKeys.containsKey(version)) {
+            return;
+        }
+        AsymmetricKey asymmetricKey = asymmetricKeyRepository.findById(version)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ASYMMETRIC_KEY_NOT_FOUND));
+        KeyPair keyPair = asymmetricKeyEncryption.toKeyPair(asymmetricKey.getPublicKey(),
+            asymmetricKey.getPrivateKey());
+        asymmetricKeys.put(version, keyPair);
+    }
+
+    private void initAsymmetricKey() {
         KeyPair keyPair = generateAsymmetricKeyPair();
         String serializedPublicKey = asymmetricKeyEncryption.serializePublicKey(
             keyPair.getPublic());
@@ -90,16 +96,9 @@ public class InMemoryAsymmetricKeyManager {
         List<AsymmetricKey> asymmetricKeys = asymmetricKeyRepository.findAll();
         return asymmetricKeys.stream().map(
             asymmetricKey -> {
-                try {
-                    PublicKey publicKey = asymmetricKeyEncryption.deserializePublicKey(
-                        asymmetricKey.getPublicKey());
-                    PrivateKey privateKey = asymmetricKeyEncryption.deserializePrivateKey(
-                        asymmetricKey.getPrivateKey());
-                    return AsymmetricKeyResult.fromEntity(asymmetricKey.getId(), publicKey,
-                        privateKey);
-                } catch (InvalidKeySpecException e) {
-                    throw new RuntimeException(e);
-                }
+                KeyPair keyPair = asymmetricKeyEncryption.toKeyPair(
+                    asymmetricKey.getPublicKey(), asymmetricKey.getPrivateKey());
+                return AsymmetricKeyResult.fromEntity(asymmetricKey.getId(), keyPair);
             }
         ).toList();
     }

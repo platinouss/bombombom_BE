@@ -28,4 +28,6 @@ public interface AsymmetricKeyEncryption {
     PublicKey deserializePublicKey(String publicKey) throws InvalidKeySpecException;
 
     PrivateKey deserializePrivateKey(String privateKey) throws InvalidKeySpecException;
+
+    KeyPair toKeyPair(String serializedPublicKey, String serializedPrivateKey);
 }

@@ -109,7 +109,7 @@ public class AsymmetricEncryptionService {
      * @return PublicKeyResult
      */
     public PublicKeyResult getFallbackPublicKeyInfo(Throwable e) {
-        long currentSymmetricKeyVersion = inMemoryAsymmetricKeyManager.getLatestSymmetricKeyVersion();
+        long currentSymmetricKeyVersion = inMemoryAsymmetricKeyManager.getLatestAsymmetricKeyVersion();
         PublicKey publicKey = inMemoryAsymmetricKeyManager.getAsymmetricKeyByVersion(
             currentSymmetricKeyVersion).getPublic();
         String serializedPublicKey = asymmetricKeyEncryption.serializePublicKey(publicKey);
