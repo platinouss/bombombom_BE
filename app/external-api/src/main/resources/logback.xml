@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
+  <property name="LOG_PATH" value="./logs"/>
+  <property name="FILE_NAME" value="api-server-logs"/>
   <property name="LOG_PATTERN"
-    value="[%d{yyyy-MM-dd HH:mm:ss}:%-4relative] [%X{requestId:-startup}] %green([%thread]) %highlight(%-5level) %boldWhite([%C.%M:%yellow(%L)]) - %msg%n"/>
+    value="[%d{yyyy-MM-dd HH:mm:ss}:%-4relative] [%X{request_id:-startup}] %green([%thread]) %highlight(%-5level) %boldWhite([%C.%M:%yellow(%L)]) - %msg%n"/>
+
   <springProfile name="!prod">
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
       <encoder>
@@ -13,4 +16,36 @@
       <appender-ref ref="CONSOLE"/>
     </root>
   </springProfile>
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/data/${FILE_NAME}.log</file>
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <charset>UTF-8</charset>
+      <providers>
+        <timestamp/>
+        <pattern>
+          <pattern>{"service_id":"devsService"}</pattern>
+        </pattern>
+        <mdc/>
+        <threadName/>
+        <logLevel/>
+        <message/>
+        <loggerName/>
+        <stackTrace/>
+        <callerData/>
+      </providers>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/prev/%d{yyyy-MM-dd}/${FILE_NAME}_%i.log</fileNamePattern>
+      <maxHistory>90</maxHistory>
+      <timeBasedFileNamingAndTriggeringPolicy
+        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>10MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="FILE"/>
+  </root>
 </configuration>
