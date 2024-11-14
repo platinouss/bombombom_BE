@@ -10,13 +10,13 @@ public record CompleteVideoUploadRequest(
     String uploadId,
     List<Part> parts,
     long studyId,
-    long userId
+    long assignmentId
 ) {
 
     public FinishMultipartUploadRequest toS3ClientDto() {
         return FinishMultipartUploadRequest.builder()
             .uploadId(uploadId)
-            .objectName("task/" + studyId + "/" + userId)
+            .objectName("task/" + studyId + "/" + assignmentId)
             .parts(parts)
             .build();
     }

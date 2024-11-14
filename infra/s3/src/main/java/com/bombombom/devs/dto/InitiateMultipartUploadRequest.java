@@ -7,7 +7,7 @@ public record InitiateMultipartUploadRequest(
     String objectName,
     String fileType,
     String studyId,
-    String userId
+    String assignmentId
 ) {
 
 }

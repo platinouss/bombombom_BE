@@ -8,7 +8,7 @@ public record GenerateUploadUrlRequest(
     @Min(0) int partNumber,
     long partSize,
     @Min(0) long studyId,
-    @Min(0) long userId
+    @Min(0) long assignmentId
 ) {
 
     public GeneratePresignedUrlRequest toS3ClientDto() {
@@ -16,7 +16,7 @@ public record GenerateUploadUrlRequest(
             .uploadId(uploadId)
             .partNumber(partNumber)
             .contentType("video/*")
-            .objectName("task/" + studyId + "/" + userId)
+            .objectName("task/" + studyId + "/" + assignmentId)
             .contentLength(partSize)
             .build();
     }

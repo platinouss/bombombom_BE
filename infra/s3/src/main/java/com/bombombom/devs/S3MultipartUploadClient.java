@@ -39,7 +39,7 @@ public class S3MultipartUploadClient {
 
     public InitiateMultipartUploadResponse initiate(InitiateMultipartUploadRequest request) {
         Map<String, String> metadata = Map.of("studyId", request.studyId(), "userId",
-            request.userId());
+            request.assignmentId());
         CreateMultipartUploadRequest multipartUploadRequest = CreateMultipartUploadRequest.builder()
             .bucket(bucketName)
             .key(request.objectName())
