@@ -6,6 +6,7 @@ import com.bombombom.devs.dto.GeneratePresignedUrlRequest;
 import com.bombombom.devs.dto.GeneratePresignedUrlResponse;
 import com.bombombom.devs.dto.InitiateMultipartUploadRequest;
 import com.bombombom.devs.dto.InitiateMultipartUploadResponse;
+import com.bombombom.devs.dto.IsUploadCompleteRequest;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedUploadPartRequest;
@@ -85,5 +87,18 @@ public class S3MultipartUploadClient {
         CompleteMultipartUploadResponse response = s3Client.completeMultipartUpload(
             completeMultipartUploadRequest);
         return FinishMultipartUploadResponse.fromResult(response);
+    }
+
+    public boolean isUploadComplete(IsUploadCompleteRequest request) {
+        try {
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(request.objectName())
+                .build();
+            s3Client.headObject(headObjectRequest);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithm
 import com.bombombom.devs.external.global.web.LoginUser;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.CheckAlgorithmProblemSolvedRequest;
+import com.bombombom.devs.external.study.controller.dto.request.CheckVideoUploadStatusRequest;
 import com.bombombom.devs.external.study.controller.dto.request.ConfigureStudyRequest;
 import com.bombombom.devs.external.study.controller.dto.request.DeleteAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest;
@@ -270,4 +271,11 @@ public class StudyController {
         ).toList());
     }
 
+    @PostMapping("/{id}/upload-status")
+    public ResponseEntity<Void> checkVideoUploadStatus(@PathVariable("id") Long studyId,
+        @RequestBody CheckVideoUploadStatusRequest request, @LoginUser AppUserDetails userDetails) {
+        bookStudyService.verifyAssignmentVideoComplete(userDetails.getId(), studyId,
+            request.assignmentId());
+        return ResponseEntity.ok().build();
+    }
 }

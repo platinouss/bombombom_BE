@@ -1,5 +1,6 @@
 package com.bombombom.devs.external.study.service;
 
+import com.bombombom.devs.S3MultipartUploadClient;
 import com.bombombom.devs.book.model.Book;
 import com.bombombom.devs.book.repository.BookRepository;
 import com.bombombom.devs.core.exception.BusinessRuleException;
@@ -9,6 +10,7 @@ import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.core.util.Util;
+import com.bombombom.devs.dto.IsUploadCompleteRequest;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.command.AddAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.DeleteAssignmentCommand;
@@ -65,11 +67,11 @@ public class BookStudyService implements StudyProgressService {
     private final UserRepository userRepository;
     private final UserStudyRepository userStudyRepository;
     private final AssignmentRepository assignmentRepository;
-
     private final UserAssignmentRepository userAssignmentRepository;
     private final VideoRepository videoRepository;
     private final ProblemRepository problemRepository;
     private final AssignmentVoteRepository assignmentVoteRepository;
+    private final S3MultipartUploadClient s3MultipartUploadClient;
 
     @Override
     public StudyType getStudyType() {
@@ -497,5 +499,19 @@ public class BookStudyService implements StudyProgressService {
 
         return AssignmentVoteResult.fromEntity(assignmentVoteRepository.save(vote));
 
+    }
+
+    public void verifyAssignmentVideoComplete(Long userId, Long studyId, Long assignmentId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+        if (!s3MultipartUploadClient.isUploadComplete(
+            IsUploadCompleteRequest.of(studyId, assignmentId))) {
+            throw new NotFoundException(ErrorCode.UPLOADED_VIDEO_NOT_FOUND);
+        }
+        videoRepository.save(Video.toEntity(user, assignment));
     }
 }
