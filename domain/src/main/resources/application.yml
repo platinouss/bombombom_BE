@@ -30,6 +30,16 @@ spring:
         expire-length: ${ACCESS_TOKEN_EXPIRE}
       refresh-token:
         expire-length: ${REFRESH_TOKEN_EXPIRE}
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+
 resilience4j:
   circuitbreaker:
     failure-rate-threshold: 10
@@ -42,6 +52,7 @@ resilience4j:
   retry:
     wait-duration: 100
     max-attempts: 2
+
 naver:
   url:
     search:

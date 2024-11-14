@@ -37,5 +37,10 @@ public class Video extends BaseEntity {
         foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private Assignment assignment;
 
-
+    public static Video toEntity(User uploader, Assignment assignment) {
+        return Video.builder()
+            .uploader(uploader)
+            .assignment(assignment)
+            .build();
+    }
 }

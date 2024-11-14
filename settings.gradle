@@ -4,7 +4,6 @@ include 'app:external-api'
 
 include 'domain'
 include 'core'
-include 'infra'
 
 include 'support'
 include 'support:common'
@@ -13,4 +12,8 @@ include 'support:naver-client'
 findProject(':support:naver-client')?.name = 'naver-client'
 include 'support:solvedac-client'
 findProject(':support:solvedac-client')?.name = 'solvedac-client'
+
+include 'infra'
+include 'infra:s3'
+findProject(':infra:s3')?.name = 's3'
 

@@ -4,6 +4,7 @@ dependencies {
     implementation project(':support:naver-client')
     implementation project(':support:solvedac-client')
     implementation project(':core')
+    implementation project(':infra:s3')
 
     //impl
     implementation 'org.springframework.boot:spring-boot-starter-web'
