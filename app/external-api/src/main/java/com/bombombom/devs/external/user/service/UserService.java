@@ -22,7 +22,9 @@ public class UserService {
         if (userRepository.existsByUsername(signupCommand.username())) {
             throw new DuplicationException(ErrorCode.DUPLICATED_USERNAME);
         }
-        userRepository.save(signupCommand.toEntity(passwordEncoder));
+        User user = signupCommand.toEntity(passwordEncoder);
+        user.initPointHistory();
+        userRepository.save(user);
     }
 
     public UserProfileResult findById(Long userId) {
