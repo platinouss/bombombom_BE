@@ -1,7 +1,9 @@
 package com.bombombom.devs.points.repository;
 
 import com.bombombom.devs.points.model.PointsHistory;
+import com.bombombom.devs.user.model.User;
 import jakarta.persistence.LockModeType;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -19,4 +21,6 @@ public interface PointsHistoryRepository extends JpaRepository<PointsHistory, Lo
         + "ORDER BY ph.createdAt DESC "
         + "LIMIT 1")
     PointsHistory findTopByUserOrderByCreatedAtDescForUpdate(Long userId);
+
+    List<PointsHistory> findByUser(User user);
 }

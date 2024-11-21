@@ -8,6 +8,7 @@ import com.bombombom.devs.points.repository.PointsHistoryRepository;
 import com.bombombom.devs.study.model.Study;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +20,21 @@ public class PointsService {
     private final UserRepository userRepository;
     private final PointsHistoryRepository pointsHistoryRepository;
 
-    @Transactional()
+    @Transactional
     public Long getCurrentPoints(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
             ErrorCode.USER_NOT_FOUND));
         PointsHistory currentPointsHistory = pointsHistoryRepository.findTopByUserOrderByCreatedAtDesc(
             userId).orElseGet(() -> pointsHistoryRepository.save(PointsHistory.init(user)));
         return currentPointsHistory.getTotal();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PointsHistoryResult> getPointsHistory(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
+            ErrorCode.USER_NOT_FOUND));
+        List<PointsHistory> pointsHistories = pointsHistoryRepository.findByUser(user);
+        return pointsHistories.stream().map(PointsHistoryResult::fromEntity).toList();
     }
 
     @Transactional
