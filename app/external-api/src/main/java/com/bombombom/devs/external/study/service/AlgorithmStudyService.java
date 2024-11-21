@@ -26,6 +26,7 @@ import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
 import com.bombombom.devs.study.model.AlgorithmStudy;
 import com.bombombom.devs.study.model.Round;
 import com.bombombom.devs.study.model.Study;
+import com.bombombom.devs.study.model.UserStudy;
 import com.bombombom.devs.study.repository.AlgorithmProblemAssignmentRepository;
 import com.bombombom.devs.study.repository.AlgorithmProblemSolvedHistoryRepository;
 import com.bombombom.devs.study.repository.AlgorithmStudyDifficultyRepository;
@@ -124,11 +125,38 @@ public class AlgorithmStudyService implements StudyProgressService {
     @Override
     @Transactional
     public void startRound(Study study, Round round) {
+        if (round.getIdx() > 0) {
+            updateDepositAndReliability(study, round.getIdx() - 1);
+        }
         AlgorithmStudy algorithmStudy = (AlgorithmStudy) study;
         Map<AlgoTag, Integer> problemCountForEachTag = algorithmProblemService.getProblemCountForEachTag(
             algorithmStudy.getProblemCount());
         algorithmProblemQueueService.addAssignProblemRequest(study, algorithmStudy, round,
             problemCountForEachTag);
+    }
+
+    @Override
+    @Transactional
+    public void updateDepositAndReliability(Study study, int prevRoundIdx) {
+        Round round = roundRepository.findByStudyAndIdx(study, prevRoundIdx)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
+        List<User> members = userStudyRepository.findWithUserByStudyId(study.getId()).stream()
+            .map(UserStudy::getUser).toList();
+        List<Long> assignedProblemIds = algoAssignmentRepository.findByRound(round).stream()
+            .map(algorithmProblemAssignment -> algorithmProblemAssignment.getProblem().getId())
+            .toList();
+        for (User member : members) {
+            List<AlgorithmProblemSolvedHistory> histories = algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemIds(
+                member.getId(), assignedProblemIds);
+            if (assignedProblemIds.size() == histories.size()) {
+                member.incrementReliability();
+            } else {
+                UserStudy userStudy = userStudyRepository.findByStudyAndUserForUpdate(study, member)
+                    .orElseThrow(() -> new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED));
+                userStudy.decreaseSecurityDeposit(study.getPenalty());
+                member.decrementReliability();
+            }
+        }
     }
 
     @Transactional

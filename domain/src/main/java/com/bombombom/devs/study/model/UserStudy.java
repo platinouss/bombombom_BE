@@ -42,6 +42,10 @@ public class UserStudy extends BaseEntity {
     @Column(name = "security_deposit")
     private Long securityDeposit;
 
+    public void decreaseSecurityDeposit(Integer amount) {
+        securityDeposit -= amount;
+    }
+
     public static UserStudy of(User user, Study study, Long securityDeposit) {
         return UserStudy.builder()
             .user(user)

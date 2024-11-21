@@ -59,6 +59,14 @@ public class User extends BaseEntity {
         pointHistories.add(pointsHistory);
     }
 
+    public void incrementReliability() {
+        reliability += 1;
+    }
+
+    public void decrementReliability() {
+        reliability -= 2;
+    }
+
     public void payMoney(Integer money) {
         if (money < 0) {
             throw new BusinessRuleException(ErrorCode.NEGATIVE_AMOUNT);

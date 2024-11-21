@@ -10,15 +10,18 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UserAssignmentRepository extends JpaRepository<UserAssignment, Long> {
 
-
     @Query("SELECT ua FROM UserAssignment ua "
         + "WHERE assignment IN :assignments AND ua.user.id IN :memberIds")
     List<UserAssignment> findAllByAssignmentInAndUserIdIn(List<Assignment> assignments,
         List<Long> memberIds);
 
-
     @Query("SELECT ua FROM UserAssignment ua "
         + "JOIN FETCH ua.assignment "
         + "WHERE user = :user")
     Optional<UserAssignment> findWithAssignmentByUser(User user);
+
+    @Query("SELECT ua FROM UserAssignment ua "
+        + "JOIN FETCH ua.user u "
+        + "WHERE ua.assignment = :assignment")
+    Optional<UserAssignment> findWithUserByAssignment(Assignment assignment);
 }

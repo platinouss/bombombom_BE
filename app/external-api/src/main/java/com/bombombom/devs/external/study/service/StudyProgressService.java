@@ -15,4 +15,6 @@ public interface StudyProgressService {
     StudyProgress findStudyProgress(Round round, List<User> members);
 
     void startRound(Study study, Round round);
+
+    void updateDepositAndReliability(Study study, int prevRoundIdx);
 }

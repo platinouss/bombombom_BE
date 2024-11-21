@@ -261,6 +261,9 @@ public class BookStudyService implements StudyProgressService {
 
     @Override
     public void startRound(Study study, Round round) {
+        if (round.getIdx() > 0) {
+            updateDepositAndReliability(study, round.getIdx() - 1);
+        }
 
         List<Assignment> assignments = assignmentRepository.findAllByRound(round);
         if (assignments.isEmpty()) {
@@ -283,6 +286,28 @@ public class BookStudyService implements StudyProgressService {
         bookStudy.endVote();
         userAssignmentRepository.saveAll(userAssignments);
 
+    }
+
+    @Override
+    public void updateDepositAndReliability(Study study, int prevRoundIdx) {
+        Round round = roundRepository.findByStudyAndIdx(study, prevRoundIdx)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
+        List<Assignment> assignments = assignmentRepository.findAllByRound(round);
+        for (Assignment assignment : assignments) {
+            UserAssignment userAssignment = userAssignmentRepository.findWithUserByAssignment(
+                    assignment)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+            User assignedUser = userAssignment.getUser();
+            if (videoRepository.findByAssignmentAndUploader(assignment, assignedUser).isEmpty()) {
+                UserStudy userStudy = userStudyRepository.findByStudyAndUserForUpdate(study,
+                        assignedUser)
+                    .orElseThrow(() -> new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED));
+                userStudy.decreaseSecurityDeposit(study.getPenalty());
+                assignedUser.decrementReliability();
+            } else {
+                assignedUser.incrementReliability();
+            }
+        }
     }
 
 
