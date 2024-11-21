@@ -51,11 +51,13 @@ public class PointsHistory extends BaseEntity {
             .build();
     }
 
-    public static PointsHistory createUpdatePointsHistory(User user, Long prevPoint, Long amount) {
+    public static PointsHistory createUpdatePointsHistory(User user, Long prevPoint,
+        Long amount, String contents) {
         return PointsHistory.builder()
             .user(user)
             .amount(amount)
             .total(prevPoint + amount)
+            .contents(contents)
             .build();
     }
 }

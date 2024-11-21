@@ -1,6 +1,7 @@
 package com.bombombom.devs.external.coupon.service.reward;
 
 import com.bombombom.devs.coupon.enums.CouponRewardType;
+import com.bombombom.devs.coupon.model.Coupon;
 import com.bombombom.devs.coupon.model.UserCoupon;
 import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.user.model.User;
@@ -20,6 +21,7 @@ public class PointRewardCouponService implements CouponRewardService {
 
     @Override
     public void use(User user, UserCoupon userCoupon) {
-        pointsService.updateUserPoints(user, userCoupon.getCoupon().getRewardValue());
+        Coupon coupon = userCoupon.getCoupon();
+        pointsService.updateUserPoints(user, coupon.getRewardValue(), coupon.getTitle());
     }
 }

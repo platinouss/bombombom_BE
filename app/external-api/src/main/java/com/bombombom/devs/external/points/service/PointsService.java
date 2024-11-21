@@ -6,7 +6,6 @@ import com.bombombom.devs.points.model.PointsHistory;
 import com.bombombom.devs.points.repository.PointsHistoryRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,18 +21,17 @@ public class PointsService {
     public Long getCurrentPoints(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
             ErrorCode.USER_NOT_FOUND));
-        Optional<PointsHistory> currentPointsHistory = pointsHistoryRepository.findTopByUserOrderByCreatedAtDesc(
-            userId);
-        System.out.println(currentPointsHistory.get().getId());
-        return currentPointsHistory.get().getTotal();
+        PointsHistory currentPointsHistory = pointsHistoryRepository.findTopByUserOrderByCreatedAtDesc(
+            userId).orElseGet(() -> pointsHistoryRepository.save(PointsHistory.init(user)));
+        return currentPointsHistory.getTotal();
     }
 
     @Transactional
-    public void updateUserPoints(User user, Long amount) {
+    public void updateUserPoints(User user, Long amount, String contents) {
         PointsHistory currentPointsHistory = pointsHistoryRepository.findTopByUserOrderByCreatedAtDescForUpdate(
             user.getId());
         PointsHistory updatedPointsHistory = PointsHistory.createUpdatePointsHistory(user,
-            currentPointsHistory.getTotal(), amount);
+            currentPointsHistory.getTotal(), amount, contents);
         pointsHistoryRepository.save(updatedPointsHistory);
     }
 }
