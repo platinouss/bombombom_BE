@@ -11,6 +11,7 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.core.util.Util;
 import com.bombombom.devs.dto.IsUploadCompleteRequest;
+import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.command.AddAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.DeleteAssignmentCommand;
@@ -61,6 +62,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookStudyService implements StudyProgressService {
 
     private final Clock clock;
+    private final PointsService pointsService;
     private final StudyRepository studyRepository;
     private final BookRepository bookRepository;
     private final RoundRepository roundRepository;
@@ -321,7 +323,7 @@ public class BookStudyService implements StudyProgressService {
             startRound(bookStudy, bookStudy.getFirstRound());
         }
 
-        user.payMoney(bookStudy.calculateDeposit());
+        pointsService.payStudyDeposit(bookStudy, user);
         return BookStudyResult.fromEntity(bookStudy);
     }
 

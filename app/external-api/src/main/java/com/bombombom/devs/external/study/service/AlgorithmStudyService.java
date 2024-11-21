@@ -15,6 +15,7 @@ import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemQueueService;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
+import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.study.service.dto.command.CheckAlgorithmProblemSolvedCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
@@ -44,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AlgorithmStudyService implements StudyProgressService {
 
     private final Clock clock;
+    private final PointsService pointsService;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
     private final RoundRepository roundRepository;
@@ -99,11 +101,10 @@ public class AlgorithmStudyService implements StudyProgressService {
 
         if (algorithmStudy.getStartDate().equals(clock.today())) {
             algorithmStudy.start(clock, userId);
-
             startRound(algorithmStudy, algorithmStudy.getFirstRound());
         }
 
-        user.payMoney(algorithmStudy.calculateDeposit());
+        pointsService.payStudyDeposit(algorithmStudy, user);
         return AlgorithmStudyResult.fromEntity(algorithmStudy);
     }
 

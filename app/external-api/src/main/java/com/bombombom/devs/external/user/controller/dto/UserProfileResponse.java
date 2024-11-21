@@ -11,7 +11,7 @@ public record UserProfileResponse(
     String image,
     String introduce,
     Integer reliability,
-    Integer money,
+    Long money,
     Role role
 ) {
 
