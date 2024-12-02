@@ -3,7 +3,6 @@ package com.bombombom.devs.external.study.controller.dto.response;
 import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
-import com.bombombom.devs.external.user.controller.dto.UserProfileResponse;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -24,18 +23,15 @@ public record AlgorithmStudyResponse(
     Integer reliabilityLimit,
     Integer penalty,
     StudyStatus state,
-    UserProfileResponse leader,
+    MemberInfoResponse leader,
     StudyType studyType,
-
     Map<AlgoTag, Spread> difficultySpreadMap,
     Integer difficultyGap,
-
-    Integer problemCount)
-    implements StudyResponse {
+    Integer problemCount
+) implements StudyResponse {
 
     public static AlgorithmStudyResponse fromResult(AlgorithmStudyResult res) {
-
-        return builder()
+        return AlgorithmStudyResponse.builder()
             .id(res.id())
             .name(res.name())
             .introduce(res.introduce())
@@ -45,7 +41,7 @@ public record AlgorithmStudyResponse(
             .startDate(res.startDate())
             .reliabilityLimit(res.reliabilityLimit())
             .penalty(res.penalty())
-            .leader(UserProfileResponse.fromResult(res.leader()))
+            .leader(MemberInfoResponse.fromResult(res.leader()))
             .difficultySpreadMap(res.difficultySpreadMap())
             .state(res.state())
             .studyType(res.studyType())

@@ -1,7 +1,7 @@
 package com.bombombom.devs.external.study.controller.dto.response;
 
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmTaskUpdateStatusResult;
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
+import com.bombombom.devs.external.study.service.dto.result.MemberInfoResult;
 import java.util.Map;
 import lombok.Builder;
 
@@ -14,10 +14,10 @@ public record AlgorithmStudyTaskStatusResponse(
     Map<Long, Boolean> tasks
 ) {
 
-    public static AlgorithmStudyTaskStatusResponse fromResult(UserProfileResult userProfileResult,
+    public static AlgorithmStudyTaskStatusResponse fromResult(MemberInfoResult memberInfoResult,
         AlgorithmTaskUpdateStatusResult taskUpdateStatusResult, Map<Long, Boolean> tasks) {
         return AlgorithmStudyTaskStatusResponse.builder()
-            .username(userProfileResult.username())
+            .username(memberInfoResult.username())
             .isUpdating(taskUpdateStatusResult.isUpdating())
             .taskStatusUpdatedAt(taskUpdateStatusResult.updatedAt())
             .tasks(tasks)

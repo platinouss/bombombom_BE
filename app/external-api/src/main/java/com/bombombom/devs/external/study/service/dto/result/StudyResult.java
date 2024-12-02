@@ -1,6 +1,5 @@
 package com.bombombom.devs.external.study.service.dto.result;
 
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmStudy;
@@ -32,7 +31,7 @@ public interface StudyResult {
 
     StudyType studyType();
 
-    UserProfileResult leader();
+    MemberInfoResult leader();
 
     static StudyResult fromEntity(Study study) {
         if (study instanceof AlgorithmStudy algorithmStudy) {

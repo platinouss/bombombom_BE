@@ -12,21 +12,9 @@ public record UserProfileResult(
     String introduce,
     String baekjoonId,
     Integer reliability,
-    Long money,
+    Long points,
     Role role
 ) {
-
-    public static UserProfileResult fromEntity(User user) {
-        return UserProfileResult.builder()
-            .id(user.getId())
-            .username(user.getUsername())
-            .role(user.getRole())
-            .image(user.getImage())
-            .introduce(user.getIntroduce())
-            .baekjoonId(user.getBaekjoon())
-            .reliability(user.getReliability())
-            .build();
-    }
 
     public static UserProfileResult fromEntity(User user, Long currentPoints) {
         return UserProfileResult.builder()
@@ -37,7 +25,7 @@ public record UserProfileResult(
             .introduce(user.getIntroduce())
             .baekjoonId(user.getBaekjoon())
             .reliability(user.getReliability())
-            .money(currentPoints)
+            .points(currentPoints)
             .build();
     }
 }
