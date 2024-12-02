@@ -1,8 +1,6 @@
 package com.bombombom.devs.user.model;
 
 import com.bombombom.devs.common.BaseEntity;
-import com.bombombom.devs.core.exception.BusinessRuleException;
-import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.points.model.PointsHistory;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -48,7 +46,6 @@ public class User extends BaseEntity {
     private String baekjoon;
 
     private Integer reliability;
-    private Integer money;
 
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
@@ -65,15 +62,5 @@ public class User extends BaseEntity {
 
     public void decrementReliability() {
         reliability -= 2;
-    }
-
-    public void payMoney(Integer money) {
-        if (money < 0) {
-            throw new BusinessRuleException(ErrorCode.NEGATIVE_AMOUNT);
-        }
-        if (this.money < money) {
-            throw new BusinessRuleException(ErrorCode.NOT_ENOUGH_MONEY);
-        }
-        this.money -= money;
     }
 }

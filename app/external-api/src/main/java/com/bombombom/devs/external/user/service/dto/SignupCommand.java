@@ -22,7 +22,6 @@ public record SignupCommand(
             .baekjoon(baekjoonId)
             .role(Role.USER)
             .reliability(0)
-            .money(0)
             .build();
     }
 }
