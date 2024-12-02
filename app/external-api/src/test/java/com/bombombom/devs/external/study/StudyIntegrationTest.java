@@ -26,11 +26,11 @@ import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.NotFoundException;
-import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.core.util.Util;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.config.ElasticsearchTestConfig;
+import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest.NewAssignmentInfo;
 import com.bombombom.devs.external.study.controller.dto.request.DeleteAssignmentRequest;
@@ -50,8 +50,8 @@ import com.bombombom.devs.external.study.service.dto.command.ConfigureStudyComma
 import com.bombombom.devs.external.study.service.dto.command.VoteAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.MemberInfoResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.enums.VotingProcess;
@@ -98,7 +98,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -114,23 +113,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @ActiveProfiles("test")
-@AutoConfigureMockMvc
 @SpringBootTest(classes = ExternalApiApplication.class)
+@AutoConfigureMockMvc
 @Import(ElasticsearchTestConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class StudyIntegrationTest {
 
     @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    Clock clock;
-
-    @Mock
-    Clock mockClock;
+    private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private PointsService pointsService;
 
     @Autowired
     private UserRepository userRepository;
@@ -190,11 +186,10 @@ public class StudyIntegrationTest {
                 .role(Role.USER)
                 .introduce("introduce")
                 .image("image")
+                .baekjoon("baekjoon")
                 .reliability(50)
-                .money(10000)
                 .build();
-
-            userRepository.save(testuser);
+            testuser.initPointHistory();
             testBook = Book.builder()
                 .title("테스트용 책")
                 .author("세계최강민석")
@@ -202,10 +197,10 @@ public class StudyIntegrationTest {
                 .publisher("메가스터디")
                 .tableOfContents("1. 2. 3. 4.")
                 .build();
-
+            userRepository.save(testuser);
             bookRepository.save(testBook);
+            pointsService.updateUserPoints(testuser, 100000L, "test");
         }
-
 
         @Test
         @DisplayName("자신이 개설한 스터디 목록을 조회할 수 있다.")
@@ -252,22 +247,16 @@ public class StudyIntegrationTest {
             /*
              * When
              */
-            ResultActions resultActions = mockMvc.perform(
-                get("/api/v1/studies/owned")
-            );
+            ResultActions resultActions = mockMvc.perform(get("/api/v1/studies/owned"));
 
             /*
              * Then
              */
-
             resultActions.andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(
-                    jsonPath("$.length()")
-                        .value(equalTo(2)))
-                .andExpect(
-                    jsonPath("$[*].id",
-                        containsInAnyOrder(study.getId().intValue(), study2.getId().intValue())));
+                .andExpect(jsonPath("$.length()").value(equalTo(2)))
+                .andExpect(jsonPath("$[*].id",
+                    containsInAnyOrder(study.getId().intValue(), study2.getId().intValue())));
         }
 
         @Nested
@@ -275,29 +264,26 @@ public class StudyIntegrationTest {
         class VoteTest {
 
             @Test
-            @DisplayName("중복할당 여부를 변경할 수 있다")
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            @DisplayName("중복할당 여부를 변경할 수 있다.")
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
             void can_set_duplicated() throws Exception {
                 /*
                  * Given
                  */
-
-                BookStudy study1 =
-                    BookStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .book(testBook)
-                        .votingProcess(VotingProcess.READY)
-                        .build();
+                BookStudy study1 = BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .book(testBook)
+                    .votingProcess(VotingProcess.READY)
+                    .build();
                 studyRepository.save(study1);
 
                 /*
@@ -314,99 +300,86 @@ public class StudyIntegrationTest {
                         .content(objectMapper.writeValueAsString(configureStudyCommand))
                 );
 
-
                 /*
                  * Then
                  */
-                resultActions.andDo(print())
-                    .andExpect(status().isNoContent());
+                resultActions.andDo(print()).andExpect(status().isNoContent());
             }
 
             @Test
             @DisplayName("투표를 시작할 수 있다")
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
             void can_start_vote() throws Exception {
                 /*
                  * Given
                  */
-
-                BookStudy study1 =
-                    BookStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .book(testBook)
-                        .votingProcess(VotingProcess.READY)
-                        .build();
+                BookStudy study1 = BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .book(testBook)
+                    .votingProcess(VotingProcess.READY)
+                    .build();
                 studyRepository.save(study1);
 
                 /*
                  * When
                  */
-
                 ResultActions resultActions = mockMvc.perform(
                     post("/api/v1/studies/" + study1.getId() + "/start-voting")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                 );
 
-
                 /*
                  * Then
                  */
-                resultActions.andDo(print())
-                    .andExpect(status().isOk());
+                resultActions.andDo(print()).andExpect(status().isOk());
             }
 
             @Test
             @DisplayName("투표할 수 있다")
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
             void can_vote() throws Exception {
                 /*
                  * Given
                  */
-
-                BookStudy study1 =
-                    BookStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .book(testBook)
-                        .votingProcess(VotingProcess.ONGOING)
-                        .build();
+                BookStudy study1 = BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .book(testBook)
+                    .votingProcess(VotingProcess.ONGOING)
+                    .build();
                 study1.createRounds();
 
                 List<Assignment> assignments = new ArrayList<>();
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("333")
-                        .round(study1.getFirstRound())
-                        .pageStart(132)
-                        .pageEnd(140).build()
+                assignments.add(Assignment.builder()
+                    .title("333")
+                    .round(study1.getFirstRound())
+                    .pageStart(132)
+                    .pageEnd(140).build()
                 );
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("가나다라")
-                        .round(study1.getFirstRound())
-                        .build()
+                assignments.add(Assignment.builder()
+                    .title("가나다라")
+                    .round(study1.getFirstRound())
+                    .build()
                 );
 
                 studyRepository.save(study1);
@@ -430,12 +403,8 @@ public class StudyIntegrationTest {
                 /*
                  * Then
                  */
-                resultActions.andDo(print())
-                    .andExpect(status().isOk());
-
+                resultActions.andDo(print()).andExpect(status().isOk());
             }
-
-
         }
 
 
@@ -445,49 +414,44 @@ public class StudyIntegrationTest {
 
             @Test
             @DisplayName("과제목록을 조회할 수 있다")
-            void can_get_assignments()
-                throws Exception {
+            void can_get_assignments() throws Exception {
                 /*
                  * Given
                  */
-
-                BookStudy study1 =
-                    BookStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .book(testBook)
-                        .votingProcess(VotingProcess.READY)
-                        .build();
+                BookStudy study1 = BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .book(testBook)
+                    .votingProcess(VotingProcess.READY)
+                    .build();
                 study1.createRounds();
 
                 List<Assignment> assignments = new ArrayList<>();
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("333")
-                        .round(study1.getFirstRound())
-                        .pageStart(132)
-                        .pageEnd(140).build()
+                assignments.add(Assignment.builder()
+                    .title("333")
+                    .round(study1.getFirstRound())
+                    .pageStart(132)
+                    .pageEnd(140)
+                    .build()
                 );
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("가나다라")
-                        .round(study1.getFirstRound())
-                        .build()
+                assignments.add(Assignment.builder()
+                    .title("가나다라")
+                    .round(study1.getFirstRound())
+                    .build()
                 );
 
                 studyRepository.save(study1);
                 assignmentRepository.saveAll(assignments);
-
 
                 /*
                  * When
@@ -498,66 +462,53 @@ public class StudyIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                 );
 
-
                 /*
                  * Then
                  */
-                String expectedResponse = objectMapper.writeValueAsString(assignments);
-
                 resultActions.andDo(print())
                     .andExpect(status().isOk())
-                    .andExpect(content().json(expectedResponse));
-
+                    .andExpect(content().json(objectMapper.writeValueAsString(assignments)));
             }
-
 
             @Test
             @DisplayName("과제목록을 추가할 수 있다")
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
-            void can_add_assignments()
-                throws Exception {
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_add_assignments() throws Exception {
                 /*
                  * Given
                  */
-
-                BookStudy study1 =
-                    BookStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .book(testBook)
-                        .votingProcess(VotingProcess.READY)
-                        .build();
+                BookStudy study1 = BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .book(testBook)
+                    .votingProcess(VotingProcess.READY)
+                    .build();
                 study1.createRounds();
 
                 studyRepository.save(study1);
 
-
                 /*
                  * When
                  */
-
                 List<NewAssignmentInfo> assignments = new ArrayList<>();
 
-                assignments.add(
-                    NewAssignmentInfo.builder()
-                        .title("333")
-                        .pageStart(132)
-                        .pageEnd(140).build()
+                assignments.add(NewAssignmentInfo.builder()
+                    .title("333")
+                    .pageStart(132)
+                    .pageEnd(140).build()
                 );
 
-                assignments.add(
-                    NewAssignmentInfo.builder()
-                        .title("가나다라")
-                        .build()
+                assignments.add(NewAssignmentInfo.builder()
+                    .title("가나다라")
+                    .build()
                 );
 
                 AddAssignmentRequest addAssignmentRequest = AddAssignmentRequest.builder()
@@ -571,59 +522,48 @@ public class StudyIntegrationTest {
                         .content(objectMapper.writeValueAsString(addAssignmentRequest))
                 );
 
-
                 /*
                  * Then
                  */
-
-                resultActions.andDo(print())
-                    .andExpect(status().isCreated());
-
+                resultActions.andDo(print()).andExpect(status().isCreated());
             }
-
 
             @Test
             @DisplayName("과제목록을 수정할 수 있다")
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
-            void can_edit_assignments()
-                throws Exception {
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_edit_assignments() throws Exception {
                 /*
                  * Given
                  */
-
-                BookStudy study1 =
-                    BookStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .book(testBook)
-                        .votingProcess(VotingProcess.READY)
-                        .build();
+                BookStudy study1 = BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .book(testBook)
+                    .votingProcess(VotingProcess.READY)
+                    .build();
                 study1.createRounds();
 
                 List<Assignment> assignments = new ArrayList<>();
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("333")
-                        .round(study1.getFirstRound())
-                        .pageStart(132)
-                        .pageEnd(140).build()
+                assignments.add(Assignment.builder()
+                    .title("333")
+                    .round(study1.getFirstRound())
+                    .pageStart(132)
+                    .pageEnd(140).build()
                 );
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("가나다라")
-                        .round(study1.getFirstRound())
-                        .build()
+                assignments.add(Assignment.builder()
+                    .title("가나다라")
+                    .round(study1.getFirstRound())
+                    .build()
                 );
 
                 studyRepository.save(study1);
@@ -666,62 +606,53 @@ public class StudyIntegrationTest {
                 resultActions.andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().json(expectedResponse));
-
             }
 
 
             @Test
             @DisplayName("과제목록을 삭제할 수 있다")
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
-            void can_delete_assignments()
-                throws Exception {
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_delete_assignments() throws Exception {
                 /*
                  * Given
                  */
-
-                BookStudy study1 =
-                    BookStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .book(testBook)
-                        .votingProcess(VotingProcess.READY)
-                        .build();
+                BookStudy study1 = BookStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .book(testBook)
+                    .votingProcess(VotingProcess.READY)
+                    .build();
                 study1.createRounds();
 
                 List<Assignment> assignments = new ArrayList<>();
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("333")
-                        .round(study1.getFirstRound())
-                        .pageStart(132)
-                        .pageEnd(140).build()
+                assignments.add(Assignment.builder()
+                    .title("333")
+                    .round(study1.getFirstRound())
+                    .pageStart(132)
+                    .pageEnd(140).build()
                 );
 
-                assignments.add(
-                    Assignment.builder()
-                        .title("가나다라")
-                        .round(study1.getFirstRound())
-                        .build()
+                assignments.add(Assignment.builder()
+                    .title("가나다라")
+                    .round(study1.getFirstRound())
+                    .build()
                 );
 
                 studyRepository.save(study1);
                 assignmentRepository.saveAll(assignments);
 
-
                 /*
                  * When
                  */
-
                 DeleteAssignmentRequest deleteAssignmentRequest = DeleteAssignmentRequest.builder()
                     .roundIdx(0)
                     .assignmentIds(List.of(assignments.getFirst().getId()))
@@ -733,13 +664,10 @@ public class StudyIntegrationTest {
                         .content(objectMapper.writeValueAsString(deleteAssignmentRequest))
                 );
 
-
                 /*
                  * Then
                  */
-                resultActions.andDo(print())
-                    .andExpect(status().isOk());
-
+                resultActions.andDo(print()).andExpect(status().isOk());
             }
         }
 
@@ -749,31 +677,27 @@ public class StudyIntegrationTest {
 
             @Test
             @DisplayName("알고리즘 스터디를 시작할 수 있다")
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
-            void can_start_algorithm_study()
-                throws Exception {
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            void can_start_algorithm_study() throws Exception {
                 /*
                  * Given
                  */
-
                 Integer difficultyGap = 5;
                 Long difficultyBegin = 10L;
-                AlgorithmStudy study1 =
-                    AlgorithmStudy.builder()
-                        .reliabilityLimit(37)
-                        .introduce("안녕하세요")
-                        .name("스터디1")
-                        .startDate(clock.today().plusWeeks(1))
-                        .penalty(5000)
-                        .weeks(5)
-                        .state(StudyStatus.READY)
-                        .headCount(0)
-                        .leader(testuser)
-                        .capacity(10)
-                        .difficultyGap(difficultyGap)
-                        .problemCount(5)
-                        .build();
+                AlgorithmStudy study1 = AlgorithmStudy.builder()
+                    .reliabilityLimit(37)
+                    .introduce("안녕하세요")
+                    .name("스터디1")
+                    .startDate(LocalDate.now().plusWeeks(1))
+                    .penalty(5000)
+                    .weeks(5)
+                    .state(StudyStatus.READY)
+                    .headCount(0)
+                    .leader(testuser)
+                    .capacity(10)
+                    .difficultyGap(difficultyGap)
+                    .problemCount(5)
+                    .build();
                 study1.createRounds();
                 study1.setDifficulty(difficultyBegin.floatValue());
 
@@ -792,45 +716,35 @@ public class StudyIntegrationTest {
                         .content(objectMapper.writeValueAsString(startStudyRequest))
                 );
 
-
                 /*
                  * Then
                  */
-                resultActions.andDo(print())
-                    .andExpect(status().isOk());
+                resultActions.andDo(print()).andExpect(status().isOk());
 
                 AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithRoundsById(
                         study1.getId())
                     .orElseThrow(() -> new NotFoundException(ErrorCode.STUDY_NOT_FOUND));
 
-                Assertions.assertThat(algorithmStudy.getState())
-                    .isEqualTo(StudyStatus.RUNNING);
-                Assertions.assertThat(algorithmStudy.getStartDate())
-                    .isEqualTo(clock.today());
+                Assertions.assertThat(algorithmStudy.getState()).isEqualTo(StudyStatus.RUNNING);
+                Assertions.assertThat(algorithmStudy.getStartDate()).isEqualTo(LocalDate.now());
 
                 Assertions.assertThat(
-                    algorithmStudy.getRounds().stream().map(
-                        round -> round.getStartDate()
-                    ).toList()
-                ).isEqualTo(
-                    IntStream.range(0, algorithmStudy.getWeeks())
-                        .mapToObj(idx -> clock.today().plusWeeks(idx)).toList()
+                    algorithmStudy.getRounds().stream().map(round -> round.getStartDate()).toList()
+                ).isEqualTo(IntStream.range(0, algorithmStudy.getWeeks())
+                    .mapToObj(idx -> LocalDate.now().plusWeeks(idx)).toList()
                 );
-
-
             }
 
             @DisplayName("과제 중복할당 불가인 기술서적 스터디를 시작할 수 있다.")
             @Test
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
             void can_start_book_study_study() throws Exception {
                 /*
                  * Given
                  */
-                final int roundIdx = 1;
-                LocalDate roundStartDate = clock.today().plusWeeks(2);
-                LocalDate roundEndDate = clock.today().plusWeeks(3);
+                final int roundIdx = 0;
+                LocalDate roundStartDate = LocalDate.now().plusWeeks(2);
+                LocalDate roundEndDate = LocalDate.now().plusWeeks(3);
                 User user1 = User.builder()
                     .username("username1")
                     .password("password")
@@ -897,7 +811,7 @@ public class StudyIntegrationTest {
                     .description("라일락하일락")
                     .build(), Assignment.builder()
                     .round(round)
-                    .title("문3ㅔ33")
+                    .title("문제33")
                     .description("통기닥통기닥")
                     .build());
                 assignmentRepository.saveAll(assignments);
@@ -915,11 +829,9 @@ public class StudyIntegrationTest {
                         .round(round).user(user2).build()
                 ));
 
-
                 /*
                  * When
                  */
-
                 StartStudyRequest startStudyRequest = StartStudyRequest.builder()
                     .studyId(study.getId())
                     .build();
@@ -929,15 +841,12 @@ public class StudyIntegrationTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(startStudyRequest))
-
                 );
 
                 /*
                  * Then
                  */
-
-                resultActions.andDo(print())
-                    .andExpect(status().isOk());
+                resultActions.andDo(print()).andExpect(status().isOk());
 
                 Long user1Assigned = userAssignmentRepository.findWithAssignmentByUser(user1)
                     .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
@@ -958,15 +867,14 @@ public class StudyIntegrationTest {
 
             @DisplayName("과제 중복할당 가능인 기술서적 스터디를 시작할 수 있다.")
             @Test
-            @WithUserDetails(value = "testuser",
-                setupBefore = TestExecutionEvent.TEST_EXECUTION)
+            @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
             void can_start_book_study_study_with_duplication() throws Exception {
                 /*
                  * Given
                  */
-                final int roundIdx = 1;
-                LocalDate roundStartDate = clock.today().plusWeeks(2);
-                LocalDate roundEndDate = clock.today().plusWeeks(3);
+                final int roundIdx = 0;
+                LocalDate roundStartDate = LocalDate.now().plusWeeks(2);
+                LocalDate roundEndDate = LocalDate.now().plusWeeks(3);
                 User user1 = User.builder()
                     .username("username1")
                     .password("password")
@@ -1009,13 +917,13 @@ public class StudyIntegrationTest {
                     .duplicated(true)
                     .state(StudyStatus.READY)
                     .build();
-                studyRepository.save(study);
                 Round round = Round.builder()
                     .idx(roundIdx)
                     .study(study)
                     .startDate(roundStartDate)
                     .endDate(roundEndDate)
                     .build();
+                studyRepository.save(study);
                 roundRepository.save(round);
 
                 userStudyRepository.saveAll(List.of(
@@ -1023,19 +931,22 @@ public class StudyIntegrationTest {
                     UserStudy.builder().user(user2).study(study).build(),
                     UserStudy.builder().user(user3).study(study).build()));
 
-                List<Assignment> assignments = List.of(Assignment.builder()
-                    .round(round)
-                    .title("가나다")
-                    .description("dldldl")
-                    .build(), Assignment.builder()
-                    .round(round)
-                    .title("문제222")
-                    .description("라일락하일락")
-                    .build(), Assignment.builder()
-                    .round(round)
-                    .title("문3ㅔ33")
-                    .description("통기닥통기닥")
-                    .build());
+                List<Assignment> assignments = List.of(
+                    Assignment.builder()
+                        .round(round)
+                        .title("가나다")
+                        .description("dldldl")
+                        .build(),
+                    Assignment.builder()
+                        .round(round)
+                        .title("문제222")
+                        .description("라일락하일락")
+                        .build(),
+                    Assignment.builder()
+                        .round(round)
+                        .title("문제33")
+                        .description("통기닥통기닥")
+                        .build());
                 assignmentRepository.saveAll(assignments);
 
                 Set<Assignment> availableAssignment = new HashSet<>(assignments);
@@ -1050,29 +961,23 @@ public class StudyIntegrationTest {
                         .round(round).user(user2).build()
                 ));
 
-
                 /*
                  * When
                  */
-
                 StartStudyRequest startStudyRequest = StartStudyRequest.builder()
                     .studyId(study.getId())
                     .build();
 
-                ResultActions resultActions = mockMvc.perform(
-                    post("/api/v1/studies/start")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(startStudyRequest))
-
+                ResultActions resultActions = mockMvc.perform(post("/api/v1/studies/start")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(startStudyRequest))
                 );
 
                 /*
                  * Then
                  */
-
-                resultActions.andDo(print())
-                    .andExpect(status().isOk());
+                resultActions.andDo(print()).andExpect(status().isOk());
 
                 Long user1Assigned = userAssignmentRepository.findWithAssignmentByUser(user1)
                     .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
@@ -1084,26 +989,20 @@ public class StudyIntegrationTest {
                     .orElseThrow(() -> new NotFoundException(ErrorCode.USER_ASSIGNMENT_NOT_FOUND))
                     .getAssignment().getId();
 
-                Assertions.assertThat(user1Assigned)
-                    .isEqualTo(firstChoice.getId());
-                Assertions.assertThat(user2Assigned)
-                    .isEqualTo(firstChoice.getId());
-
+                Assertions.assertThat(user1Assigned).isEqualTo(firstChoice.getId());
+                Assertions.assertThat(user2Assigned).isEqualTo(firstChoice.getId());
                 Assertions.assertThat(user3Assigned)
                     .isIn(availableAssignment.stream().map(Assignment::getId).toList());
             }
-
         }
 
         @Test
         @DisplayName("알고리즘 문제에 대한 피드백을 줄 수 있다.")
-        @WithUserDetails(value = "testuser",
-            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
         void can_feedback() throws Exception {
             /*
              Given
              */
-
             Random gen = new Random();
             List<String> tags = AlgoTag.getTagNames();
             AlgoTag randomTag = AlgoTag.valueOf(tags.get(gen.nextInt(tags.size())));
@@ -1119,21 +1018,20 @@ public class StudyIntegrationTest {
 
             algorithmProblemRepository.save(problem);
 
-            AlgorithmStudy study =
-                AlgorithmStudy.builder()
-                    .reliabilityLimit(37)
-                    .introduce("안녕하세요")
-                    .name("스터디1")
-                    .penalty(5000)
-                    .weeks(5)
-                    .state(StudyStatus.READY)
-                    .headCount(0)
-                    .leader(testuser)
-                    .capacity(10)
-                    .problemCount(5)
-                    .difficultyGap(difficultyGap)
-                    .startDate(clock.today())
-                    .build();
+            AlgorithmStudy study = AlgorithmStudy.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .penalty(5000)
+                .weeks(5)
+                .state(StudyStatus.READY)
+                .headCount(0)
+                .leader(testuser)
+                .capacity(10)
+                .problemCount(5)
+                .difficultyGap(difficultyGap)
+                .startDate(LocalDate.now())
+                .build();
             study.admit(testuser);
             study.createRounds();
             study.setDifficulty(difficultyBegin.floatValue());
@@ -1143,7 +1041,7 @@ public class StudyIntegrationTest {
 
             algorithmProblemSolvedHistoryRepository.save(AlgorithmProblemSolvedHistory.builder()
                 .tryCount(1)
-                .solvedAt(clock.now())
+                .solvedAt(LocalDateTime.now())
                 .problem(problem)
                 .user(testuser)
                 .build());
@@ -1167,32 +1065,26 @@ public class StudyIntegrationTest {
             /*
             Then
              */
-            resultActions.andDo(print())
-                .andExpect(status().isOk());
+            resultActions.andDo(print()).andExpect(status().isOk());
 
             AlgorithmStudy algorithmStudy = (AlgorithmStudy) studyRepository.findWithDifficultiesById(
                     feedback.studyId())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-            Map<AlgoTag, Spread> difficultyMap =
-                study.getDifficultySpreadMap();
-            Float variance = study.getDifficultyVariance(
-                AlgorithmProblemFeedback.builder()
-                    .difficulty(feedback.difficulty())
-                    .build()
+            Map<AlgoTag, Spread> difficultyMap = study.getDifficultySpreadMap();
+            Float variance = study.getDifficultyVariance(AlgorithmProblemFeedback.builder()
+                .difficulty(feedback.difficulty())
+                .build()
             );
             Integer adjustedDifficulty = Math.round(difficultyBegin + variance);
-            difficultyMap.put(randomTag,
-                Spread.of(
-                    Util.ensureRange(adjustedDifficulty, MIN_DIFFICULTY_LEVEL,
-                        MAX_DIFFICULTY_LEVEL),
-                    Util.ensureRange(adjustedDifficulty + difficultyGap, MIN_DIFFICULTY_LEVEL,
-                        MAX_DIFFICULTY_LEVEL)
-                ));
+            difficultyMap.put(randomTag, Spread.of(
+                Util.ensureRange(adjustedDifficulty, MIN_DIFFICULTY_LEVEL, MAX_DIFFICULTY_LEVEL),
+                Util.ensureRange(adjustedDifficulty + difficultyGap, MIN_DIFFICULTY_LEVEL,
+                    MAX_DIFFICULTY_LEVEL)
+            ));
 
             Assertions.assertThat(algorithmStudy.getDifficultySpreadMap())
                 .isEqualTo(difficultyMap);
-
         }
 
         @Test
@@ -1219,25 +1111,23 @@ public class StudyIntegrationTest {
                 .introduce("introduce")
                 .image("image")
                 .reliability(50)
-                .money(10000)
                 .build();
             userRepository.save(leader);
 
-            Study study =
-                BookStudy.builder()
-                    .reliabilityLimit(37)
-                    .capacity(10)
-                    .introduce("안녕하세요")
-                    .startDate(LocalDate.now())
-                    .name("스터디")
-                    .leader(leader)
-                    .penalty(1000)
-                    .weeks(5)
-                    .state(StudyStatus.READY)
-                    .headCount(0)
-                    .book(book)
-                    .votingProcess(VotingProcess.READY)
-                    .build();
+            Study study = BookStudy.builder()
+                .reliabilityLimit(37)
+                .capacity(10)
+                .introduce("안녕하세요")
+                .startDate(LocalDate.now())
+                .name("스터디")
+                .leader(leader)
+                .penalty(1000)
+                .weeks(5)
+                .state(StudyStatus.READY)
+                .headCount(0)
+                .book(book)
+                .votingProcess(VotingProcess.READY)
+                .build();
             studyRepository.save(study);
             JoinStudyRequest request = JoinStudyRequest.builder()
                 .studyId(study.getId()).build();
@@ -1256,18 +1146,15 @@ public class StudyIntegrationTest {
              */
             resultActions.andDo(print())
                 .andExpect(status().isOk());
-
         }
 
         @Test
         @DisplayName("알고리즘 스터디를 생성할 수 있다")
-        @WithUserDetails(value = "testuser",
-            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+        @WithUserDetails(value = "testuser", setupBefore = TestExecutionEvent.TEST_EXECUTION)
         void can_register_algorithm_study() throws Exception {
             /*
             Given
              */
-
             RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
                 RegisterAlgorithmStudyRequest.builder()
                     .reliabilityLimit(37)
@@ -1279,16 +1166,14 @@ public class StudyIntegrationTest {
                     .weeks(5)
                     .difficultyBegin(10)
                     .difficultyEnd(15)
-                    .problemCount(5).build();
+                    .problemCount(5)
+                    .build();
 
-            UserProfileResult profile = UserProfileResult.builder()
+            MemberInfoResult profile = MemberInfoResult.builder()
                 .id(testuser.getId())
-                .role(testuser.getRole())
-                .introduce(testuser.getIntroduce())
-                .money(testuser.getMoney() - 5000)
-                .reliability(testuser.getReliability())
                 .username(testuser.getUsername())
-                .image(testuser.getImage())
+                .baekjoonId("baekjoon")
+                .reliability(testuser.getReliability())
                 .build();
 
             AlgorithmStudyResult algorithmStudyResult = AlgorithmStudyResult.builder()
@@ -1317,28 +1202,23 @@ public class StudyIntegrationTest {
             /*
             When
              */
-            ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/studies/algo")
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
+            ResultActions resultActions = mockMvc.perform(post("/api/v1/studies/algo")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerAlgorithmStudyRequest))
             );
-
 
             /*
             Then
              */
-            StudyResponse studyResponse = StudyResponse.fromResult(
-                algorithmStudyResult);
+            StudyResponse studyResponse = StudyResponse.fromResult(algorithmStudyResult);
             String expectedResponse = objectMapper.writeValueAsString(studyResponse);
 
             resultActions.andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expectedResponse));
 
-            resultActions = mockMvc.perform(
-                get("/api/v1/users/me")
-            );
+            resultActions = mockMvc.perform(get("/api/v1/users/me"));
             resultActions.andDo(print());
         }
 
@@ -1358,7 +1238,6 @@ public class StudyIntegrationTest {
                 .introduce("introduce")
                 .image("image")
                 .reliability(50)
-                .money(10000)
                 .build();
             userRepository.save(leader);
 
@@ -1371,70 +1250,60 @@ public class StudyIntegrationTest {
                 .build();
             bookRepository.save(book);
 
-            UserProfileResult profile = UserProfileResult.builder()
+            MemberInfoResult profile = MemberInfoResult.builder()
                 .id(testuser.getId())
-                .role(testuser.getRole())
-                .introduce(testuser.getIntroduce())
-                .money(testuser.getMoney() - 5000)
-                .reliability(testuser.getReliability())
                 .username(testuser.getUsername())
-                .image(testuser.getImage())
+                .baekjoonId("baekjoon")
+                .reliability(testuser.getReliability())
                 .build();
 
-            RegisterBookStudyRequest registerBookStudyRequest =
-                RegisterBookStudyRequest.builder()
-                    .reliabilityLimit(37)
-                    .introduce("안녕하세요")
-                    .name("스터디1")
-                    .capacity(10)
-                    .startDate(LocalDate.now().plusWeeks(1))
-                    .penalty(1000)
-                    .weeks(5)
-                    .isbn(123456789L)
-                    .build();
+            RegisterBookStudyRequest registerBookStudyRequest = RegisterBookStudyRequest.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .capacity(10)
+                .startDate(LocalDate.now().plusWeeks(1))
+                .penalty(1000)
+                .weeks(5)
+                .isbn(123456789L)
+                .build();
 
-            BookStudyResult bookStudyResult =
-                BookStudyResult.builder()
-                    .id(1L)
-                    .reliabilityLimit(37)
-                    .introduce("안녕하세요")
-                    .name("스터디1")
-                    .headCount(1)
-                    .capacity(10)
-                    .startDate(registerBookStudyRequest.startDate())
-                    .penalty(1000)
-                    .weeks(5)
-                    .leader(profile)
-                    .state(StudyStatus.READY)
-                    .studyType(StudyType.BOOK)
-                    .votingProcess(VotingProcess.READY)
-                    .duplicated(false)
-                    .bookResult(SearchBooksResult.fromBook(book))
-                    .build();
-
+            BookStudyResult bookStudyResult = BookStudyResult.builder()
+                .id(1L)
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .headCount(1)
+                .capacity(10)
+                .startDate(registerBookStudyRequest.startDate())
+                .penalty(1000)
+                .weeks(5)
+                .leader(profile)
+                .state(StudyStatus.READY)
+                .studyType(StudyType.BOOK)
+                .votingProcess(VotingProcess.READY)
+                .duplicated(false)
+                .bookResult(SearchBooksResult.fromBook(book))
+                .build();
 
             /*
             When
              */
-
-            ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/studies/book")
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            ResultActions resultActions = mockMvc.perform(post("/api/v1/studies/book")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
 
             /*
             Then
              */
-            StudyResponse studyResponse = StudyResponse.fromResult(
-                bookStudyResult);
+            StudyResponse studyResponse = StudyResponse.fromResult(bookStudyResult);
             String expectedResponse = objectMapper.writeValueAsString(studyResponse);
 
             resultActions.andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().json(expectedResponse));
-
         }
 
 
@@ -1446,29 +1315,24 @@ public class StudyIntegrationTest {
             /*
             Given
              */
-
-            RegisterBookStudyRequest registerBookStudyRequest =
-                RegisterBookStudyRequest.builder()
-                    .reliabilityLimit(37)
-                    .introduce("안녕하세요")
-                    .name("스터디1")
-                    .capacity(10)
-                    .startDate(LocalDate.now())
-                    .penalty(1000)
-                    .weeks(5)
-                    .isbn(123456789L)
-                    .build();
-
+            RegisterBookStudyRequest registerBookStudyRequest = RegisterBookStudyRequest.builder()
+                .reliabilityLimit(37)
+                .introduce("안녕하세요")
+                .name("스터디1")
+                .capacity(10)
+                .startDate(LocalDate.now())
+                .penalty(1000)
+                .weeks(5)
+                .isbn(123456789L)
+                .build();
 
             /*
             When
              */
-
-            ResultActions resultActions = mockMvc.perform(
-                post("/api/v1/studies/book")
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(registerBookStudyRequest))
+            ResultActions resultActions = mockMvc.perform(post("/api/v1/studies/book")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBookStudyRequest))
             );
 
             /*
@@ -1477,8 +1341,6 @@ public class StudyIntegrationTest {
             resultActions.andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ErrorCode.BOOK_NOT_FOUND.getMessage()));
-
-
         }
     }
 
@@ -1489,7 +1351,6 @@ public class StudyIntegrationTest {
         /*
         Given
          */
-
         User leader = User.builder()
             .username("leader")
             .password(passwordEncoder.encode("password"))
@@ -1497,7 +1358,6 @@ public class StudyIntegrationTest {
             .introduce("introduce")
             .image("image")
             .reliability(50)
-            .money(10000)
             .build();
         userRepository.save(leader);
 
@@ -1509,40 +1369,37 @@ public class StudyIntegrationTest {
             .tableOfContents("1. 2. 3. 4.")
             .build();
         bookRepository.save(book);
-        Study study1 =
-            AlgorithmStudy.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .startDate(LocalDate.of(2024, 06, 14))
-                .penalty(5000)
-                .weeks(5)
-                .state(StudyStatus.READY)
-                .headCount(0)
-                .leader(leader)
 
-                .capacity(10)
-                .problemCount(5)
-                .build();
-
-        Study study2 =
-            BookStudy.builder()
-                .reliabilityLimit(37)
-                .capacity(10)
-                .introduce("안녕하세요")
-                .startDate(LocalDate.of(2024, 06, 14))
-                .name("스터디1")
-                .penalty(5000)
-                .weeks(5)
-                .leader(leader)
-                .book(book)
-                .state(StudyStatus.READY)
-                .headCount(0)
-                .votingProcess(VotingProcess.READY)
-                .build();
-
+        Study study1 = AlgorithmStudy.builder()
+            .reliabilityLimit(37)
+            .introduce("안녕하세요")
+            .name("스터디1")
+            .startDate(LocalDate.of(2024, 06, 14))
+            .penalty(5000)
+            .weeks(5)
+            .state(StudyStatus.READY)
+            .headCount(0)
+            .leader(leader)
+            .capacity(10)
+            .problemCount(5)
+            .build();
+        Study study2 = BookStudy.builder()
+            .reliabilityLimit(37)
+            .capacity(10)
+            .introduce("안녕하세요")
+            .startDate(LocalDate.of(2024, 06, 14))
+            .name("스터디1")
+            .penalty(5000)
+            .weeks(5)
+            .leader(leader)
+            .book(book)
+            .state(StudyStatus.READY)
+            .headCount(0)
+            .votingProcess(VotingProcess.READY)
+            .build();
         studyRepository.save(study1);
         studyRepository.save(study2);
+
         /*
         When
          */
@@ -1551,7 +1408,6 @@ public class StudyIntegrationTest {
                 .param("page", "1")
                 .param("size", "1")
         );
-
 
         /*
         Then
@@ -1582,15 +1438,15 @@ public class StudyIntegrationTest {
             .id(1L)
             .username("username1")
             .password("password")
-            .role(Role.USER)
             .reliability(50)
+            .role(Role.USER)
             .build();
         User user2 = User.builder()
             .id(2L)
             .username("username2")
             .password("password")
-            .role(Role.USER)
             .reliability(60)
+            .role(Role.USER)
             .build();
         userRepository.saveAll(List.of(user1, user2));
         Study study = AlgorithmStudy.builder()
@@ -1814,7 +1670,7 @@ public class StudyIntegrationTest {
             .reliabilityLimit(0)
             .startDate(LocalDate.of(2024, 7, 22))
             .weeks(2)
-            .leader(UserProfileResult.fromEntity(user1))
+            .leader(MemberInfoResult.fromEntity(user1))
             .state(StudyStatus.RUNNING)
             .build();
         Map<Long, AlgorithmProblemInfo> problems = new HashMap<>();
@@ -1983,7 +1839,6 @@ public class StudyIntegrationTest {
 
         videoRepository.saveAll(List.of(video1, video2, video3));
 
-
         /*
         When
          */
@@ -1996,7 +1851,6 @@ public class StudyIntegrationTest {
         Then
          */
         String userPath = "$.users.%s";
-
         String jsonForUser1 = objectMapper.writeValueAsString(
             Map.of("username", user1.getUsername(),
                 "assignmentId", assignment1.getId(),
@@ -2010,12 +1864,10 @@ public class StudyIntegrationTest {
 
         resultActions.andDo(print())
             .andExpect(status().isOk())
-            .andExpect(
-                jsonPath(userPath, user1.getId())
-                    .value(equalTo(JsonPath.read(jsonForUser1, "$"))))
-            .andExpect(
-                jsonPath(userPath, user2.getId())
-                    .value(equalTo(JsonPath.read(jsonForUser2, "$"))));
+            .andExpect(jsonPath(userPath, user1.getId())
+                .value(equalTo(JsonPath.read(jsonForUser1, "$"))))
+            .andExpect(jsonPath(userPath, user2.getId())
+                .value(equalTo(JsonPath.read(jsonForUser2, "$"))));
     }
 
     @DisplayName("기술서적 스터디 상세 정보를 조회할 수 있다.")
@@ -2094,10 +1946,10 @@ public class StudyIntegrationTest {
 
         assignmentRepository.saveAll(List.of(assignment1, assignment2, assignment3));
 
-        userAssignmentRepository.saveAll(List.of(
-            UserAssignment.builder().user(user1).assignment(assignment1).build(),
-            UserAssignment.builder().user(user2).assignment(assignment2).build()
-        ));
+        userAssignmentRepository.saveAll(
+            List.of(UserAssignment.builder().user(user1).assignment(assignment1).build(),
+                UserAssignment.builder().user(user2).assignment(assignment2).build()
+            ));
 
         Problem problem1 = Problem.builder()
             .examiner(user1)
@@ -2121,9 +1973,7 @@ public class StudyIntegrationTest {
             .uploader(user2)
             .assignment(assignment2)
             .build();
-
         videoRepository.saveAll(List.of(video1, video2, video3));
-
 
         /*
         When
@@ -2150,11 +2000,9 @@ public class StudyIntegrationTest {
 
         resultActions.andDo(print())
             .andExpect(status().isOk())
-            .andExpect(
-                jsonPath(userPath, user1.getId())
-                    .value(equalTo(JsonPath.read(jsonForUser1, "$"))))
-            .andExpect(
-                jsonPath(userPath, user2.getId())
-                    .value(equalTo(JsonPath.read(jsonForUser2, "$"))));
+            .andExpect(jsonPath(userPath, user1.getId())
+                .value(equalTo(JsonPath.read(jsonForUser1, "$"))))
+            .andExpect(jsonPath(userPath, user2.getId())
+                .value(equalTo(JsonPath.read(jsonForUser2, "$"))));
     }
 }

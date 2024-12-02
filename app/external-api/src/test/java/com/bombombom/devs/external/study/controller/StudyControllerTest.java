@@ -46,15 +46,14 @@ import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmSt
 import com.bombombom.devs.external.study.service.dto.command.RegisterBookStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.MemberInfoResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
-import com.bombombom.devs.user.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -111,14 +110,10 @@ class StudyControllerTest {
             /*
             Given
              */
-
-            UserProfileResult leaderProfile = UserProfileResult.builder()
+            MemberInfoResult leaderProfile = MemberInfoResult.builder()
                 .username("leader")
-                .role(Role.USER)
-                .introduce("introduce")
-                .image("image")
+                .baekjoonId("baekjoon")
                 .reliability(50)
-                .money(10000)
                 .build();
             BookResult bookResult = BookResult.builder()
                 .title("누가 내머리에 똥쌌어")
@@ -636,14 +631,10 @@ class StudyControllerTest {
             /*
             Given
              */
-
-            UserProfileResult leaderProfile = UserProfileResult.builder()
+            MemberInfoResult leaderProfile = MemberInfoResult.builder()
                 .username("leader")
-                .role(Role.USER)
-                .introduce("introduce")
-                .image("image")
+                .baekjoonId("baekjoon")
                 .reliability(50)
-                .money(10000)
                 .build();
             RegisterAlgorithmStudyRequest registerAlgorithmStudyRequest =
                 RegisterAlgorithmStudyRequest.builder()
@@ -1372,14 +1363,10 @@ class StudyControllerTest {
         Given
          */
         List<StudyResult> studyResults = new ArrayList<>();
-
-        UserProfileResult leaderProfile = UserProfileResult.builder()
+        MemberInfoResult leaderProfile = MemberInfoResult.builder()
             .username("leader")
-            .role(Role.USER)
-            .introduce("introduce")
-            .image("image")
+            .baekjoonId("baekjoon")
             .reliability(50)
-            .money(10000)
             .build();
         BookResult bookResult = BookResult.builder()
             .title("누가 내머리에 똥쌌어")
@@ -1389,37 +1376,34 @@ class StudyControllerTest {
             .author("세계최강민석")
             .tableOfContents("").build();
 
-        StudyResult studyResult =
-            AlgorithmStudyResult.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .startDate(LocalDate.of(2024, 06, 14))
-                .penalty(5000)
-                .weeks(5)
-                .capacity(10)
-                .leader(leaderProfile)
-                .problemCount(5)
-                .build();
+        StudyResult studyResult = AlgorithmStudyResult.builder()
+            .reliabilityLimit(37)
+            .introduce("안녕하세요")
+            .name("스터디1")
+            .startDate(LocalDate.of(2024, 06, 14))
+            .penalty(5000)
+            .weeks(5)
+            .capacity(10)
+            .leader(leaderProfile)
+            .problemCount(5)
+            .build();
 
-        StudyResult studyResult2 =
-            BookStudyResult.builder()
-                .reliabilityLimit(37)
-                .capacity(10)
-                .introduce("안녕하세요")
-                .leader(leaderProfile)
-                .startDate(LocalDate.of(2024, 06, 14))
-                .name("스터디1")
-                .penalty(5000)
-                .bookResult(bookResult)
-                .weeks(5)
-                .build();
+        StudyResult studyResult2 = BookStudyResult.builder()
+            .reliabilityLimit(37)
+            .capacity(10)
+            .introduce("안녕하세요")
+            .leader(leaderProfile)
+            .startDate(LocalDate.of(2024, 06, 14))
+            .name("스터디1")
+            .penalty(5000)
+            .bookResult(bookResult)
+            .weeks(5)
+            .build();
 
         studyResults.add(studyResult);
         studyResults.add(studyResult2);
 
-        Page<StudyResult> serviceResponse =
-            new PageImpl<>(studyResults);
+        Page<StudyResult> serviceResponse = new PageImpl<>(studyResults);
 
         when(studyService.readStudy(any(Pageable.class))).thenReturn(serviceResponse);
 
@@ -1493,16 +1477,16 @@ class StudyControllerTest {
             Integer roundIdx = 1;
             String username1 = "username1";
             String username2 = "username2";
-            UserProfileResult user1 = UserProfileResult.builder()
+            MemberInfoResult user1 = MemberInfoResult.builder()
                 .id(1L)
                 .username(username1)
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(50)
                 .build();
-            UserProfileResult user2 = UserProfileResult.builder()
+            MemberInfoResult user2 = MemberInfoResult.builder()
                 .id(2L)
                 .username(username2)
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(60)
                 .build();
             RoundResult round = RoundResult.builder()
@@ -1625,16 +1609,16 @@ class StudyControllerTest {
              */
             String studyId = "test";
             Integer roundIdx = 1;
-            UserProfileResult user1 = UserProfileResult.builder()
+            MemberInfoResult user1 = MemberInfoResult.builder()
                 .id(1L)
                 .username("username1")
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(50)
                 .build();
-            UserProfileResult user2 = UserProfileResult.builder()
+            MemberInfoResult user2 = MemberInfoResult.builder()
                 .id(2L)
                 .username("username2")
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(60)
                 .build();
             RoundResult round = RoundResult.builder()
@@ -1699,16 +1683,16 @@ class StudyControllerTest {
              */
             Long studyId = 1L;
             String roundIdx = "test";
-            UserProfileResult user1 = UserProfileResult.builder()
+            MemberInfoResult user1 = MemberInfoResult.builder()
                 .id(1L)
                 .username("username1")
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(50)
                 .build();
-            UserProfileResult user2 = UserProfileResult.builder()
+            MemberInfoResult user2 = MemberInfoResult.builder()
                 .id(2L)
                 .username("username2")
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(60)
                 .build();
             RoundResult round = RoundResult.builder()
@@ -1780,16 +1764,16 @@ class StudyControllerTest {
             Integer roundIdx = 1;
             String username1 = "username1";
             String username2 = "username2";
-            UserProfileResult user1 = UserProfileResult.builder()
+            MemberInfoResult user1 = MemberInfoResult.builder()
                 .id(1L)
                 .username(username1)
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(50)
                 .build();
-            UserProfileResult user2 = UserProfileResult.builder()
+            MemberInfoResult user2 = MemberInfoResult.builder()
                 .id(2L)
                 .username(username2)
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(60)
                 .build();
             RoundResult round = RoundResult.builder()
@@ -1932,16 +1916,16 @@ class StudyControllerTest {
              */
             String studyId = "test";
             Integer roundIdx = 1;
-            UserProfileResult user1 = UserProfileResult.builder()
+            MemberInfoResult user1 = MemberInfoResult.builder()
                 .id(1L)
                 .username("username1")
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(50)
                 .build();
-            UserProfileResult user2 = UserProfileResult.builder()
+            MemberInfoResult user2 = MemberInfoResult.builder()
                 .id(2L)
                 .username("username2")
-                .role(Role.USER)
+                .baekjoonId("baekjoon")
                 .reliability(60)
                 .build();
             RoundResult round = RoundResult.builder()

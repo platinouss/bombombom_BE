@@ -6,7 +6,6 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.user.service.dto.SignupCommand;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
-import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ public class UserService {
     private final PointsService pointsService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserStudyRepository userStudyRepository;
 
     public void addUser(SignupCommand signupCommand) {
         if (userRepository.existsByUsername(signupCommand.username())) {

@@ -1,5 +1,6 @@
 package com.bombombom.devs.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
@@ -14,13 +15,14 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-@Getter
 @MappedSuperclass
 @EntityListeners(value = AuditingEntityListener.class)
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BaseEntity {
 
+    @Getter
+    @JsonIgnore
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -188,7 +188,7 @@ class UserControllerTest {
             .introduce("introduce")
             .baekjoonId("testname")
             .reliability(0)
-            .money(0)
+            .points(0L)
             .build());
 
         /*
