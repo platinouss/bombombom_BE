@@ -16,7 +16,7 @@ import com.bombombom.devs.external.book.controller.dto.BookListResponse;
 import com.bombombom.devs.external.book.enums.SearchOption;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
-import com.bombombom.devs.external.config.ElasticsearchTestConfig;
+import com.bombombom.devs.external.config.TestContainerConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +38,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest(classes = ExternalApiApplication.class)
-@Import(ElasticsearchTestConfig.class)
+@Import(TestContainerConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class BookIntegrationTest {
 

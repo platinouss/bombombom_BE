@@ -29,7 +29,7 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Util;
 import com.bombombom.devs.external.algo.controller.dto.request.FeedbackAlgorithmProblemRequest;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
-import com.bombombom.devs.external.config.ElasticsearchTestConfig;
+import com.bombombom.devs.external.config.TestContainerConfig;
 import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest;
 import com.bombombom.devs.external.study.controller.dto.request.AddAssignmentRequest.NewAssignmentInfo;
@@ -115,7 +115,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @ActiveProfiles("test")
 @SpringBootTest(classes = ExternalApiApplication.class)
 @AutoConfigureMockMvc
-@Import(ElasticsearchTestConfig.class)
+@Import(TestContainerConfig.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class StudyIntegrationTest {
 
