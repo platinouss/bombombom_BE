@@ -33,7 +33,8 @@ public class PointsService {
     public List<PointsHistoryResult> getPointsHistory(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
             ErrorCode.USER_NOT_FOUND));
-        List<PointsHistory> pointsHistories = pointsHistoryRepository.findByUser(user);
+        List<PointsHistory> pointsHistories = pointsHistoryRepository.findByUser(user).stream()
+            .filter(pointsHistory -> pointsHistory.getAmount() != 0).toList();
         return pointsHistories.stream().map(PointsHistoryResult::fromEntity).toList();
     }
 
