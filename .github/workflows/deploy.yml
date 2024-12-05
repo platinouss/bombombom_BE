@@ -8,6 +8,8 @@ on:
 
 jobs:
   boot-jar:
+    if: ${{ secrets.ENABLE_CD == 'true' }}
+
     runs-on: ubuntu-latest
     outputs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
@@ -55,10 +57,10 @@ jobs:
       ECS_TASK_DEFINITION: ./devs-spring-server-task.json
       CONTAINER_NAME: spring-boot
 
-    if: ${{ needs.boot-jar.outputs.cache-hit != 'true' }}
     needs: boot-jar
-    runs-on: ubuntu-latest
+    if: ${{ secrets.ENABLE_CD == 'true' && needs.boot-jar.outputs.cache-hit != 'true' }}
 
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
