@@ -47,7 +47,7 @@ public class PointsHistory extends BaseEntity {
             .user(user)
             .amount(0L)
             .total(0L)
-            .contents("회원가입")
+            .contents("초기화")
             .build();
     }
 

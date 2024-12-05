@@ -1,57 +1,64 @@
 package com.bombombom.devs.user;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.bombombom.devs.core.exception.BusinessRuleException;
-import com.bombombom.devs.core.exception.ErrorCode;
+import static org.assertj.core.api.Java6Assertions.assertThat;
+
+import com.bombombom.devs.points.model.PointsHistory;
+import com.bombombom.devs.points.repository.PointsHistoryRepository;
+import com.bombombom.devs.user.model.Role;
 import com.bombombom.devs.user.model.User;
+import com.bombombom.devs.user.repository.UserRepository;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserTest {
 
-    @Test
-    @DisplayName("유저는 자신이 가진 재화 이내에서 재화를 지불할 수 있다.")
-    void user_can_pay_money_within_his_money() {
-        /*
-         * Given
-         */
-        User testuser = User.builder()
-            .id(1L)
-            .username("testuser")
-            .money(1000)
-            .build();
+    @Autowired
+    private UserRepository userRepository;
 
-        /*
-         * When
-         */
-        testuser.payMoney(500);
-
-        /*
-         * Then
-         */
-        assertThat(testuser.getMoney()).isEqualTo(500);
-    }
+    @Autowired
+    private PointsHistoryRepository pointsHistoryRepository;
 
     @Test
-    @DisplayName("유저가 가진 재화보다 많은 재화를 지불할 수 없다.")
-    void user_can_not_pay_more_than_have() {
+    @DisplayName("회원가입 시 포인트 초기화 히스토리를 추가한다.")
+    @Transactional
+    void initialize_point_history_when_user_register() {
         /*
-         * Given
+        Given
          */
         User testuser = User.builder()
-            .id(1L)
             .username("testuser")
-            .money(1000)
+            .password("password")
+            .role(Role.USER)
             .build();
+        testuser.initPointHistory();
 
         /*
-         * When & Then
+        When
          */
-        assertThatThrownBy(() -> testuser.payMoney(1500))
-            .isInstanceOf(BusinessRuleException.class)
-            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_ENOUGH_MONEY);
-    }
+        userRepository.save(testuser);
 
+        /*
+        Then
+         */
+        User registeredUser = userRepository.findUserByUsername("testuser").get();
+        List<PointsHistory> userPointsHistories = pointsHistoryRepository.findByUser(
+            registeredUser);
+
+        assertThat(registeredUser).isNotNull();
+        assertThat(registeredUser.getUsername()).isEqualTo("testuser");
+        assertThat(userPointsHistories).hasSize(1);
+        assertThat(userPointsHistories.get(0).getContents()).isEqualTo("초기화");
+        assertThat(userPointsHistories.get(0).getAmount()).isEqualTo(0);
+        assertThat(userPointsHistories.get(0).getTotal()).isEqualTo(0);
+    }
 }
