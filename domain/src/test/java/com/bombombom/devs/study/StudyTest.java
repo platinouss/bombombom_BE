@@ -32,7 +32,6 @@ class StudyTest {
         User testuser = User.builder()
             .id(1L)
             .username("testuser")
-            .money(10000)
             .reliability(10)
             .build();
         Study study = AlgorithmStudy.builder()
@@ -43,7 +42,6 @@ class StudyTest {
             .penalty(1000)
             .state(StudyStatus.READY)
             .build();
-
 
         /*
          * When
@@ -68,7 +66,6 @@ class StudyTest {
         User testuser = User.builder()
             .id(1L)
             .username("testuser")
-            .money(10000)
             .reliability(10)
             .build();
         Study study = AlgorithmStudy.builder()
@@ -97,7 +94,6 @@ class StudyTest {
         User testuser = User.builder()
             .id(1L)
             .username("testuser")
-            .money(10000)
             .reliability(10)
             .build();
         Study study = AlgorithmStudy.builder()
@@ -112,12 +108,9 @@ class StudyTest {
         /*
          * When & Then
          */
-
         assertThatThrownBy(() -> study.admit(testuser))
             .isInstanceOf(BusinessRuleException.class)
             .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_IS_FULL);
-
-
     }
 
     @Test
@@ -129,7 +122,6 @@ class StudyTest {
         User testuser = User.builder()
             .id(1L)
             .username("testuser")
-            .money(10000)
             .reliability(5)
             .build();
         Study study = AlgorithmStudy.builder()
@@ -168,7 +160,6 @@ class StudyTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(
                     () -> study.setDuplicated(false))
                     .isInstanceOf(BusinessRuleException.class)
@@ -188,7 +179,6 @@ class StudyTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(
                     () -> study.setDuplicated(false))
                     .isInstanceOf(BusinessRuleException.class)
@@ -212,7 +202,6 @@ class StudyTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(
                     () -> study.startVoting(userId))
                     .isInstanceOf(BusinessRuleException.class)
@@ -237,7 +226,6 @@ class StudyTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(
                     () -> study.startVoting(userId))
                     .isInstanceOf(ForbiddenException.class)
@@ -263,7 +251,6 @@ class StudyTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(
                     () -> study.startVoting(userId))
                     .isInstanceOf(BusinessRuleException.class)
@@ -287,7 +274,6 @@ class StudyTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(
                     study::canVote)
                     .isInstanceOf(BusinessRuleException.class)
@@ -307,7 +293,6 @@ class StudyTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(
                     study::canVote)
                     .isInstanceOf(BusinessRuleException.class)
@@ -338,7 +323,6 @@ class StudyTest {
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> study.canEditAssignment(userId, roundIdx, nextRound))
                 .isInstanceOf(BusinessRuleException.class)
@@ -360,7 +344,6 @@ class StudyTest {
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> study.canEditAssignment(userId, roundIdx, nextRound))
                 .isInstanceOf(InvalidInputException.class)
@@ -383,7 +366,6 @@ class StudyTest {
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> study.canEditAssignment(userId, roundIdx, nextRound))
                 .isInstanceOf(BusinessRuleException.class)
@@ -407,7 +389,6 @@ class StudyTest {
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> study.canEditAssignment(userId, roundIdx, nextRound))
                 .isInstanceOf(ForbiddenException.class)

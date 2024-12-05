@@ -11,7 +11,7 @@ public record UserProfileResponse(
     String image,
     String introduce,
     Integer reliability,
-    Integer money,
+    Long points,
     Role role
 ) {
 
@@ -23,7 +23,7 @@ public record UserProfileResponse(
             .image(result.image())
             .introduce(result.introduce())
             .reliability(result.reliability())
-            .money(result.money())
+            .points(result.points())
             .build();
     }
 }

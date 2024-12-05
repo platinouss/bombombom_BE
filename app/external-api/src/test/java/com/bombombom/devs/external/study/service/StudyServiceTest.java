@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmPro
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemResult;
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmProblemSolvedHistoryResult;
 import com.bombombom.devs.external.algo.service.dto.result.AlgorithmTaskUpdateStatusResult;
+import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.command.AddAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.ConfigureStudyCommand;
@@ -39,13 +41,13 @@ import com.bombombom.devs.external.study.service.dto.command.StartStudyCommand;
 import com.bombombom.devs.external.study.service.dto.command.VoteAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
+import com.bombombom.devs.external.study.service.dto.result.MemberInfoResult;
 import com.bombombom.devs.external.study.service.dto.result.RoundResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyDetailsResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
 import com.bombombom.devs.external.study.service.factory.StudyServiceFactory;
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.enums.VotingProcess;
@@ -119,7 +121,7 @@ class StudyServiceTest {
     private AssignmentRepository assignmentRepository;
 
     @Mock
-    AlgorithmProblemRepository algorithmProblemRepository;
+    private AlgorithmProblemRepository algorithmProblemRepository;
 
     @Mock
     private AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
@@ -133,6 +135,9 @@ class StudyServiceTest {
     @Mock
     private AssignmentVoteRepository assignmentVoteRepository;
 
+    @Mock
+    private PointsService pointsService;
+
     @InjectMocks
     private AlgorithmStudyService algorithmStudyService;
 
@@ -144,7 +149,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("readStudy 메소드는 Page<StudyResult>를 반환한다")
-    void read_study_returns_page_of_study_result() throws Exception {
+    void read_study_returns_page_of_study_result() {
         /*
         Given
          */
@@ -164,46 +169,41 @@ class StudyServiceTest {
             .introduce("introduce")
             .image("image")
             .reliability(50)
-            .money(10000)
             .build();
-        Study study1 =
-            AlgorithmStudy.builder()
-                .reliabilityLimit(37)
-                .introduce("안녕하세요")
-                .name("스터디1")
-                .startDate(LocalDate.of(2024, 06, 14))
-                .penalty(5000)
-                .weeks(5)
-                .leader(leader)
-                .difficultyGap(5)
-                .capacity(10)
-                .problemCount(5)
-                .build();
+        Study study1 = AlgorithmStudy.builder()
+            .reliabilityLimit(37)
+            .introduce("안녕하세요")
+            .name("스터디1")
+            .startDate(LocalDate.of(2024, 06, 14))
+            .penalty(5000)
+            .weeks(5)
+            .leader(leader)
+            .difficultyGap(5)
+            .capacity(10)
+            .problemCount(5)
+            .build();
 
-        Study study2 =
-            BookStudy.builder()
-                .reliabilityLimit(37)
-                .capacity(10)
-                .introduce("안녕하세요")
-                .startDate(LocalDate.of(2024, 06, 14))
-                .name("스터디1")
-                .leader(leader)
-                .penalty(5000)
-                .weeks(5)
-                .book(book)
-                .build();
+        Study study2 = BookStudy.builder()
+            .reliabilityLimit(37)
+            .capacity(10)
+            .introduce("안녕하세요")
+            .startDate(LocalDate.of(2024, 06, 14))
+            .name("스터디1")
+            .leader(leader)
+            .penalty(5000)
+            .weeks(5)
+            .book(book)
+            .build();
 
         repositoryResponses.add(study1);
         repositoryResponses.add(study2);
 
         Page<Study> studies = new PageImpl<>(repositoryResponses);
         Page<Long> studyIds = studies.map(Study::getId);
-        when(studyRepository.findIdsAll(
-            any(Pageable.class))).thenReturn(studyIds);
-
+        when(studyRepository.findIdsAll(any(Pageable.class))).thenReturn(studyIds);
         when(studyRepository.findWithDifficultiesAndLeaderAndBookByIds(
-            studyIds.getContent()
-        )).thenReturn(studies.getContent());
+            studyIds.getContent())).thenReturn(studies.getContent());
+
         /*
         When
          */
@@ -229,7 +229,6 @@ class StudyServiceTest {
         User testuser = User.builder()
             .id(1L)
             .username("testuser")
-            .money(100000)
             .reliability(10)
             .build();
         Study study = AlgorithmStudy.builder()
@@ -252,7 +251,6 @@ class StudyServiceTest {
             testuser.getId(), joinStudyCommand))
             .isInstanceOf(BusinessRuleException.class)
             .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_JOINED);
-
     }
 
     @Test
@@ -264,7 +262,6 @@ class StudyServiceTest {
         User testuser = User.builder()
             .id(1L)
             .username("testuser")
-            .money(100000)
             .reliability(40)
             .build();
 
@@ -303,29 +300,22 @@ class StudyServiceTest {
                             .algoTag(AlgoTag.valueOf(tagName))
                             .difficulty(
                                 registerAlgorithmStudyCommand.difficultyBegin().floatValue())
-
                             .build()
-
                 ).collect(Collectors.toList())
-            )
-            .build();
+            ).build();
 
         when(userRepository.findById(testuser.getId())).thenReturn(Optional.of(testuser));
-
 
         /*
         When
          */
         AlgorithmStudyResult algorithmStudyResult = algorithmStudyService.createStudy(
-            testuser.getId(),
-            registerAlgorithmStudyCommand);
+            testuser.getId(), registerAlgorithmStudyCommand);
 
         /*
         Then
          */
-        StudyResult expectedResponse = StudyResult.fromEntity(
-            algorithmStudy);
-
+        StudyResult expectedResponse = StudyResult.fromEntity(algorithmStudy);
         Assertions.assertThat(algorithmStudyResult).isEqualTo(expectedResponse);
     }
 
@@ -339,7 +329,6 @@ class StudyServiceTest {
         User testuser = User.builder()
             .id(1L)
             .username("testuser")
-            .money(100000)
             .reliability(40)
             .build();
         Book book = Book.builder()
@@ -359,7 +348,6 @@ class StudyServiceTest {
                 .startDate(LocalDate.of(2024, 06, 19))
                 .penalty(5000)
                 .weeks(5)
-
                 .state(StudyStatus.READY)
                 .headCount(0)
                 .isbn(123456789L)
@@ -380,21 +368,20 @@ class StudyServiceTest {
             .votingProcess(VotingProcess.READY)
             .build();
 
+        doNothing().when(pointsService).payStudyDeposit(any(Study.class), any(User.class));
         when(userRepository.findById(1L)).thenReturn(Optional.of(testuser));
         when(bookRepository.findByIsbn(123456789L)).thenReturn(Optional.of(book));
 
         /*
         When
          */
-        BookStudyResult bookStudyResult = bookStudyService.createStudy(
-            testuser.getId(),
+        BookStudyResult bookStudyResult = bookStudyService.createStudy(testuser.getId(),
             registerBookStudyCommand);
 
         /*
         Then
          */
-        StudyResult expectedResponse = StudyResult.fromEntity(
-            bookStudy);
+        StudyResult expectedResponse = StudyResult.fromEntity(bookStudy);
 
         Assertions.assertThat(bookStudyResult).isEqualTo(expectedResponse);
     }
@@ -406,11 +393,9 @@ class StudyServiceTest {
         @Test
         @DisplayName("problem을 찾지 못한 경우 피드백 적용이 실패한다")
         void apply_feedback_fail_if_problem_not_found() {
-
             /*
              * Given
              */
-
             FeedbackAlgorithmProblemCommand feedback = FeedbackAlgorithmProblemCommand.builder()
                 .studyId(1L)
                 .problemId(1L)
@@ -420,13 +405,11 @@ class StudyServiceTest {
 
             Study study = mock(AlgorithmStudy.class);
 
-            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(
-                study));
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
             when(study.getStudyType()).thenReturn(StudyType.ALGORITHM);
             when(study.getId()).thenReturn(feedback.studyId());
             when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(study.getId(),
                 clock.today())).thenReturn(Optional.of(mock(Round.class)));
-
             when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
                 Optional.empty());
 
@@ -437,13 +420,11 @@ class StudyServiceTest {
                 1L, feedback))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROBLEM_NOT_FOUND);
-
         }
 
         @Test
         @DisplayName("study을 찾지 못한 경우 피드백 적용이 실패한다")
         void apply_feedback_fail_if_study_not_found() {
-
             /*
              * Given
              */
@@ -462,32 +443,27 @@ class StudyServiceTest {
                 .refId(10293)
                 .tag(AlgoTag.DP)
                 .build();
-
             FeedbackAlgorithmProblemCommand feedback = FeedbackAlgorithmProblemCommand.builder()
                 .studyId(1L)
                 .problemId(1L)
                 .difficulty(2)
                 .again(true)
                 .build();
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.empty());
 
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.empty());
 
             /*
              * When & Then
              */
-            assertThatThrownBy(() -> algorithmStudyService.feedback(
-                1L, feedback))
+            assertThatThrownBy(() -> algorithmStudyService.feedback(1L, feedback))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
-
         }
 
 
         @Test
         @DisplayName("study가 기술서적 타입인 경우 피드백 적용이 실패한다")
         void apply_feedback_fail_if_study_type_is_book() {
-
             /*
              * Given
              */
@@ -513,9 +489,7 @@ class StudyServiceTest {
                 .difficulty(2)
                 .again(true)
                 .build();
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.of(study));
-
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
 
             /*
              * When & Then
@@ -524,13 +498,11 @@ class StudyServiceTest {
                 1L, feedback))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.WRONG_STUDY_TYPE);
-
         }
 
         @Test
         @DisplayName("study의 진행중인 라운드가 없는 경우 피드백 적용이 실패한다")
         void apply_feedback_fail_if_study_doesnt_have_ongoing_round() {
-
             /*
              * Given
              */
@@ -547,7 +519,6 @@ class StudyServiceTest {
                 .id(1L)
                 .link("https://www.bombombom.com")
                 .title("에옹")
-
                 .refId(10293)
                 .tag(AlgoTag.DP)
                 .build();
@@ -558,13 +529,10 @@ class StudyServiceTest {
                 .difficulty(2)
                 .again(true)
                 .build();
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.of(study));
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
             when(clock.today()).thenReturn(LocalDate.now());
             when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
-                study.getId(),
-                clock.today())).thenReturn(Optional.empty());
-
+                study.getId(), clock.today())).thenReturn(Optional.empty());
 
             /*
              * When & Then
@@ -573,14 +541,12 @@ class StudyServiceTest {
                 1L, feedback))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROUND_NOT_FOUND);
-
         }
 
 
         @Test
         @DisplayName("문제가 study의 진행중인 과제로 할당되지 않은 경우 피드백 적용이 실패한다")
         void apply_feedback_fail_if_problem_is_not_ongoing_assignment() {
-
             /*
              * Given
              */
@@ -613,24 +579,20 @@ class StudyServiceTest {
                 .build();
             when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
                 Optional.of(algorithmProblem));
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.of(study));
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
             when(clock.today()).thenReturn(LocalDate.now());
             when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
-                eq(study.getId()),
-                any(LocalDate.class))).thenReturn(Optional.of(round));
-
+                eq(study.getId()), any(LocalDate.class))).thenReturn(Optional.of(round));
             when(algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(
-                round.getId(),
-                algorithmProblem.getId())).thenReturn(false);
+                round.getId(), algorithmProblem.getId())).thenReturn(false);
 
             AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
             when(history.getSolvedAt()).thenReturn(now);
-            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
-                1L, algorithmProblem.getId()
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(1L,
+                algorithmProblem.getId()
             )).thenReturn(Optional.of(history));
 
             /*
@@ -640,7 +602,6 @@ class StudyServiceTest {
                 1L, feedback))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ASSIGNMENT_NOT_FOUND);
-
         }
 
 
@@ -654,7 +615,6 @@ class StudyServiceTest {
             User testuser = User.builder()
                 .id(1L)
                 .username("testuser")
-                .money(100000)
                 .reliability(10)
                 .build();
             Study study = AlgorithmStudy.builder()
@@ -686,29 +646,23 @@ class StudyServiceTest {
                 .build();
             when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
                 Optional.of(algorithmProblem));
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.of(study));
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
             when(clock.today()).thenReturn(LocalDate.now());
             when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
-                eq(study.getId()),
-                any(LocalDate.class))).thenReturn(Optional.of(round));
-
+                eq(study.getId()), any(LocalDate.class))).thenReturn(Optional.of(round));
             when(algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(
-                round.getId(),
-                algorithmProblem.getId())).thenReturn(true);
+                round.getId(), algorithmProblem.getId())).thenReturn(true);
 
             AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
             when(history.getSolvedAt()).thenReturn(now);
-            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
-                testuser.getId(), algorithmProblem.getId()
-            )).thenReturn(Optional.of(history));
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(testuser.getId(),
+                algorithmProblem.getId())).thenReturn(Optional.of(history));
+            when(userStudyRepository.existsByStudyIdAndUserId(study.getId(),
+                testuser.getId())).thenReturn(false);
 
-            when(userStudyRepository.existsByStudyIdAndUserId(
-                study.getId(), testuser.getId()
-            )).thenReturn(false);
             /*
              * When & Then
              */
@@ -716,7 +670,6 @@ class StudyServiceTest {
                 testuser.getId(), feedback))
                 .isInstanceOf(ForbiddenException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ONLY_MEMBER_ALLOWED);
-
         }
 
 
@@ -726,7 +679,6 @@ class StudyServiceTest {
             User testuser = User.builder()
                 .id(1L)
                 .username("testuser")
-                .money(100000)
                 .reliability(10)
                 .build();
             Study study = AlgorithmStudy.builder()
@@ -758,33 +710,23 @@ class StudyServiceTest {
                 .build();
             when(algorithmProblemRepository.findById(feedback.problemId())).thenReturn(
                 Optional.of(algorithmProblem));
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.of(study));
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
             when(clock.today()).thenReturn(LocalDate.now());
             when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
-                eq(study.getId()),
-                any(LocalDate.class))).thenReturn(Optional.of(round));
-
+                eq(study.getId()), any(LocalDate.class))).thenReturn(Optional.of(round));
             when(algorithmProblemAssignmentRepository.existsByRoundIdAndProblemId(
-                round.getId(),
-                algorithmProblem.getId())).thenReturn(true);
-
-            when(userStudyRepository.existsByStudyIdAndUserId(
-                study.getId(), testuser.getId()
-            )).thenReturn(true);
-
-            when(userRepository.findById(
-                testuser.getId()
-            )).thenReturn(Optional.empty());
+                round.getId(), algorithmProblem.getId())).thenReturn(true);
+            when(userStudyRepository.existsByStudyIdAndUserId(study.getId(),
+                testuser.getId())).thenReturn(true);
+            when(userRepository.findById(testuser.getId())).thenReturn(Optional.empty());
 
             AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
             when(history.getSolvedAt()).thenReturn(now);
-            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
-                testuser.getId(), algorithmProblem.getId()
-            )).thenReturn(Optional.of(history));
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(testuser.getId(),
+                algorithmProblem.getId())).thenReturn(Optional.of(history));
 
             /*
              * When & Then
@@ -822,24 +764,20 @@ class StudyServiceTest {
             when(study.getId()).thenReturn(feedback.studyId());
             when(study.getStudyType()).thenReturn(StudyType.ALGORITHM);
 
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.of(study));
-
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
             when(clock.today()).thenReturn(LocalDate.now());
 
             Round round = mock(Round.class);
 
             when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
-                eq(study.getId()),
-                any(LocalDate.class))).thenReturn(Optional.of(round));
+                eq(study.getId()), any(LocalDate.class))).thenReturn(Optional.of(round));
 
             AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
-            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
-                userId, problem.getId()
-            )).thenReturn(Optional.empty());
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(userId,
+                problem.getId())).thenReturn(Optional.empty());
 
             /*
              * When & Then
@@ -854,11 +792,9 @@ class StudyServiceTest {
         @Test
         @DisplayName("유저가 문제를 풀지 않았다면 피드백 적용이 실패한다")
         void apply_feedback_fail_if_unsolved() {
-
             /*
              * Given
              */
-
             FeedbackAlgorithmProblemCommand feedback = FeedbackAlgorithmProblemCommand.builder()
                 .studyId(1L)
                 .problemId(1L)
@@ -877,30 +813,25 @@ class StudyServiceTest {
             when(study.getId()).thenReturn(feedback.studyId());
             when(study.getStudyType()).thenReturn(StudyType.ALGORITHM);
 
-            when(studyRepository.findById(feedback.studyId())).thenReturn(
-                Optional.of(study));
-
+            when(studyRepository.findById(feedback.studyId())).thenReturn(Optional.of(study));
             when(clock.today()).thenReturn(LocalDate.now());
 
             Round round = mock(Round.class);
 
             when(roundRepository.findRoundByStudyIdAndStartDateBeforeAndEndDateAfter(
-                eq(study.getId()),
-                any(LocalDate.class))).thenReturn(Optional.of(round));
+                eq(study.getId()), any(LocalDate.class))).thenReturn(Optional.of(round));
 
             AlgorithmProblemSolvedHistory history = mock(AlgorithmProblemSolvedHistory.class);
 
             LocalDateTime now = LocalDateTime.now();
 
-            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(
-                userId, problem.getId()
-            )).thenReturn(Optional.of(history));
+            when(algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemId(userId,
+                problem.getId())).thenReturn(Optional.of(history));
 
             /*
              * When & Then
              */
-            assertThatThrownBy(() -> algorithmStudyService.feedback(
-                userId, feedback))
+            assertThatThrownBy(() -> algorithmStudyService.feedback(userId, feedback))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PROBLEM_NOT_SOLVED);
         }
@@ -917,9 +848,9 @@ class StudyServiceTest {
             @DisplayName("study id와 round 순서번호로 특정 회차의 알고리즘 스터디 진행 현황 결과를 반환할 수 있다.")
             @Test
             void retrieve_algorithm_study_progress_by_study_id_and_round_idx() {
-            /*
-            Given
-             */
+                /*
+                Given
+                 */
                 Long studyId = 1L;
                 Integer roundIdx = 1;
                 String username1 = "username1";
@@ -929,14 +860,16 @@ class StudyServiceTest {
                 User user1 = User.builder()
                     .id(1L)
                     .username(username1)
-                    .role(Role.USER)
+                    .baekjoon("baekjoon")
                     .reliability(50)
+                    .role(Role.USER)
                     .build();
                 User user2 = User.builder()
                     .id(2L)
                     .username(username2)
-                    .role(Role.USER)
+                    .baekjoon("baekjoon")
                     .reliability(60)
+                    .role(Role.USER)
                     .build();
                 Study study = AlgorithmStudy.builder()
                     .id(studyId)
@@ -1006,16 +939,16 @@ class StudyServiceTest {
                 Map<Long, AlgorithmTaskUpdateStatus> taskUpdateStatuses = Map.of(1L,
                     taskUpdateStatus1, 2L, taskUpdateStatus2);
 
-                UserProfileResult userProfileResult1 = UserProfileResult.builder()
+                MemberInfoResult memberInfoResult1 = MemberInfoResult.builder()
                     .id(1L)
                     .username(username1)
-                    .role(Role.USER)
+                    .baekjoonId("baekjoon")
                     .reliability(50)
                     .build();
-                UserProfileResult userProfileResult2 = UserProfileResult.builder()
+                MemberInfoResult memberInfoResult2 = MemberInfoResult.builder()
                     .id(2L)
                     .username(username2)
-                    .role(Role.USER)
+                    .baekjoonId("baekjoon")
                     .reliability(60)
                     .build();
                 RoundResult roundResult = RoundResult.builder()
@@ -1063,7 +996,7 @@ class StudyServiceTest {
                     .build();
                 StudyProgressResult studyProgressResult = StudyProgressResult.builder()
                     .studyType(StudyType.ALGORITHM)
-                    .members(List.of(userProfileResult1, userProfileResult2))
+                    .members(List.of(memberInfoResult1, memberInfoResult2))
                     .studyProgress(algorithmStudyProgress)
                     .build();
 
@@ -1168,14 +1101,16 @@ class StudyServiceTest {
                 User user1 = User.builder()
                     .id(1L)
                     .username(username1)
-                    .role(Role.USER)
+                    .baekjoon("baekjoon")
                     .reliability(50)
+                    .role(Role.USER)
                     .build();
                 User user2 = User.builder()
                     .id(2L)
                     .username(username2)
-                    .role(Role.USER)
+                    .baekjoon("baekjoon")
                     .reliability(60)
+                    .role(Role.USER)
                     .build();
                 Study study = AlgorithmStudy.builder()
                     .id(studyId)
@@ -1245,16 +1180,16 @@ class StudyServiceTest {
                 Map<Long, AlgorithmTaskUpdateStatus> taskUpdateStatuses = Map.of(1L,
                     taskUpdateStatus1, 2L, taskUpdateStatus2);
 
-                UserProfileResult userProfileResult1 = UserProfileResult.builder()
+                MemberInfoResult memberInfoResult1 = MemberInfoResult.builder()
                     .id(1L)
                     .username(username1)
-                    .role(Role.USER)
+                    .baekjoonId("baekjoon")
                     .reliability(50)
                     .build();
-                UserProfileResult userProfileResult2 = UserProfileResult.builder()
+                MemberInfoResult memberInfoResult2 = MemberInfoResult.builder()
                     .id(2L)
                     .username(username2)
-                    .role(Role.USER)
+                    .baekjoonId("baekjoon")
                     .reliability(60)
                     .build();
                 RoundResult roundResult = RoundResult.builder()
@@ -1302,7 +1237,7 @@ class StudyServiceTest {
                     .build();
                 StudyProgressResult studyProgressResult = StudyProgressResult.builder()
                     .studyType(StudyType.ALGORITHM)
-                    .members(List.of(userProfileResult1, userProfileResult2))
+                    .members(List.of(memberInfoResult1, memberInfoResult2))
                     .studyProgress(algorithmStudyProgress)
                     .build();
                 StudyResult studyResult = AlgorithmStudyResult.builder()
@@ -1317,7 +1252,7 @@ class StudyServiceTest {
                     .reliabilityLimit(0)
                     .startDate(roundStartDate)
                     .weeks(2)
-                    .leader(userProfileResult1)
+                    .leader(memberInfoResult1)
                     .state(StudyStatus.RUNNING)
                     .build();
                 StudyDetailsResult studyDetailsResult = StudyDetailsResult.builder()
@@ -1371,7 +1306,7 @@ class StudyServiceTest {
             @Test
             void retrieve_algorithm_study_details_with_non_existent_round_fail() {
                 /*
-                 *   Given
+                 * Given
                  */
                 Long studyId = 1L;
                 LocalDate studyStartDate = LocalDate.of(2024, 7, 22);
@@ -1404,14 +1339,11 @@ class StudyServiceTest {
                 /*
                  * When & Then
                  */
-
                 assertThatThrownBy(() -> studyService.findStudyDetails(studyId))
                     .isInstanceOf(NotFoundException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROUND_NOT_FOUND);
             }
-
         }
-
 
         @Nested
         @DisplayName("기술서적 스터디 진행현황")
@@ -1427,9 +1359,7 @@ class StudyServiceTest {
                 Integer roundIdx = 2;
 
                 when(studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                    .thenReturn(Optional.empty());
 
                 /*
                  * When & Then
@@ -1455,16 +1385,10 @@ class StudyServiceTest {
                     .build();
 
                 when(studyRepository.findWithDifficultiesAndLeaderAndBookById(studyId))
-                    .thenReturn(
-                        Optional.of(study)
-                    );
-
+                    .thenReturn(Optional.of(study));
                 when(roundRepository.findRoundByStudyIdAndBetweenStartDateAndEndDateOrIdx(
                     eq(studyId), eq(studyWeeks - 1), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.empty()
-                    );
-
+                    .thenReturn(Optional.empty());
 
                 /*
                  * When & Then
@@ -1472,12 +1396,8 @@ class StudyServiceTest {
                 assertThatThrownBy(() -> studyService.findStudyDetails(studyId))
                     .isInstanceOf(NotFoundException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROUND_NOT_FOUND);
-
-
             }
-
         }
-
     }
 
     @Nested
@@ -1497,9 +1417,7 @@ class StudyServiceTest {
                 .build();
 
             when(studyRepository.findWithLeaderById(startStudyCommand.studyId()))
-                .thenReturn(
-                    Optional.empty()
-                );
+                .thenReturn(Optional.empty());
 
             /*
              * When & Then
@@ -1523,14 +1441,11 @@ class StudyServiceTest {
 
             Study study = AlgorithmStudy.builder()
                 .id(startStudyCommand.studyId())
-                .leader(User.builder()
-                    .id(userId + 1).build())
+                .leader(User.builder().id(userId + 1).build())
                 .build();
 
             when(studyRepository.findWithLeaderById(startStudyCommand.studyId()))
-                .thenReturn(
-                    Optional.of(study)
-                );
+                .thenReturn(Optional.of(study));
 
             /*
              * When & Then
@@ -1554,15 +1469,12 @@ class StudyServiceTest {
 
             Study study = AlgorithmStudy.builder()
                 .id(startStudyCommand.studyId())
-                .leader(User.builder()
-                    .id(userId).build())
+                .leader(User.builder().id(userId).build())
                 .state(StudyStatus.RUNNING)
                 .build();
 
             when(studyRepository.findWithLeaderById(startStudyCommand.studyId()))
-                .thenReturn(
-                    Optional.of(study)
-                );
+                .thenReturn(Optional.of(study));
 
             /*
              * When & Then
@@ -1571,7 +1483,6 @@ class StudyServiceTest {
                 .isInstanceOf(BusinessRuleException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_STARTED);
         }
-
     }
 
     @Nested
@@ -1588,17 +1499,13 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 1L;
-                AddAssignmentCommand addAssignmentCommand = AddAssignmentCommand.builder()
-                    .build();
+                AddAssignmentCommand addAssignmentCommand = AddAssignmentCommand.builder().build();
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                    .thenReturn(Optional.empty());
 
                 /*
                 When & Then
@@ -1616,23 +1523,15 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 1L;
-                AddAssignmentCommand addAssignmentCommand = AddAssignmentCommand.builder()
-                    .build();
+                AddAssignmentCommand addAssignmentCommand = AddAssignmentCommand.builder().build();
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.of(mock(Round.class))
-                    );
-
-                when(studyRepository.findWithLeaderById(
-                    studyId))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                    .thenReturn(Optional.of(mock(Round.class)));
+                when(studyRepository.findWithLeaderById(studyId))
+                    .thenReturn(Optional.empty());
 
                 /*
                 When & Then
@@ -1655,7 +1554,6 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 1L;
                 DeleteAssignmentCommand deleteAssignmentCommand = DeleteAssignmentCommand.builder()
@@ -1663,9 +1561,7 @@ class StudyServiceTest {
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                    .thenReturn(Optional.empty());
 
                 /*
                 When & Then
@@ -1684,7 +1580,6 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 1L;
                 DeleteAssignmentCommand deleteAssignmentCommand = DeleteAssignmentCommand.builder()
@@ -1692,15 +1587,8 @@ class StudyServiceTest {
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.of(mock(Round.class))
-                    );
-
-                when(studyRepository.findWithLeaderById(
-                    studyId))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                    .thenReturn(Optional.of(mock(Round.class)));
+                when(studyRepository.findWithLeaderById(studyId)).thenReturn(Optional.empty());
 
                 /*
                 When & Then
@@ -1719,7 +1607,6 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 2L;
                 DeleteAssignmentCommand deleteAssignmentCommand = DeleteAssignmentCommand.builder()
@@ -1729,21 +1616,11 @@ class StudyServiceTest {
                 Round mockRound = mock(Round.class);
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
-                    eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.of(mockRound)
-                    );
-
-                when(studyRepository.findWithLeaderById(
-                    studyId))
-                    .thenReturn(
-                        Optional.of(mock(Study.class))
-                    );
-
+                    eq(studyId), any(LocalDate.class))).thenReturn(Optional.of(mockRound));
+                when(studyRepository.findWithLeaderById(studyId)).thenReturn(
+                    Optional.of(mock(Study.class)));
                 when(assignmentRepository.existsAllByIdInAndRoundNot(
-                    eq(deleteAssignmentCommand.assignmentIds()),
-                    eq(mockRound)))
-                    .thenReturn(true);
+                    eq(deleteAssignmentCommand.assignmentIds()), eq(mockRound))).thenReturn(true);
 
                 /*
                 When & Then
@@ -1766,17 +1643,13 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 1L;
                 EditAssignmentCommand editAssignmentCommand = EditAssignmentCommand.builder()
                     .build();
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
-                    eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                    eq(studyId), any(LocalDate.class))).thenReturn(Optional.empty());
 
                 /*
                 When & Then
@@ -1794,7 +1667,6 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 1L;
                 EditAssignmentCommand editAssignmentCommand = EditAssignmentCommand.builder()
@@ -1802,15 +1674,8 @@ class StudyServiceTest {
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.of(mock(Round.class))
-                    );
-
-                when(studyRepository.findWithLeaderById(
-                    studyId))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                    .thenReturn(Optional.of(mock(Round.class)));
+                when(studyRepository.findWithLeaderById(studyId)).thenReturn(Optional.empty());
 
                 /*
                 When & Then
@@ -1828,7 +1693,6 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 2L;
                 EditAssignmentCommand editAssignmentCommand = EditAssignmentCommand.builder()
@@ -1841,15 +1705,9 @@ class StudyServiceTest {
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.of(mock(Round.class))
-                    );
-
-                when(studyRepository.findWithLeaderById(
-                    studyId))
-                    .thenReturn(
-                        Optional.of(mock(Study.class))
-                    );
+                    .thenReturn(Optional.of(mock(Round.class)));
+                when(studyRepository.findWithLeaderById(studyId)).thenReturn(
+                    Optional.of(mock(Study.class)));
 
                 /*
                 When & Then
@@ -1867,7 +1725,6 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 2L;
                 EditAssignmentCommand editAssignmentCommand = EditAssignmentCommand.builder()
@@ -1880,21 +1737,13 @@ class StudyServiceTest {
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.of(mock(Round.class))
-                    );
-
-                when(studyRepository.findWithLeaderById(studyId))
-                    .thenReturn(
-                        Optional.of(mock(Study.class))
-                    );
-
+                    .thenReturn(Optional.of(mock(Round.class)));
+                when(studyRepository.findWithLeaderById(studyId)).thenReturn(
+                    Optional.of(mock(Study.class)));
                 when(assignmentRepository.findAllById(
                     editAssignmentCommand.assignments().stream().map(AssignmentInfo::id)
                         .collect(Collectors.toSet())))
-                    .thenReturn(
-                        List.of(mock(Assignment.class))
-                    );
+                    .thenReturn(List.of(mock(Assignment.class)));
 
                 /*
                 When & Then
@@ -1911,7 +1760,6 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Long userId = 2L;
                 EditAssignmentCommand editAssignmentCommand = EditAssignmentCommand.builder()
@@ -1924,20 +1772,13 @@ class StudyServiceTest {
 
                 when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(
                     eq(studyId), any(LocalDate.class)))
-                    .thenReturn(
-                        Optional.of(mock(Round.class))
-                    );
-
-                when(studyRepository.findWithLeaderById(studyId))
-                    .thenReturn(
-                        Optional.of(mock(Study.class))
-                    );
-
+                    .thenReturn(Optional.of(mock(Round.class)));
+                when(studyRepository.findWithLeaderById(studyId)).thenReturn(
+                    Optional.of(mock(Study.class)));
                 when(assignmentRepository.findAllById(
                     editAssignmentCommand.assignments().stream().map(AssignmentInfo::id)
                         .collect(Collectors.toSet())))
-                    .thenReturn(
-                        editAssignmentCommand.assignments().stream().map(
+                    .thenReturn(editAssignmentCommand.assignments().stream().map(
                             info -> Assignment.builder()
                                 .id(info.id())
                                 .round(mock(Round.class))
@@ -1965,15 +1806,11 @@ class StudyServiceTest {
                 /*
                 Given
                  */
-
                 Long studyId = 1L;
                 Integer roundIdx = 2;
 
-                when(roundRepository.findRoundByStudyAndIdx(
-                    eq(studyId), eq(roundIdx)))
-                    .thenReturn(
-                        Optional.empty()
-                    );
+                when(roundRepository.findRoundByStudyAndIdx(eq(studyId), eq(roundIdx)))
+                    .thenReturn(Optional.empty());
 
                 /*
                 When & Then
@@ -2075,8 +1912,7 @@ class StudyServiceTest {
                 /*
                  * When & Then
                  */
-                assertThatThrownBy(
-                    () -> bookStudyService.startRound(study, round))
+                assertThatThrownBy(() -> bookStudyService.startRound(study, round))
                     .isInstanceOf(BusinessRuleException.class)
                     .hasFieldOrPropertyWithValue("errorCode",
                         ErrorCode.INVALID_VOTE_FOR_UNKNOWN_ASSIGNMENT);
@@ -2227,8 +2063,7 @@ class StudyServiceTest {
                 /*
                  * When & Then
                  */
-                assertThatThrownBy(
-                    () -> bookStudyService.startRound(study, round))
+                assertThatThrownBy(() -> bookStudyService.startRound(study, round))
                     .isInstanceOf(BusinessRuleException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_VOTE_BY_NOT_MEMBER);
             }
@@ -2326,8 +2161,7 @@ class StudyServiceTest {
                 /*
                  * When & Then
                  */
-                assertThatThrownBy(
-                    () -> bookStudyService.startRound(study, round))
+                assertThatThrownBy(() -> bookStudyService.startRound(study, round))
                     .isInstanceOf(BusinessRuleException.class)
                     .hasFieldOrPropertyWithValue("errorCode",
                         ErrorCode.MULTIPLE_VOTE);
@@ -2352,11 +2186,9 @@ class StudyServiceTest {
 
             when(studyRepository.findById(studyId)).thenReturn(Optional.empty());
 
-
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> bookStudyService.voteAssignment(userId, studyId, voteAssignmentCommand))
                 .isInstanceOf(NotFoundException.class)
@@ -2402,21 +2234,15 @@ class StudyServiceTest {
             VoteAssignmentCommand voteAssignmentCommand = VoteAssignmentCommand.builder()
                 .build();
 
-            when(userRepository.findById(userId))
-                .thenReturn(Optional.of(mock(User.class)));
-            when(studyRepository.findById(studyId))
-                .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
-                .thenReturn(true);
-
+            when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+            when(studyRepository.findById(studyId)).thenReturn(Optional.of(mock(Study.class)));
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId)).thenReturn(true);
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
-                LocalDate.class)))
-                .thenReturn(Optional.empty());
+                LocalDate.class))).thenReturn(Optional.empty());
 
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> bookStudyService.voteAssignment(userId, studyId, voteAssignmentCommand))
                 .isInstanceOf(NotFoundException.class)
@@ -2436,23 +2262,17 @@ class StudyServiceTest {
                 .second(4L)
                 .build();
 
-            when(userRepository.findById(userId))
-                .thenReturn(Optional.of(mock(User.class)));
-            when(studyRepository.findById(studyId))
-                .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
-                .thenReturn(true);
-
+            when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+            when(studyRepository.findById(studyId)).thenReturn(Optional.of(mock(Study.class)));
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId)).thenReturn(true);
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
-                LocalDate.class)))
-                .thenReturn(Optional.of(mock(Round.class)));
+                LocalDate.class))).thenReturn(Optional.of(mock(Round.class)));
+            when(assignmentRepository.findById(voteAssignmentCommand.first())).thenReturn(
+                Optional.empty());
 
-            when(assignmentRepository.findById(voteAssignmentCommand.first()))
-                .thenReturn(Optional.empty());
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> bookStudyService.voteAssignment(userId, studyId, voteAssignmentCommand))
                 .isInstanceOf(NotFoundException.class)
@@ -2471,27 +2291,21 @@ class StudyServiceTest {
                 .first(3L)
                 .second(4L)
                 .build();
-            when(userRepository.findById(userId))
-                .thenReturn(Optional.of(mock(User.class)));
-            when(studyRepository.findById(studyId))
-                .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
-                .thenReturn(true);
 
+            when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+            when(studyRepository.findById(studyId)).thenReturn(Optional.of(mock(Study.class)));
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId)).thenReturn(true);
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
-                LocalDate.class)))
-                .thenReturn(Optional.of(mock(Round.class)));
-
+                LocalDate.class))).thenReturn(Optional.of(mock(Round.class)));
             when(assignmentRepository.findById(voteAssignmentCommand.first()))
-                .thenReturn(Optional.of(
-                    Assignment.builder()
-                        .round(mock(Round.class))
-                        .build()
+                .thenReturn(Optional.of(Assignment.builder()
+                    .round(mock(Round.class))
+                    .build()
                 ));
+
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> bookStudyService.voteAssignment(userId, studyId, voteAssignmentCommand))
                 .isInstanceOf(BusinessRuleException.class)
@@ -2513,27 +2327,20 @@ class StudyServiceTest {
                 .build();
 
             Round nextRound = mock(Round.class);
-            when(userRepository.findById(userId))
-                .thenReturn(Optional.of(mock(User.class)));
-            when(studyRepository.findById(studyId))
-                .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
-                .thenReturn(true);
 
+            when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+            when(studyRepository.findById(studyId)).thenReturn(Optional.of(mock(Study.class)));
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId)).thenReturn(true);
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
-                LocalDate.class)))
-                .thenReturn(Optional.of(nextRound));
-
+                LocalDate.class))).thenReturn(Optional.of(nextRound));
             when(assignmentRepository.findById(voteAssignmentCommand.first()))
                 .thenReturn(Optional.of(
                     Assignment.builder()
                         .round(nextRound)
                         .build()
                 ));
-
             when(assignmentRepository.findById(voteAssignmentCommand.second()))
-                .thenReturn(Optional.empty()
-                );
+                .thenReturn(Optional.empty());
             /*
              * When & Then
              */
@@ -2558,24 +2365,18 @@ class StudyServiceTest {
                 .build();
 
             Round nextRound = mock(Round.class);
-            when(userRepository.findById(userId))
-                .thenReturn(Optional.of(mock(User.class)));
-            when(studyRepository.findById(studyId))
-                .thenReturn(Optional.of(mock(Study.class)));
-            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId))
-                .thenReturn(true);
 
+            when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+            when(studyRepository.findById(studyId)).thenReturn(Optional.of(mock(Study.class)));
+            when(userStudyRepository.existsByStudyIdAndUserId(studyId, userId)).thenReturn(true);
             when(roundRepository.findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(eq(studyId), any(
-                LocalDate.class)))
-                .thenReturn(Optional.of(nextRound));
-
+                LocalDate.class))).thenReturn(Optional.of(nextRound));
             when(assignmentRepository.findById(voteAssignmentCommand.first()))
                 .thenReturn(Optional.of(
                     Assignment.builder()
                         .round(nextRound)
                         .build()
                 ));
-
             when(assignmentRepository.findById(voteAssignmentCommand.second()))
                 .thenReturn(Optional.of(
                         Assignment.builder()
@@ -2583,10 +2384,10 @@ class StudyServiceTest {
                             .build()
                     )
                 );
+
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> bookStudyService.voteAssignment(userId, studyId, voteAssignmentCommand))
                 .isInstanceOf(BusinessRuleException.class)
@@ -2607,12 +2408,12 @@ class StudyServiceTest {
                 .build();
 
             Round nextRound = mock(Round.class);
-            when(studyRepository.findById(studyId))
-                .thenReturn(Optional.of(mock(Study.class)));
+
+            when(studyRepository.findById(studyId)).thenReturn(Optional.of(mock(Study.class)));
+
             /*
              * When & Then
              */
-
             assertThatThrownBy(
                 () -> bookStudyService.voteAssignment(userId, studyId, voteAssignmentCommand))
                 .isInstanceOf(NotFoundException.class)
@@ -2632,19 +2433,16 @@ class StudyServiceTest {
                 Long userId = 1L;
                 Long studyId = 2L;
 
-                when(studyRepository.findWithLeaderById(studyId))
-                    .thenReturn(Optional.empty());
+                when(studyRepository.findWithLeaderById(studyId)).thenReturn(Optional.empty());
+
                 /*
                  * When & Then
                  */
-
-                assertThatThrownBy(
-                    () -> studyService.startVoting(userId, studyId))
+                assertThatThrownBy(() -> studyService.startVoting(userId, studyId))
                     .isInstanceOf(NotFoundException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
             }
         }
-
     }
 
     @Nested
@@ -2666,8 +2464,7 @@ class StudyServiceTest {
             /*
              * When & Then
              */
-            assertThatThrownBy(
-                () -> studyService.configure(userId, studyId, configureStudyCommand))
+            assertThatThrownBy(() -> studyService.configure(userId, studyId, configureStudyCommand))
                 .isInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.STUDY_NOT_FOUND);
         }

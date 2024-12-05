@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.bombombom.devs.core.exception.DuplicationException;
 import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.user.service.dto.SignupCommand;
 import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.user.model.Role;
@@ -33,6 +34,9 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PointsService pointsService;
+
     @DisplayName("username이 존재하는 경우 회원가입이 실패한다.")
     @Test
     void signup_withExistingUsername_Fail() {
@@ -50,7 +54,6 @@ public class UserServiceTest {
         When & Then
          */
         assertThatThrownBy(() -> userService.addUser(signupCommand))
-
             .isInstanceOf(DuplicationException.class)
             .hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATED_USERNAME);
     }
@@ -61,31 +64,34 @@ public class UserServiceTest {
         /*
         Given
          */
+        final Long points = 10000L;
         User user = User.builder()
+            .id(1L)
             .username("username")
             .password("password")
-            .role(Role.USER)
             .introduce("introduce")
             .image("image")
+            .baekjoon("baekjoon")
             .reliability(0)
-            .money(0)
+            .role(Role.USER)
             .build();
+        UserProfileResult userProfileResult = UserProfileResult.builder()
+            .id(1L)
+            .username("username")
+            .image("image")
+            .introduce("introduce")
+            .baekjoonId("baekjoon")
+            .reliability(0)
+            .points(points)
+            .role(Role.USER)
+            .build();
+
         when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        when(pointsService.getCurrentPoints(1L)).thenReturn(points);
 
         /*
-        When
+        When & Then
          */
-        UserProfileResult result = userService.findById(user.getId());
-
-        /*
-        Then
-         */
-        assertThat(result.id()).isEqualTo(user.getId());
-        assertThat(result.username()).isEqualTo(user.getUsername());
-        assertThat(result.role()).isEqualTo(user.getRole());
-        assertThat(result.introduce()).isEqualTo(user.getIntroduce());
-        assertThat(result.image()).isEqualTo(user.getImage());
-        assertThat(result.reliability()).isEqualTo(user.getReliability());
-        assertThat(result.money()).isEqualTo(user.getMoney());
+        assertThat(userService.findById(user.getId())).isEqualTo(userProfileResult);
     }
 }

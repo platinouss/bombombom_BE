@@ -103,8 +103,8 @@ public abstract class Study extends BaseEntity {
     public abstract StudyType getStudyType();
 
 
-    public Integer calculateDeposit() {
-        return penalty * weeks;
+    public Long calculateDeposit() {
+        return (long) penalty * weeks;
     }
 
     public void admit(User user) {

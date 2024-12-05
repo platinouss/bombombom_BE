@@ -2,9 +2,9 @@ package com.bombombom.devs.external.study.controller.dto.response;
 
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.result.AssignmentResult;
+import com.bombombom.devs.external.study.service.dto.result.MemberInfoResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyProgressResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.BookStudyProgress;
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +22,6 @@ public record BookStudyProgressResponse(
     Map<Long, MemberAndSubmissionInfo> users
 ) implements StudyProgressResponse {
 
-
     public record MemberAndSubmissionInfo(
         String username,
         Long assignmentId,
@@ -30,14 +29,12 @@ public record BookStudyProgressResponse(
         List<Long> problemIds
     ) {
 
-
-        public static MemberAndSubmissionInfo fromResult(UserProfileResult member,
+        public static MemberAndSubmissionInfo fromResult(MemberInfoResult member,
             Long assignmentId, List<Long> videoIds, List<Long> problemIds) {
             return new MemberAndSubmissionInfo(member.username(), assignmentId, videoIds,
                 problemIds);
         }
     }
-
 
     public static BookStudyProgressResponse fromResult(StudyProgressResult studyProgress) {
         BookStudyProgress bookStudyProgress = (BookStudyProgress) studyProgress.studyProgress();

@@ -2,7 +2,6 @@ package com.bombombom.devs.external.study.service.dto.result;
 
 import com.bombombom.devs.core.Spread;
 import com.bombombom.devs.core.enums.AlgoTag;
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmStudy;
@@ -18,7 +17,7 @@ public record AlgorithmStudyResult(
     Integer capacity,
     Integer headCount,
     Integer weeks,
-    UserProfileResult leader,
+    MemberInfoResult leader,
     LocalDate startDate,
     Integer reliabilityLimit,
     Integer penalty,
@@ -40,7 +39,7 @@ public record AlgorithmStudyResult(
             .startDate(algorithmStudy.getStartDate())
             .reliabilityLimit(algorithmStudy.getReliabilityLimit())
             .penalty(algorithmStudy.getPenalty())
-            .leader(UserProfileResult.fromEntity(algorithmStudy.getLeader()))
+            .leader(MemberInfoResult.fromEntity(algorithmStudy.getLeader()))
             .difficultySpreadMap(algorithmStudy.getDifficultySpreadMap())
             .state(algorithmStudy.getState())
             .difficultyGap(algorithmStudy.getDifficultyGap())

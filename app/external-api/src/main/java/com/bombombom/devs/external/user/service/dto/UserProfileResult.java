@@ -12,11 +12,11 @@ public record UserProfileResult(
     String introduce,
     String baekjoonId,
     Integer reliability,
-    Integer money,
+    Long points,
     Role role
 ) {
 
-    public static UserProfileResult fromEntity(User user) {
+    public static UserProfileResult fromEntity(User user, Long currentPoints) {
         return UserProfileResult.builder()
             .id(user.getId())
             .username(user.getUsername())
@@ -25,7 +25,7 @@ public record UserProfileResult(
             .introduce(user.getIntroduce())
             .baekjoonId(user.getBaekjoon())
             .reliability(user.getReliability())
-            .money(user.getMoney())
+            .points(currentPoints)
             .build();
     }
 }

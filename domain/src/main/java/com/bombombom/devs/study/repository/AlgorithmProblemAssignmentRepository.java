@@ -17,6 +17,8 @@ public interface AlgorithmProblemAssignmentRepository
         + "WHERE a.round.id = :roundId")
     List<AlgorithmProblemAssignment> findAssignmentWithProblemByRoundId(Long roundId);
 
+    List<AlgorithmProblemAssignment> findByRound(Round round);
+
     @Modifying
     void deleteByRound(Round round);
 }

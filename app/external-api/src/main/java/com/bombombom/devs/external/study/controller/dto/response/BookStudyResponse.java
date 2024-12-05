@@ -2,7 +2,6 @@ package com.bombombom.devs.external.study.controller.dto.response;
 
 import com.bombombom.devs.external.book.controller.dto.BookInfo;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
-import com.bombombom.devs.external.user.controller.dto.UserProfileResponse;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.enums.VotingProcess;
@@ -23,23 +22,22 @@ public record BookStudyResponse(
     Integer reliabilityLimit,
     Integer penalty,
     StudyStatus state,
-    UserProfileResponse leader,
+    MemberInfoResponse leader,
     StudyType studyType,
     BookInfo bookInfo,
     VotingProcess votingProcess,
-    Boolean duplicated)
-    implements StudyResponse {
+    Boolean duplicated
+) implements StudyResponse {
 
     public static BookStudyResponse fromResult(BookStudyResult res) {
-
-        return builder()
+        return BookStudyResponse.builder()
             .id(res.id())
             .name(res.name())
             .introduce(res.introduce())
             .capacity(res.capacity())
             .headCount(res.headCount())
             .weeks(res.weeks())
-            .leader(UserProfileResponse.fromResult(res.leader()))
+            .leader(MemberInfoResponse.fromResult(res.leader()))
             .startDate(res.startDate())
             .reliabilityLimit(res.reliabilityLimit())
             .penalty(res.penalty())
@@ -49,7 +47,6 @@ public record BookStudyResponse(
             .votingProcess(res.votingProcess())
             .duplicated(res.duplicated())
             .build();
-
     }
 
 }

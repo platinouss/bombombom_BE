@@ -1,6 +1,7 @@
 package com.bombombom.devs.study.repository;
 
 import com.bombombom.devs.study.model.Round;
+import com.bombombom.devs.study.model.Study;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +25,6 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
 
     Optional<Round> findTop1RoundByStudyIdAndStartDateAfterOrderByIdx(Long studyId, LocalDate date);
 
-
     @Query("SELECT r FROM Round r "
         + "WHERE r.study.id = :studyId AND ("
         + " (r.startDate > :currentDate AND r.idx = 0) OR "
@@ -37,5 +37,7 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
     @Query("SELECT r FROM Round r "
         + "WHERE r.study.id = :studyId AND r.idx = :idx")
     Optional<Round> findRoundByStudyAndIdx(Long studyId, Integer idx);
+
+    Optional<Round> findByStudyAndIdx(Study study, Integer idx);
 }
 

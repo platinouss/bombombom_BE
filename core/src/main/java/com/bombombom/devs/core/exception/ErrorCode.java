@@ -42,6 +42,7 @@ public enum ErrorCode {
     NEXT_ROUND_NOT_FOUND(NOT_FOUND, 40408, "다음 회차가 존재하지 않습니다."),
     ASYMMETRIC_KEY_NOT_FOUND(NOT_FOUND, 40409, "해당 version의 비대칭 키가 존재하지 않습니다."),
     UPLOADED_VIDEO_NOT_FOUND(NOT_FOUND, 40410, "업로드된 해설 영상이 존재하지 않습니다."),
+    COUPON_NOT_FOUND(NOT_FOUND, 40411, "존재하지 않는 쿠폰이거나 발급받을 수 없는 쿠폰입니다."),
 
     // NOT_ACCEPTABLE 406
     STUDY_STARTED(NOT_ACCEPTABLE, 40600, "스터디가 시작하였습니다."),
@@ -62,6 +63,9 @@ public enum ErrorCode {
     INVALID_VOTE_FOR_UNKNOWN_ASSIGNMENT(NOT_ACCEPTABLE, 40614, "투표한 과제가 유효하지 않습니다."),
     MULTIPLE_VOTE(NOT_ACCEPTABLE, 40615, "다중 투표가 존재합니다."),
     INVALID_VOTE_BY_NOT_MEMBER(NOT_ACCEPTABLE, 40616, "투표한 유저가 멤버가 아닙니다."),
+    COUPON_CONDITION_NOT_FULFILLED(NOT_ACCEPTABLE, 40617, "쿠폰 발급 조건이 충족되지 않았습니다."),
+    COUPON_ALREADY_ISSUED(NOT_ACCEPTABLE, 40618, "이미 발급받은 쿠폰입니다."),
+    COUPON_ALREADY_USED_OR_EXPIRED(NOT_ACCEPTABLE, 40619, "이미 사용되거나 만료된 쿠폰입니다."),
 
     // CONFLICT 409
     DUPLICATED_USERNAME(CONFLICT, 40900, "이미 사용중인 유저 이름입니다."),

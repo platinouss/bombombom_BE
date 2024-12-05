@@ -11,6 +11,7 @@ import com.bombombom.devs.core.exception.NotFoundException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.core.util.Util;
 import com.bombombom.devs.dto.IsUploadCompleteRequest;
+import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.study.controller.dto.request.EditAssignmentRequest.AssignmentInfo;
 import com.bombombom.devs.external.study.service.dto.command.AddAssignmentCommand;
 import com.bombombom.devs.external.study.service.dto.command.DeleteAssignmentCommand;
@@ -61,6 +62,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookStudyService implements StudyProgressService {
 
     private final Clock clock;
+    private final PointsService pointsService;
     private final StudyRepository studyRepository;
     private final BookRepository bookRepository;
     private final RoundRepository roundRepository;
@@ -259,6 +261,9 @@ public class BookStudyService implements StudyProgressService {
 
     @Override
     public void startRound(Study study, Round round) {
+        if (round.getIdx() > 0) {
+            updateDepositAndReliability(study, round.getIdx() - 1);
+        }
 
         List<Assignment> assignments = assignmentRepository.findAllByRound(round);
         if (assignments.isEmpty()) {
@@ -281,6 +286,28 @@ public class BookStudyService implements StudyProgressService {
         bookStudy.endVote();
         userAssignmentRepository.saveAll(userAssignments);
 
+    }
+
+    @Override
+    public void updateDepositAndReliability(Study study, int prevRoundIdx) {
+        Round round = roundRepository.findByStudyAndIdx(study, prevRoundIdx)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.ROUND_NOT_FOUND));
+        List<Assignment> assignments = assignmentRepository.findAllByRound(round);
+        for (Assignment assignment : assignments) {
+            UserAssignment userAssignment = userAssignmentRepository.findWithUserByAssignment(
+                    assignment)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+            User assignedUser = userAssignment.getUser();
+            if (videoRepository.findByAssignmentAndUploader(assignment, assignedUser).isEmpty()) {
+                UserStudy userStudy = userStudyRepository.findByStudyAndUserForUpdate(study,
+                        assignedUser)
+                    .orElseThrow(() -> new ForbiddenException(ErrorCode.ONLY_MEMBER_ALLOWED));
+                userStudy.decreaseSecurityDeposit(study.getPenalty());
+                assignedUser.decrementReliability();
+            } else {
+                assignedUser.incrementReliability();
+            }
+        }
     }
 
 
@@ -321,7 +348,7 @@ public class BookStudyService implements StudyProgressService {
             startRound(bookStudy, bookStudy.getFirstRound());
         }
 
-        user.payMoney(bookStudy.calculateDeposit());
+        pointsService.payStudyDeposit(bookStudy, user);
         return BookStudyResult.fromEntity(bookStudy);
     }
 

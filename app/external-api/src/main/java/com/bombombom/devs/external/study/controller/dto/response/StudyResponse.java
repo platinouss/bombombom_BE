@@ -3,7 +3,6 @@ package com.bombombom.devs.external.study.controller.dto.response;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.BookStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.StudyResult;
-import com.bombombom.devs.external.user.controller.dto.UserProfileResponse;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import java.time.LocalDate;
@@ -23,7 +22,7 @@ public interface StudyResponse {
 
     Integer weeks();
 
-    UserProfileResponse leader();
+    MemberInfoResponse leader();
 
     LocalDate startDate();
 

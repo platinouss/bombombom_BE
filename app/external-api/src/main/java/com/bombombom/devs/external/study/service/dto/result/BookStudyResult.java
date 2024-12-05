@@ -2,7 +2,6 @@ package com.bombombom.devs.external.study.service.dto.result;
 
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult;
 import com.bombombom.devs.external.book.service.dto.SearchBooksResult.BookResult;
-import com.bombombom.devs.external.user.service.dto.UserProfileResult;
 import com.bombombom.devs.study.enums.StudyStatus;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.enums.VotingProcess;
@@ -22,7 +21,7 @@ public record BookStudyResult(
     Integer reliabilityLimit,
     Integer penalty,
     StudyStatus state,
-    UserProfileResult leader,
+    MemberInfoResult leader,
     StudyType studyType,
     BookResult bookResult,
     VotingProcess votingProcess,
@@ -30,7 +29,6 @@ public record BookStudyResult(
 ) implements StudyResult {
 
     public static BookStudyResult fromEntity(BookStudy bookStudy) {
-
         return BookStudyResult.builder()
             .id(bookStudy.getId())
             .name(bookStudy.getName())
@@ -42,7 +40,7 @@ public record BookStudyResult(
             .reliabilityLimit(bookStudy.getReliabilityLimit())
             .penalty(bookStudy.getPenalty())
             .state(bookStudy.getState())
-            .leader(UserProfileResult.fromEntity(bookStudy.getLeader()))
+            .leader(MemberInfoResult.fromEntity(bookStudy.getLeader()))
             .bookResult(SearchBooksResult.fromBook(bookStudy.getBook()))
             .studyType(bookStudy.getStudyType())
             .votingProcess(bookStudy.getVotingProcess())

@@ -1,8 +1,8 @@
 package com.bombombom.devs.user.model;
 
 import com.bombombom.devs.common.BaseEntity;
-import com.bombombom.devs.core.exception.BusinessRuleException;
-import com.bombombom.devs.core.exception.ErrorCode;
+import com.bombombom.devs.points.model.PointsHistory;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,7 +10,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -42,15 +46,21 @@ public class User extends BaseEntity {
     private String baekjoon;
 
     private Integer reliability;
-    private Integer money;
 
-    public void payMoney(Integer money) {
-        if (money < 0) {
-            throw new BusinessRuleException(ErrorCode.NEGATIVE_AMOUNT);
-        }
-        if (this.money < money) {
-            throw new BusinessRuleException(ErrorCode.NOT_ENOUGH_MONEY);
-        }
-        this.money -= money;
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
+    private List<PointsHistory> pointHistories = new ArrayList<>();
+
+    public void initPointHistory() {
+        PointsHistory pointsHistory = PointsHistory.init(this);
+        pointHistories.add(pointsHistory);
+    }
+
+    public void incrementReliability() {
+        reliability += 1;
+    }
+
+    public void decrementReliability() {
+        reliability -= 2;
     }
 }
