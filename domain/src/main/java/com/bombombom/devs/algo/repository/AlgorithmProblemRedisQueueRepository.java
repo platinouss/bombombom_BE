@@ -6,11 +6,11 @@ import static com.bombombom.devs.algo.constant.AlgorithmProblemRedisConstant.ALG
 import static com.bombombom.devs.algo.constant.AlgorithmProblemRedisConstant.getAlgorithmAssignmentSolvedStatusUpdateKey;
 
 import com.bombombom.devs.algo.enums.AlgorithmProblemRequestType;
-import com.bombombom.devs.algo.model.vo.AlgorithmProblemQueueMessage;
+import com.bombombom.devs.algo.model.vo.AlgorithmAssignmentQueueMessage;
 import com.bombombom.devs.algo.model.vo.AlgorithmTaskUpdateStatus;
-import com.bombombom.devs.algo.model.vo.AssignAlgorithmProblem;
+import com.bombombom.devs.algo.model.vo.AssignAlgorithmProblemMessage;
 import com.bombombom.devs.algo.model.vo.PendingMessageInfo;
-import com.bombombom.devs.algo.model.vo.UpdateAlgorithmTaskStatus;
+import com.bombombom.devs.algo.model.vo.UpdateAlgorithmTaskStatusMessage;
 import com.bombombom.devs.core.util.Clock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -88,26 +87,25 @@ public class AlgorithmProblemRedisQueueRepository {
         }
     }
 
-    public void addMessage(AssignAlgorithmProblem assignAlgorithmProblem)
+    public void addMessage(AssignAlgorithmProblemMessage assignAlgorithmProblemMessage)
         throws JsonProcessingException {
         Map<String, String> message = new HashMap<>();
         message.put("type", AlgorithmProblemRequestType.ASSIGN.name());
-        message.put("data", objectMapper.writeValueAsString(assignAlgorithmProblem));
+        message.put("message", objectMapper.writeValueAsString(assignAlgorithmProblemMessage));
         streamOperations.add(
             StreamRecords.mapBacked(message).withStreamKey(ALGORITHM_STUDY_ASSIGNMENT_QUEUE_KEY));
     }
 
-    public void addMessage(Long studyId, Long userId, String baekjoonId, Set<Integer> problemRefIds)
+    public void addMessage(UpdateAlgorithmTaskStatusMessage updateAlgorithmTaskStatusMessage)
         throws JsonProcessingException {
         Map<String, String> message = new HashMap<>();
         message.put("type", AlgorithmProblemRequestType.UPDATE.name());
-        message.put("data", objectMapper.writeValueAsString(
-            UpdateAlgorithmTaskStatus.of(studyId, userId, baekjoonId, problemRefIds)));
+        message.put("message", objectMapper.writeValueAsString(updateAlgorithmTaskStatusMessage));
         streamOperations.add(
             StreamRecords.mapBacked(message).withStreamKey(ALGORITHM_STUDY_ASSIGNMENT_QUEUE_KEY));
     }
 
-    public AlgorithmProblemQueueMessage readMessage() {
+    public AlgorithmAssignmentQueueMessage readMessage() {
         StreamReadOptions streamReadOptions = StreamReadOptions.empty().count(1);
         StreamOffset<String> streamOffset = StreamOffset.create(
             ALGORITHM_STUDY_ASSIGNMENT_QUEUE_KEY, ReadOffset.lastConsumed());
@@ -117,7 +115,7 @@ public class AlgorithmProblemRedisQueueRepository {
         if (messages == null || messages.isEmpty()) {
             return null;
         }
-        return AlgorithmProblemQueueMessage.fromResult(messages.getFirst());
+        return AlgorithmAssignmentQueueMessage.fromResult(messages.getFirst());
     }
 
     public PendingMessageInfo getOldestPendingMessageInfo() {
@@ -130,11 +128,11 @@ public class AlgorithmProblemRedisQueueRepository {
         return PendingMessageInfo.fromResult(pendingMessages.get(0));
     }
 
-    public AlgorithmProblemQueueMessage getOldestPendingMessage(PendingMessageInfo messageInfo) {
-        String messageId = messageInfo.recordId();
+    public AlgorithmAssignmentQueueMessage getOldestPendingMessage(PendingMessageInfo messageInfo) {
+        String recordId = messageInfo.recordId();
         MapRecord<String, String, String> message = Objects.requireNonNull(streamOperations.range(
-            ALGORITHM_STUDY_ASSIGNMENT_QUEUE_KEY, Range.closed(messageId, messageId))).getFirst();
-        return AlgorithmProblemQueueMessage.fromResult(message);
+            ALGORITHM_STUDY_ASSIGNMENT_QUEUE_KEY, Range.closed(recordId, recordId))).getFirst();
+        return AlgorithmAssignmentQueueMessage.fromResult(message);
     }
 
     public void ackMessage(String recordId) {

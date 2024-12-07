@@ -11,15 +11,22 @@ import com.bombombom.devs.core.exception.BusinessRuleException;
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.ForbiddenException;
 import com.bombombom.devs.core.exception.NotFoundException;
+import com.bombombom.devs.core.exception.RateLimitException;
 import com.bombombom.devs.core.util.Clock;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemQueueService;
 import com.bombombom.devs.external.algo.service.AlgorithmProblemService;
+import com.bombombom.devs.external.algo.service.dto.command.AddSolvedProblemHistoriesCommand;
+import com.bombombom.devs.external.algo.service.dto.command.AssignAlgorithmProblemCommand;
 import com.bombombom.devs.external.algo.service.dto.command.FeedbackAlgorithmProblemCommand;
 import com.bombombom.devs.external.points.service.PointsService;
 import com.bombombom.devs.external.study.service.dto.command.CheckAlgorithmProblemSolvedCommand;
 import com.bombombom.devs.external.study.service.dto.command.RegisterAlgorithmStudyCommand;
 import com.bombombom.devs.external.study.service.dto.result.AlgorithmStudyResult;
 import com.bombombom.devs.external.study.service.dto.result.progress.AlgorithmStudyProgress;
+import com.bombombom.devs.job.AlgorithmProblemConverter;
+import com.bombombom.devs.solvedac.SolvedacClient;
+import com.bombombom.devs.solvedac.dto.ProblemListResponse;
+import com.bombombom.devs.solvedac.dto.ProblemResponse;
 import com.bombombom.devs.study.enums.StudyType;
 import com.bombombom.devs.study.model.AlgorithmProblemAssignment;
 import com.bombombom.devs.study.model.AlgorithmProblemSolvedHistory;
@@ -35,8 +42,12 @@ import com.bombombom.devs.study.repository.StudyRepository;
 import com.bombombom.devs.study.repository.UserStudyRepository;
 import com.bombombom.devs.user.model.User;
 import com.bombombom.devs.user.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +57,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class AlgorithmStudyService implements StudyProgressService {
 
     private final Clock clock;
+    private final SolvedacClient solvedacClient;
+    private final AlgorithmProblemConverter algorithmProblemConverter;
     private final PointsService pointsService;
+    private final AlgorithmProblemQueueService algorithmProblemQueueService;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
     private final RoundRepository roundRepository;
@@ -56,7 +70,6 @@ public class AlgorithmStudyService implements StudyProgressService {
     private final AlgorithmProblemSolvedHistoryRepository algoSolvedHistoryRepository;
     private final AlgorithmProblemFeedbackRepository algoFeedbackRepository;
     private final AlgorithmProblemAssignmentRepository algorithmProblemAssignmentRepository;
-    private final AlgorithmProblemQueueService algorithmProblemQueueService;
     private final AlgorithmProblemSolvedHistoryRepository algorithmProblemSolvedHistoryRepository;
     private final AlgorithmStudyDifficultyRepository algorithmStudyDifficultyRepository;
     private final AlgorithmProblemService algorithmProblemService;
@@ -68,8 +81,7 @@ public class AlgorithmStudyService implements StudyProgressService {
     }
 
     @Transactional
-    public AlgorithmStudyResult createStudy(
-        Long userId,
+    public AlgorithmStudyResult createStudy(Long userId,
         RegisterAlgorithmStudyCommand registerAlgorithmStudyCommand) {
 
         int difficultyGap = registerAlgorithmStudyCommand.difficultyEnd()
@@ -131,8 +143,13 @@ public class AlgorithmStudyService implements StudyProgressService {
         AlgorithmStudy algorithmStudy = (AlgorithmStudy) study;
         Map<AlgoTag, Integer> problemCountForEachTag = algorithmProblemService.getProblemCountForEachTag(
             algorithmStudy.getProblemCount());
-        algorithmProblemQueueService.addAssignProblemRequest(study, algorithmStudy, round,
+        AssignAlgorithmProblemCommand command = AssignAlgorithmProblemCommand.of(study, round,
             problemCountForEachTag);
+        try {
+            assignAlgorithmProblems(command);
+        } catch (RateLimitException e) {
+            algorithmProblemQueueService.addAssignProblemRequest(command.toVo());
+        }
     }
 
     @Override
@@ -160,21 +177,38 @@ public class AlgorithmStudyService implements StudyProgressService {
     }
 
     @Transactional
+    public void assignAlgorithmProblems(AssignAlgorithmProblemCommand command) {
+        ProblemListResponse problemListResponse = solvedacClient.getUnSolvedProblems(
+            command.baekjoonIds(), command.difficultySpread(),
+            command.problemCountForEachTag());
+        List<AlgorithmProblem> problems = algorithmProblemConverter.convert(
+            problemListResponse);
+        List<AlgorithmProblem> foundOrSavedProblems = algorithmProblemService.findProblemsThenSaveWhenNotExist(
+            problems);
+        List<AlgorithmProblemAssignment> assignments = new ArrayList<>();
+        for (AlgorithmProblem problem : foundOrSavedProblems) {
+            assignments.add(AlgorithmProblemAssignment.of(command.round(), problem));
+        }
+        algorithmProblemAssignmentRepository.saveAll(assignments);
+    }
+
+    @Transactional
     public void updateAlgorithmTaskStatus(CheckAlgorithmProblemSolvedCommand command) {
-        User user = userRepository.findById(command.userId())
-            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-        if (user.getBaekjoon() == null || user.getBaekjoon().isBlank()) {
-            throw new NotFoundException(ErrorCode.BAEKJOON_ID_NOT_FOUND);
+        if (algorithmProblemQueueService.hasRecentlyUpdatedTaskStatus(command.studyId(),
+            command.userId())) {
+            throw new BusinessRuleException(ErrorCode.ALGORITHM_TASK_STATUS_RECENTLY_UPDATED);
         }
-        if (command.problemIds().isEmpty()) {
-            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
+        algorithmProblemRedisQueueRepository.setTaskUpdateInProgress(command.studyId(),
+            command.userId());
+        AddSolvedProblemHistoriesCommand addSolvedProblemHistoriesCommand = AddSolvedProblemHistoriesCommand.of(
+            command);
+        try {
+            addSolvedProblemHistories(addSolvedProblemHistoriesCommand);
+            algorithmProblemRedisQueueRepository.setTaskUpdateCompleted(command.studyId(),
+                command.userId());
+        } catch (RateLimitException e) {
+            algorithmProblemQueueService.addUpdateTaskStatusRequest(command.toVo());
         }
-        List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemIds());
-        if (problems.size() != command.problemIds().size()) {
-            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
-        }
-        algorithmProblemQueueService.addUpdateTaskStatusRequest(user, problems,
-            command.studyId());
     }
 
     @Transactional
@@ -241,6 +275,39 @@ public class AlgorithmStudyService implements StudyProgressService {
             problem.addFeedback(newFeedback);
             algoProblemRepository.save(problem);
         }
+    }
+
+    @Transactional
+    public void addSolvedProblemHistories(AddSolvedProblemHistoriesCommand command) {
+        User user = userRepository.findById(command.userId())
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+        if (user.getBaekjoon() == null || user.getBaekjoon().isBlank()) {
+            throw new NotFoundException(ErrorCode.BAEKJOON_ID_NOT_FOUND);
+        }
+        List<AlgorithmProblem> problems = algoProblemRepository.findAllById(command.problemIds());
+        if (problems.size() != command.problemIds().size()) {
+            throw new NotFoundException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+        List<AlgorithmProblem> solvedProblems = getSolvedProblems(user.getBaekjoon(), problems);
+        Set<Long> alreadySolvedProblemIds = algorithmProblemSolvedHistoryRepository.findByUserIdAndProblemIds(
+                user.getId(), solvedProblems.stream().map(AlgorithmProblem::getId).toList())
+            .stream().map(history -> history.getProblem().getId()).collect(Collectors.toSet());
+        List<AlgorithmProblemSolvedHistory> solvedProblemHistories = solvedProblems.stream()
+            .filter(problem -> !alreadySolvedProblemIds.contains(problem.getId()))
+            .map(problem -> AlgorithmProblemSolvedHistory.createAlgorithmProblemSolvedHistory(
+                user, problem, LocalDateTime.now())).toList();
+        algorithmProblemSolvedHistoryRepository.saveAll(solvedProblemHistories);
+    }
+
+    private List<AlgorithmProblem> getSolvedProblems(String baekjoonId,
+        List<AlgorithmProblem> problems) {
+        Set<Integer> problemRefIds = problems.stream().map(AlgorithmProblem::getRefId)
+            .collect(Collectors.toSet());
+        ProblemListResponse solvedProblemsResult = solvedacClient.checkProblemSolved(
+            baekjoonId, problemRefIds);
+        List<Integer> solvedProblemRefIds = solvedProblemsResult.items().stream()
+            .map(ProblemResponse::problemId).toList();
+        return algoProblemRepository.findAllByRefId(solvedProblemRefIds);
     }
 
     private void applyFeedback(AlgorithmStudy study, AlgorithmProblemFeedback feedback) {

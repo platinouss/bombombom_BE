@@ -1,5 +1,7 @@
 package com.bombombom.devs.ratelimit.config;
 
+import static com.bombombom.devs.job.AlgorithmStudyAssignmentJob.ALGORITHM_ASSIGNMENT_TRIGGER_KEY;
+
 import com.bombombom.devs.algo.repository.AlgorithmAssignmentRateLimitRepository;
 import com.bombombom.devs.core.enums.AlgoTag;
 import com.bombombom.devs.core.exception.RateLimitException;
@@ -10,15 +12,11 @@ import io.github.bucket4j.BucketConfiguration;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.quartz.TriggerKey;
 import org.springframework.stereotype.Component;
 
 /**
@@ -58,18 +56,9 @@ public class SolvedacApiRateLimitConfig {
      * {@link com.bombombom.devs.job.AlgorithmStudyAssignmentJob}을 수행하는 스케줄러의 동작이 일시정지된다.
      */
     @Before("execution(* com.bombombom.devs.solvedac.SolvedacClient.checkProblemSolved(..))")
-    public void beforeJobExecution() throws SchedulerException {
+    public void beforeJobExecution() {
         if (!apiRateLimiter.tryConsume(SOLVEDAC_BUCKET_KEY, createBucketConfiguration())) {
-            TriggerKey triggerKey = algorithmStudyAssignmentJob.getTriggerKey();
-            quartzJobScheduler.removeTrigger(triggerKey);
-            JobDetail jobDetail = algorithmStudyAssignmentJob.getJobDetail();
-            try {
-                Trigger trigger = algorithmStudyAssignmentJob.buildJobTriggerAtTime(
-                    getTaskStatusUpdateDelayInSeconds());
-                quartzJobScheduler.setScheduleJob(jobDetail, trigger);
-            } catch (NoSuchElementException e) {
-                log.info(String.valueOf(e));
-            }
+            triggerQueueScheduler();
             throw new RateLimitException(SOLVEDAC_BUCKET_KEY);
         }
     }
@@ -86,6 +75,7 @@ public class SolvedacApiRateLimitConfig {
         int algorithmTagCount = problemCountForEachTag.keySet().size();
         if (!apiRateLimiter.tryConsume(SOLVEDAC_BUCKET_KEY, createBucketConfiguration(),
             algorithmTagCount)) {
+            triggerQueueScheduler();
             throw new RateLimitException(SOLVEDAC_BUCKET_KEY);
         }
     }
@@ -102,5 +92,18 @@ public class SolvedacApiRateLimitConfig {
             .getSeconds();
         long durationSeconds = secondsDifference % REFILL_DURATION_OF_SECONDS;
         return REFILL_DURATION_OF_SECONDS - (int) durationSeconds + 1;
+    }
+
+    private void triggerQueueScheduler() {
+        try {
+            if (quartzJobScheduler.isTriggerAlreadyInitialized(ALGORITHM_ASSIGNMENT_TRIGGER_KEY)) {
+                return;
+            }
+            Trigger initialTrigger = algorithmStudyAssignmentJob.buildJobTrigger(
+                getTaskStatusUpdateDelayInSeconds());
+            quartzJobScheduler.rescheduleJob(ALGORITHM_ASSIGNMENT_TRIGGER_KEY, initialTrigger);
+        } catch (Exception e) {
+            log.info(String.valueOf(e));
+        }
     }
 }

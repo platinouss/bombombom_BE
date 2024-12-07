@@ -29,6 +29,8 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -125,10 +127,10 @@ public abstract class Study extends BaseEntity {
         userStudies.add(userStudy);
     }
 
-    public List<String> getBaekjoonIds() {
+    public Set<String> getBaekjoonIds() {
         return userStudies.stream()
             .map(userStudy -> userStudy.getUser().getBaekjoon())
-            .toList();
+            .collect(Collectors.toSet());
     }
 
     public void createRounds() {
