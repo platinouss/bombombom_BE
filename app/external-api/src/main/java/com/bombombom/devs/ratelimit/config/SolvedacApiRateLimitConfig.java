@@ -25,13 +25,18 @@ import org.springframework.stereotype.Component;
  * 처리될 수 있기 때문)</p>
  * <p>
  * {@link com.bombombom.devs.solvedac.SolvedacClient SolvedacClient(외부 API 호출 client)}를 통해 외부 API를
- * 호출하여 알고리즘 과제를 할당하거나 과제 해결 여부를 판단하게 되는데, 이때 Aspect가 적용되어, Token 수가 요청 횟수 이상일 때만 외부 API를 호출할 수
- * 있다.</p>
+ * 호출하여 알고리즘 과제를 할당하거나 과제 해결 여부를 판단하게 되는데, 이때 Aspect가 적용되어, Token 수가 요청 횟수 이상일 때만 외부 API를 호출할 수 있다.
+ * 만약 Token 수가 부족하다면, 추후 해당 요청을 처리하기 위해 대기열 큐를 확인하는 스케줄러를 재등록하고(Token Bucket의 Token이 갱신되는 시점에 실행),
+ * RateLimitException을 던진다.
+ * </p>
  *
  * @see SolvedacApiRateLimitConfig#beforeJobExecution()
  * @see SolvedacApiRateLimitConfig#beforeJobExecution(Map)
+ * @see SolvedacApiRateLimitConfig#triggerQueueScheduler()
  * @see <a href="https://github.com/Team-BomBomBom/Server/pull/51">Feat: #BBB-120 알고리즘 과제 할당 및 해결 여부
  * 요청에 Rate Limit과 대기열 시스템 적용</a>
+ * @see <a href="https://github.com/Team-BomBomBom/Server/pull/78">Refactor: #BBB-162 호출 초과 시점에만 대기열
+ * 큐에 알고리즘 과제 관련 요청 파라미터 추가</a>
  */
 
 @Slf4j
@@ -52,8 +57,8 @@ public class SolvedacApiRateLimitConfig {
 
     /**
      * 특정 유저의 알고리즘 과제 해결 여부를 갱신하기 위해, 외부 API(solved.ac API)를 호출하기 전 수행된다. Bucket에 Token이 1개 이상 존재하는
-     * 경우 호출할 수 있고, Token이 존재하지 않는 경우에는 Token이 리필되기 전까지
-     * {@link com.bombombom.devs.job.AlgorithmStudyAssignmentJob}을 수행하는 스케줄러의 동작이 일시정지된다.
+     * 경우 호출할 수 있다. Token을 소모할 수 없는 경우에는 {@link SolvedacApiRateLimitConfig#triggerQueueScheduler()}를
+     * 호출하여 스케줄러를 재등록하고, RateLimitException을 던진다.
      */
     @Before("execution(* com.bombombom.devs.solvedac.SolvedacClient.checkProblemSolved(..))")
     public void beforeJobExecution() {
@@ -65,7 +70,9 @@ public class SolvedacApiRateLimitConfig {
 
     /**
      * 특정 알고리즘 스터디의 과제를 할당하기 위해, 외부 API(solved.ac API)를 호출하기 전 수행된다. Bucket에 Token이
-     * {@code algorithmTagCount}개 이상 존재하는 경우 호출할 수 있다.
+     * {@code algorithmTagCount}개 이상 존재하는 경우 호출할 수 있다. Token을 소모할 수 없는 경우에는
+     * {@link SolvedacApiRateLimitConfig#triggerQueueScheduler()}를 호출하여 스케줄러를 재등록하고,
+     * RateLimitException을 던진다.
      *
      * @param problemCountForEachTag 알고리즘 분류와 해당 문제 개수를 매핑한 Map 객체
      */
@@ -94,6 +101,13 @@ public class SolvedacApiRateLimitConfig {
         return REFILL_DURATION_OF_SECONDS - (int) durationSeconds + 1;
     }
 
+    /**
+     * 외부 API 호출 초과 시점에 호출되는 메서드로, 대기열 큐에 존재하는 알고리즘 과제 관련 요청을 처리하기 위한 스케줄러를 등록하는 역할을 한다.
+     * <p>
+     * 해당 메서드는 호출 초과 시점에 항상 호출되기 때문에 이미 스케줄러가 재등록되었는지 확인한다. 이후
+     * {@link com.bombombom.devs.job.AlgorithmStudyAssignmentJob}을 수행하는 스케줄러를 등록하게 되는데, Token
+     * Bucket의 Token이 갱신 되는 시점에 동작하도록 구성한다.</p>
+     */
     private void triggerQueueScheduler() {
         try {
             if (quartzJobScheduler.isTriggerAlreadyInitialized(ALGORITHM_ASSIGNMENT_TRIGGER_KEY)) {

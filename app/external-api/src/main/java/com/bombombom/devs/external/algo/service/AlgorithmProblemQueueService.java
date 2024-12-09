@@ -9,43 +9,34 @@ import com.bombombom.devs.algo.repository.AlgorithmProblemRedisQueueRepository;
 import com.bombombom.devs.core.exception.ErrorCode;
 import com.bombombom.devs.core.exception.ServerInternalException;
 import com.bombombom.devs.core.util.Clock;
-import com.bombombom.devs.external.algo.service.dto.command.AddSolvedProblemHistoriesCommand;
-import com.bombombom.devs.study.model.AlgorithmStudy;
-import com.bombombom.devs.study.model.Round;
-import com.bombombom.devs.study.model.Study;
-import com.bombombom.devs.user.model.User;
+import com.bombombom.devs.external.algo.service.dto.command.AssignAlgorithmProblemCommand;
+import com.bombombom.devs.external.study.service.AlgorithmStudyService;
+import com.bombombom.devs.external.study.service.dto.command.CheckAlgorithmProblemSolvedCommand;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * '알고리즘 과제 할당 요청'과 '알고리즘 과제 해결 여부 갱신 요청' 시, 각각
- * {@link AlgorithmProblemQueueService#addAssignProblemRequest(Study, AlgorithmStudy, Round, Map)}
- * 메서드와 {@link AlgorithmProblemQueueService#addUpdateTaskStatusRequest(User, List, Long)} 메서드가
- * 호출된다.
+ * '알고리즘 과제 할당 요청'과 '알고리즘 과제 해결 여부 갱신 요청' 처리 시 외부 API 호출 초과 시점이라면, 추후 해당 요청을 처리하기 위해 대기열 큐에 요청 파라미터를
+ * 추가하는 {@link AlgorithmProblemQueueService#addAssignProblemRequest(AssignAlgorithmProblemMessage)}
+ * 메서드와
+ * {@link AlgorithmProblemQueueService#addUpdateTaskStatusRequest(UpdateAlgorithmTaskStatusMessage)}
+ * 메서드가 호출된다.
  * <p>
- * 이 두 가지 요청은, 외부 API(solved.ac API)의 호출 제한 조건(15분에 256회)으로 인해 Token Bucket 알고리즘 기반 Rate Limit이
- * 적용되며, 대기열 큐에 해당 요청을 추가한다.
- * ({@link com.bombombom.devs.ratelimit.config.SolvedacApiRateLimitConfig
- * SolvedacApiRateLimitConfig} 에서 설정된 수치를 바탕으로 Rate Limit이 적용)
- * <p>
- * {@link com.bombombom.devs.job.AlgorithmStudyAssignmentJob AlgorithmStudyAssignmentJob}을 수행하는
- * 스케줄러는 대기열 큐에 담긴 메시지를 순차적으로 읽고, 메시지 타입(과제 할당 또는 갱신 요청)에 따라 각각
- * {@link
- * AlgorithmProblemQueueService#assignProblems(com.bombombom.devs.external.algo.service.dto.command.AssignAlgorithmProblemMessage)}와
- * {@link AlgorithmProblemQueueService#updateTaskStatus(AddSolvedProblemHistoriesCommand)}를 호출하여, 과제
- * 할당 또는 해결 여부 갱신 요청 로직을 수행한다. 이 두 메서드는 Rate Limit을 관리하는 Bucket에 Token이 존재하는 경우에만 수행된다.
- * ({@link com.bombombom.devs.ratelimit.config.SolvedacApiRateLimitConfig
- * SolvedacApiRateLimitConfig} 내부에 Aspect가 선언되어 Token consume 로직 수행)</p>
+ * 이후 {@link com.bombombom.devs.job.AlgorithmStudyAssignmentJob AlgorithmStudyAssignmentJob}을 수행하는
+ * 스케줄러는 대기열 큐에 담긴 메시지를 순차적으로 읽고, 메시지 타입(과제 할당 또는 해결 여부 갱신 요청)에 따라 각각 실제 로직을 수행하는
+ * {@link AlgorithmStudyService#assignAlgorithmProblems(AssignAlgorithmProblemCommand)}와
+ * {@link AlgorithmStudyService#updateAlgorithmTaskStatus(CheckAlgorithmProblemSolvedCommand)}를
+ * 호출하여, '알고리즘 과제 할당' 또는 '알고리즘 과제 해결 여부 갱신' 요청을 처리한다.</p>
  *
  * @see <a href="https://github.com/Team-BomBomBom/Server/pull/51">Feat: #BBB-120 알고리즘 과제 할당 및 해결 여부
  * 요청에 Rate Limit과 대기열 시스템 적용</a>
+ * @see <a href="https://github.com/Team-BomBomBom/Server/pull/78">Refactor: #BBB-162 호출 초과 시점에만 대기열
+ * 큐에 알고리즘 과제 관련 요청 파라미터 추가</a>
  */
 
 @Slf4j
