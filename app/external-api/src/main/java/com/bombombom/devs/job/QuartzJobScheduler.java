@@ -8,12 +8,15 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@DependsOn("algorithmStudyAssignmentJob")
 public class QuartzJobScheduler {
 
     private final Scheduler scheduler;
@@ -21,11 +24,11 @@ public class QuartzJobScheduler {
 
     @PostConstruct
     public void scheduleJob() {
-        JobDetail jobDetail = RoundStartJob.buildJobDetail();
-        Trigger trigger = RoundStartJob.buildJobTrigger();
-        JobDetail updateAlgoStudyTaskStatusDetail = algorithmStudyAssignmentJob.getJobDetail();
-        Trigger updateAlgoStudyTaskStatusTrigger = algorithmStudyAssignmentJob.getTrigger();
         try {
+            JobDetail jobDetail = RoundStartJob.buildJobDetail();
+            Trigger trigger = RoundStartJob.buildJobTrigger();
+            JobDetail algorithmAssignmentJobDetail = algorithmStudyAssignmentJob.getJobDetail();
+            Trigger algorithmAssignmentTrigger = algorithmStudyAssignmentJob.buildJobTrigger();
             JobKey jobKey = jobDetail.getKey();
             if (!scheduler.checkExists(jobKey)) {
                 scheduler.scheduleJob(jobDetail, trigger);
@@ -33,18 +36,19 @@ public class QuartzJobScheduler {
             } else {
                 log.warn("Job already exists with key: {}", jobKey);
             }
-            scheduler.scheduleJob(updateAlgoStudyTaskStatusDetail,
-                updateAlgoStudyTaskStatusTrigger);
+            scheduler.scheduleJob(algorithmAssignmentJobDetail, algorithmAssignmentTrigger);
         } catch (SchedulerException e) {
             log.error(e.getMessage());
         }
     }
 
-    public void setScheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException {
-        scheduler.scheduleJob(jobDetail, trigger);
+    public boolean isTriggerAlreadyInitialized(TriggerKey triggerKey) throws SchedulerException {
+        Trigger trigger = scheduler.getTrigger(triggerKey);
+        return scheduler.getTriggerState(triggerKey) == TriggerState.NORMAL
+            && trigger.getPreviousFireTime() == null;
     }
 
-    public void removeTrigger(TriggerKey triggerKey) throws SchedulerException {
-        scheduler.unscheduleJob(triggerKey);
+    public void rescheduleJob(TriggerKey triggerKey, Trigger trigger) throws SchedulerException {
+        scheduler.rescheduleJob(triggerKey, trigger);
     }
 }
